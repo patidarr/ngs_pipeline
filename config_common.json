@@ -1,0 +1,12 @@
+{
+	"platform"		: "Illumina",
+	"samtools"		: "1.2",
+	"fastqc"		: "0.11.2",
+	"bwa"			: "0.7.10",
+	"picard"		: "1.119",
+	"GATK"			: "3.3-0",
+	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
+	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",
+	"1000G_phase1"		: "/data/khanlab/ref/GATK/hg19/1000G_phase1.indels.hg19.vcf",
+	"Mills_and_1000G"	: "/data/khanlab/ref/GATK/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
+}
