@@ -4,7 +4,7 @@ shell.prefix("set -eo pipefail; ")
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_cluster.json"
 
-localrules: Khanlab_Pipeline, test
+localrules: Khanlab_Pipeline, MuTect
 ####
 #### Targets
 ####
@@ -16,7 +16,6 @@ ALL_BAI     = expand("{sample}/{sample}.bam.bai", sample = ALL_SAMPLES)
 ALL_FLAGS   = expand("{sample}/{sample}.bam.flagstat.txt", sample = ALL_SAMPLES)
 ALL_DDBAM   = expand("{sample}/{sample}.dd.bam", sample = ALL_SAMPLES)
 ALL_FINAL   = expand("{sample}/{sample}.final.bam", sample = ALL_SAMPLES)
-FAKE 	    = expand("{sample}/{sample}.fake", sample = ALL_SAMPLES)
 MUTECT      = []
 
 
@@ -33,7 +32,8 @@ if len(config['sample_references']) > 0:
 #			MUTECT += ["{sample}/{ref_sample}_vs_{sample}.MuTect.vcf".format(sample=Tumor, ref_sample=Normal)]
 
 rule Khanlab_Pipeline:
-	input: ALL_FASTQC, ALL_FLAGS, ALL_FINAL, MUTECT
+	input: ALL_FASTQC, ALL_FLAGS, ALL_FINAL
+#MUTECT
 
 #ALL_FASTQC, ALL_BAMS, ALL_BAI, ALL_FLAGS, ALL_DDBAM
 ############
@@ -169,24 +169,16 @@ rule GATK:
 ############
 #       FAKE
 ############
-rule MuTect:
-	input:
-		"{sample}/{sample}.final.bam"
-	output:
-		vcf="{sample}/{sample}.MuTect.vcf"
-	shell: """
-	echo "{input}   {vcf}" > {vcf}
-	"""
+#rule MuTect:
+#	input:
+#		"{pairs}"
+#	output:
+#		vcf="{sample}/{sample}.MuTect.vcf"
+#	shell: """
+#	echo {input}
+#	echo "{input}    \n\n {input}   {output.vcf}" > {output.vcf}
+#	"""
 
 ############
 #       Platypus
 ############
-############
-#       Mutect
-############
-
-
-
-
-
-
