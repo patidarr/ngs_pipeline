@@ -12,5 +12,11 @@
 		"Sample_RMS245_A_H3FHYAFXX": [
 			"Sample_RMS248_A_H3FHYAFXX"
 		]
+	},
+	"sample_captures":{
+		"Sample_RMS241_A_H3FHYAFXX" : "rms_capture",
+		"Sample_RMS244_A_H3FHYAFXX" : "rms_capture",
+		"Sample_RMS245_A_H3FHYAFXX" : "rms_capture",
+		"Sample_RMS248_A_H3FHYAFXX" : "rms_capture"
 	}
 }

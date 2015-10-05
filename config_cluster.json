@@ -3,6 +3,7 @@
 	"job_bwa"        : "--partition=ccr --time=10:00:00 --mem=10G --exclusive",
         "job_flagstat"   : "--partition=norm --time=01:00:00 --mem=2G",
         "job_markdup"    : "--partition=ccr  --time=04:00:00 --mem=10G --gres=lscratch:40",
-	"job_gatk"	 : "--partition=ccr  --time=24:00:00 --mem=40G --gres=lscratch:100"
-
+	"job_gatk"	 : "--partition=ccr  --time=24:00:00 --mem=40G --gres=lscratch:100",
+	"job_mutect"     : "--partition=ccr  --time=3-24:00:00 --mem=5G",
+	"job_strelka"	 : "--partition=ccr  --time=05:00:00 --mem=50G --gres=lscratch:100"
 }

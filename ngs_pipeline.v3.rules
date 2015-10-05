@@ -1,41 +1,43 @@
+import itertools
+import os
+import collections
+from snakemake.utils import R
+from snakemake.exceptions import MissingInputException
 
 shell.prefix("set -eo pipefail; ")
-
+TEMP="/lscratch/${{SLURM_JOBID}}"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_cluster.json"
 
-localrules: Khanlab_Pipeline, MuTect
+localrules: Khanlab_Pipeline, Haplotype_Caller
 ####
 #### Targets
 ####
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
-#ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R1_fastqc.zip", sample = ALL_SAMPLES) + expand("{sample}/fastqc/{sample}_R2_fastqc.zip", sample = ALL_SAMPLES) + expand("{sample}/fastqc/{sample}_R1_fastqc.html", sample = ALL_SAMPLES) + expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
-ALL_BAMS    = expand("{sample}/{sample}.bam", sample = ALL_SAMPLES)
-ALL_BAI     = expand("{sample}/{sample}.bam.bai", sample = ALL_SAMPLES) 
-ALL_FLAGS   = expand("{sample}/{sample}.bam.flagstat.txt", sample = ALL_SAMPLES)
-ALL_DDBAM   = expand("{sample}/{sample}.dd.bam", sample = ALL_SAMPLES)
-ALL_FINAL   = expand("{sample}/{sample}.final.bam", sample = ALL_SAMPLES)
-MUTECT      = []
-
-
+ALL_FLAGS   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES)
+ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.vcf", sample = ALL_SAMPLES)
+ALL_SOMATIC = []
 somaticPairs = {}
+pairedCapture = {}
+sampleCapture ={}
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
-			TumorBam = "{sample}/{sample}.final.bam".format(sample=Tumor)
-			NormalBam = "{sample}/{sample}.final.bam".format(sample=Normal)
-			somaticPairs_bams = [TumorBam, TumorBam + ".bai", NormalBam, NormalBam + ".bai"]
-			somaticPairs[Tumor] = somaticPairs_bams
-			#somaticPairs[NormalBam + "_vs_" + TumorBam] = somaticPairs_bams
-			MUTECT += ["{sample}/{sample}.MuTect.vcf".format(sample=Tumor)]
-#			MUTECT += ["{sample}/{ref_sample}_vs_{sample}.MuTect.vcf".format(sample=Tumor, ref_sample=Normal)]
+			TumorBam = "{sample}/{sample}.final".format(sample=Tumor)
+			NormalBam = "{sample}/{sample}.final".format(sample=Normal)
+			pairedCapture[Tumor] = config[config['sample_captures'][Tumor]]
+			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
+			ALL_SOMATIC += ["{sample}/{sample}.MuTect.vcf".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.vcf".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.vcf".format(sample=Tumor)]
 
+
+###########################################################################
+###########################################################################
 rule Khanlab_Pipeline:
-	input: ALL_FASTQC, ALL_FLAGS, ALL_FINAL
-#MUTECT
-
-#ALL_FASTQC, ALL_BAMS, ALL_BAI, ALL_FLAGS, ALL_DDBAM
+	input: ALL_GERMLINE
+#ALL_FASTQC, ALL_FLAGS, ALL_SOMATIC, ALL_GERMLINE
 ############
 #	FASTQC
 ############
@@ -58,8 +60,8 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2> {log}
-	fastqc -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2> {log}
+	fastqc -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
+	fastqc -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
 	#######################
 	"""
 ############
@@ -95,7 +97,7 @@ rule BWA:
 ############
 rule flagstat:
 	input:  rules.BWA.output
-	output: "{sample}/{sample}.bam.flagstat.txt"
+	output: "{sample}/{sample}.flagstat.txt"
 	log:    "{sample}/pbs_log/flagstat"
 	version: config["samtools"]
 	threads: 1
@@ -167,18 +169,99 @@ rule GATK:
 #       Haplotype Caller
 ############
 ############
-#       FAKE
+#       MuTect
 ############
-#rule MuTect:
-#	input:
-#		"{pairs}"
-#	output:
-#		vcf="{sample}/{sample}.MuTect.vcf"
-#	shell: """
-#	echo {input}
-#	echo "{input}    \n\n {input}   {output.vcf}" > {output.vcf}
-#	"""
+rule MuTect:
+	input:
+		lambda wildcards: somaticPairs[wildcards.Tumor],
+		ref=config["reference"],
+		dbsnp=config["dbsnp"],
+		cosmic=config["cosmic"],
+		interval=pairedCapture[Tumor]
+	output:
+		vcf="{Tumor}/{Tumor}.MuTect.vcf",
+		call_stats="{Tumor}/{Tumor}.mutect.call_stats.txt",
+		coverage="{Tumor}/{Tumor}.mutect.coverage.wig.txt"
+	log:	"{Tumor}/pbs_log/mutect"
+	version: config["MuTect"]
+	threads: 10
+	params:
+		rulename  = "MuTect",
+		batch     = config["job_mutect"],
+	shell: """
+	#######################
+	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+	module load muTect/{version}
+	java -Xmx${{MEM}}g -jar $MUTECTJARPATH -T MuTect \
+		--reference_sequence {input.ref} \
+		--cosmic {input.cosmic} \
+		--dbsnp {input.dbsnp} \
+		--input_file:normal {input[0]} \
+		--input_file:tumor {input[2]} \
+		--intervals {input.interval} \
+		--coverage_file {output.coverage} \
+		--out {output.call_stats} \
+		--vcf {output.vcf} \
+		> {log} 2>&1
+	#######################
+	"""
+############
+#       Strelka
+############
+rule Strelka:
+	input:
+		lambda wildcards: somaticPairs[wildcards.Tumor],
+		ref=config["reference"],
+		config=config["strelka_config"],
+		interval=pairedCapture[Tumor]
+	output:
+		snps="{Tumor}/{Tumor}.strelka.snvs.vcf",
+		indels="{Tumor}/{Tumor}.strelka.indels.vcf"
+	log:    "{Tumor}/pbs_log/strelka"
+	version: config["strelka"]
+	threads: 32
+	params:
+		rulename = "Strelka",
+		batch    = config["job_strelka"],
+		vcftools = config["vcftools"]
+	shell: """
+	#######################
+	module load strelka/{version}
+	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]}\
+	--ref={input.ref} --config={input.config} --output-dir=/lscratch/${{SLURM_JOBID}}/strelka > {log} 2>&1
+	make -j {threads} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2 >> {log}
+	module load vcftools/{params.vcftools}
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {input.interval} --out {output[0]} --recode --keep-INFO-all
+	mv {output[0]}.recode.vcf {output.snps}
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.indels.vcf --bed {input.interval} --out {output[1]} --recode --keep-INFO-all
+	mv {output[1]}.recode.vcf {output[1]}
+	#######################
+	"""
+############
+#       HaplotypeCaller
+############
+rule Haplotype_Caller:
+	input:
+		bam="{sample}/{sample}.final.bam",
+		index="{sample}/{sample}.final.bai",
+		ref=config["reference"],
+		dbsnp=config["dbsnp"],
+	output:
+		vcf="{sample}/{sample}.hapcaller.vcf"
+	log: "{sample}/pbs_log/hapcaller"
+	version: config["GATK"]
+	threads: 2
+	params:
+		rulename = "hapcall",
+		batch    = config["job_gatk"],
+		dbsnp    = config["dbsnp"], 
+	shell: """
+	#######################
+#	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+#	module load GATK/{version}
+#	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/$SLURM_JOBID -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
+	echo "  config['rms_capture'] " >{output.vcf}	
+	#######################
+	"""
 
-############
-#       Platypus
-############
+		
