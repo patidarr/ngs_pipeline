@@ -34,7 +34,7 @@ if len(config['sample_references']) > 0:
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
-	input: ALL_GERMLINE
+	input: ALL_FASTQC, ALL_FLAGS, ALL_GERMLINE, ALL_SOMATIC
 #ALL_FASTQC, ALL_FLAGS, ALL_SOMATIC, ALL_GERMLINE
 ############
 #	FASTQC
@@ -240,14 +240,24 @@ rule Strelka:
 ############
 rule Haplotype_Caller :
 	input:
-		bam="{sample}/{sample}.final.bam"
+		bam="{sample}/{sample}.final.bam",
+		bai="{sample}/{sample}.final.bai",
+		ref=config["reference"],
+                dbsnp=config["dbsnp"],
+		intervals= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
 		vcf="{sample}/{sample}.hapcaller.vcf"
+	log:    "{sample}/pbs_log/hapcaller"
+	version: config["GATK"]
+	threads: 5
 	params:
-		target_intervals= lambda wildcards: config['sample_captures'][wildcards.sample]
+		rulename = "HapCall",
+		batch    = config["job_gatk"]
 	shell: """
 	#######################
-	echo "{input.bam} {output.vcf} " >{output.vcf}
-	echo "{params.target_intervals} " >>{output.vcf}
+	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+	module load GATK/{version}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -L {input.intervals} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
+
 	#######################
 	"""
