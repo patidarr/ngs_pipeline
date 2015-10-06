@@ -20,21 +20,16 @@ ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.vcf", sample = ALL_SAMPLES)
 ALL_SOMATIC = []
 somaticPairs = {}
 pairedCapture = {}
-sampleCapture ={}
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
 			TumorBam = "{sample}/{sample}.final".format(sample=Tumor)
 			NormalBam = "{sample}/{sample}.final".format(sample=Normal)
-			pairedCapture[Tumor] = config[config['sample_captures'][Tumor]]
+			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
 			ALL_SOMATIC += ["{sample}/{sample}.MuTect.vcf".format(sample=Tumor)]
 			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.vcf".format(sample=Tumor)]
 			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.vcf".format(sample=Tumor)]
-
-for sample in config['sample_references']:
-	sampleCapture[sample] = config[config['sample_captures'][sample]]
-print (sampleCapture)
 
 ###########################################################################
 ###########################################################################
@@ -243,29 +238,16 @@ rule Strelka:
 ############
 #       HaplotypeCaller
 ############
-rule Haplotype_Caller:
+rule Haplotype_Caller :
 	input:
-		bam="{sample}/{sample}.final.bam",
-		index="{sample}/{sample}.final.bai",
-		ref=config["reference"],
-		dbsnp=config["dbsnp"],
+		bam="{sample}/{sample}.final.bam"
 	output:
 		vcf="{sample}/{sample}.hapcaller.vcf"
-	log: "{sample}/pbs_log/hapcaller"
-	version: config["GATK"]
-	threads: 2
 	params:
-		rulename = "hapcall",
-		batch    = config["job_gatk"],
-		dbsnp    = config["dbsnp"], 
+		target_intervals= lambda wildcards: config['sample_captures'][wildcards.sample]
 	shell: """
 	#######################
-	INT=sampleCapture[wildcards.sample]
-#	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
-#	module load GATK/{version}
-#	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/$SLURM_JOBID -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
-	echo ${{INT}} >{output.vcf}	
+	echo "{input.bam} {output.vcf} " >{output.vcf}
+	echo "{params.target_intervals} " >>{output.vcf}
 	#######################
 	"""
-
-		

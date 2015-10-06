@@ -14,9 +14,9 @@
 		]
 	},
 	"sample_captures":{
-		"Sample_RMS241_A_H3FHYAFXX" : "rms_capture",
-		"Sample_RMS244_A_H3FHYAFXX" : "rms_capture",
-		"Sample_RMS245_A_H3FHYAFXX" : "rms_capture",
-		"Sample_RMS248_A_H3FHYAFXX" : "rms_capture"
+		"Sample_RMS241_A_H3FHYAFXX" : "/data/khanlab/ref/GATK/hg19/RMS_Amplicon.hg19.bed",
+		"Sample_RMS244_A_H3FHYAFXX" : "/data/khanlab/ref/GATK/hg19/RMS_Amplicon.hg19.bed",
+		"Sample_RMS245_A_H3FHYAFXX" : "/data/khanlab/ref/GATK/hg19/RMS_Amplicon.hg19.bed",
+		"Sample_RMS248_A_H3FHYAFXX" : "/data/khanlab/ref/GATK/hg19/RMS_Amplicon.hg19.bed"
 	}
 }
