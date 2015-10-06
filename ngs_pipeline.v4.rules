@@ -15,7 +15,7 @@ localrules: Khanlab_Pipeline, Haplotype_Caller
 ####
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
-ALL_FLAGS   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES)
+ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES)
 ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.vcf", sample = ALL_SAMPLES)
 ALL_SOMATIC = []
 somaticPairs = {}
@@ -34,8 +34,8 @@ if len(config['sample_references']) > 0:
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
-	input: ALL_FASTQC, ALL_FLAGS, ALL_GERMLINE, ALL_SOMATIC
-#ALL_FASTQC, ALL_FLAGS, ALL_SOMATIC, ALL_GERMLINE
+	input: ALL_QC, ALL_FASTQC, ALL_GERMLINE, ALL_SOMATIC
+#ALL_FASTQC, ALL_SOMATIC, ALL_GERMLINE
 ############
 #	FASTQC
 ############
@@ -91,10 +91,42 @@ rule BWA:
 	#######################
 	"""
 ############
+#       GenotypeFile
+############
+rule Genotyping:
+	input:
+		bam="{sample}/{sample}.final.bam",
+		interval=config["genotypeBed"],
+		ref=config["reference"],
+		vcf2genotype=config["vcf2genotype"]
+	output:
+		vcf="{sample}/{sample}.samtools.vcf",
+		gt="{sample}/{sample}.gt"
+	log: "{sample}/pbs_log/genotyping"
+	version: config["samtools"]
+	threads: 2
+	message: "Making Genotyping Input file on {input[0]}"
+	params:
+		rulename  = "genotype",
+		batch     = config["job_genotype"],
+		dest	  = config["genotypeDest"]
+	shell: """
+	#######################
+	module load samtools/{version}
+	samtools mpileup -u -C50 -f {input.ref} -l {input.interval} {input.bam} | bcftools view -gc - >{output.vcf} 2>{log}
+	perl {input.vcf2genotype} {output.vcf} >{output.gt} 2>>{log}
+	cp -f {output.gt} {params.dest} 2>>{log}
+	
+	#######################
+	"""
+		
+		
+	
+############
 #       Samtools flagstat
 ############
 rule flagstat:
-	input:  rules.BWA.output
+	input:	"{sample}/{sample}.bam"
 	output: "{sample}/{sample}.flagstat.txt"
 	log:    "{sample}/pbs_log/flagstat"
 	version: config["samtools"]
@@ -109,6 +141,31 @@ rule flagstat:
 	samtools flagstat {input} > {output}
 	#######################
 	"""
+############
+#       Hotspot Coverage
+############
+rule HotSpotCoverage:
+	input:	
+		bam="{sample}/{sample}.final.bam",
+		interval=config["hotspot_intervals"]
+	output: "{sample}/{sample}.hotspot.depth"
+	log: "{sample}/pbs_log/hotspotCoverage"
+	version: config["bedtools"]
+	threads: 1
+	message: "Running Hotspot Coverage flagstat on {input[0]}"
+	params:
+		rulename  = "HotSpotCov",
+		batch     = config["job_hotspot"],
+		samtools  = config["samtools"]
+	shell: """
+	#######################
+	module load samtools/{params.samtools} 
+	module load bedtools/{version}
+	samtools view -hF 0x400 -q 30 {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
+	
+	#######################
+	"""
+
 ############
 #       Picard Mark Duplicates
 ############

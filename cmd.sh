@@ -3,7 +3,7 @@ NOW=$(date +"%H%M%S_%m%d%Y")
 module load python/3.4.3
 
 WORK_DIR=/data/khanlab/projects/patidar/Testing/
-SNAKEFILE=/data/khanlab/projects/patidar/Snakemake/ngs_pipeline.v2.rules
+SNAKEFILE=/data/khanlab/projects/patidar/Snakemake/ngs_pipeline.v4.rules
 SAM_CONFIG=/data/khanlab/projects/patidar/Snakemake/config_samples.json
 
 cd $WORK_DIR
