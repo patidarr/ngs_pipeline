@@ -1,4 +1,6 @@
 #!/bin/sh
+#BATCH --job-name="NCI0276"
+
 NOW=$(date +"%H%M%S_%m%d%Y")
 module load python/3.4.3
 
@@ -14,7 +16,7 @@ snakemake\
 	--jobname '{rulename}.{jobid}' \
 	--nolock --notemp \
 	-k -p -T \
-	-j 300 \
+	-j 3000 \
 	--stats ngs_pipeline_${NOW}.stats \
 	--cluster "sbatch -e log/{params.rulename}.%j.e -o log/{params.rulename}.%j.o {params.batch}" \
         >& ngs_pipeline_${NOW}.log

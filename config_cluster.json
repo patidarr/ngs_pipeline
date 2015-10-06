@@ -1,6 +1,6 @@
 {
-	"job_fastqc"     : "--partition=ccr --time=01:00:00 --mem=2G",
-	"job_bwa"        : "--partition=ccr --time=10:00:00 --mem=10G --exclusive",
+	"job_fastqc"     : "--partition=ccr --time=01:00:00 --mem=20G",
+	"job_bwa"        : "--partition=ccr --time=10:00:00 --mem=50G --exclusive",
         "job_flagstat"   : "--partition=norm --time=02:00:00 --mem=2G",
         "job_genotype"   : "--partition=norm --time=05:00:00 --mem=2G",
         "job_hotspot"    : "--partition=norm --time=01:00:00 --mem=2G",

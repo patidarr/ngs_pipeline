@@ -9,7 +9,7 @@ TEMP="/lscratch/${{SLURM_JOBID}}"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_cluster.json"
 
-localrules: Khanlab_Pipeline, Haplotype_Caller
+localrules: Khanlab_Pipeline
 ####
 #### Targets
 ####
@@ -52,7 +52,7 @@ rule fastqc:
 		"{sample}/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
 	version: config["fastqc"]
-	threads: 2
+	threads: 10
 	message: "Running Fastqc on {input[0]}"
 	params:
 		rulename  = "fastqc",
@@ -60,8 +60,8 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
-	fastqc -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
+	fastqc -t {threads} -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
+	fastqc -t {threads} -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
 	#######################
 	"""
 ############
