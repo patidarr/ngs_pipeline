@@ -95,6 +95,7 @@ rule BWA:
 ############
 #       GenotypeFile
 ############
+# Using Older version of samtools for this purpose
 rule Genotyping:
 	input:
 		bam="{sample}/{sample}.final.bam",
@@ -105,7 +106,7 @@ rule Genotyping:
 		vcf="{sample}/{sample}.samtools.vcf",
 		gt="{sample}/{sample}.gt"
 	log: "{sample}/pbs_log/genotyping"
-	version: config["samtools"]
+	version: config["samtools_old"]
 	threads: 2
 	message: "Making Genotyping Input file on {input[0]}"
 	params:
@@ -117,8 +118,7 @@ rule Genotyping:
 	module load samtools/{version}
 	samtools mpileup -u -C50 -f {input.ref} -l {input.interval} {input.bam} | bcftools view -gc - >{output.vcf} 2>{log}
 	perl {input.vcf2genotype} {output.vcf} >{output.gt} 2>>{log}
-	cp -f {output.gt} {params.dest} 2>>{log}
-	
+	cp -f {output.gt} {params.dest}/{output.gt} 2>>{log}
 	#######################
 	"""	
 ############
@@ -143,7 +143,6 @@ rule BamQC:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load qualimap/{version}
-	export DISPLAY=:0
 	qualimap bamqc -c -bam {input.bam} -outdir {params.outdir} -gff {input.interval} -nt {threads} --java-mem-size=${{MEM}}G > {log} 2>&1
 	#######################
 	"""
@@ -246,9 +245,6 @@ rule GATK:
 	######################
 	"""
 ############
-#       Haplotype Caller
-############
-############
 #       MuTect
 ############
 rule MuTect:
@@ -339,7 +335,8 @@ rule Haplotype_Caller :
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -L {input.intervals} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.intervals} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -L /lscratch/${{SLURM_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
 
 	#######################
 	"""
