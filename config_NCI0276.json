@@ -1,0 +1,29 @@
+{
+	"samples": [
+		"Sample_NCI0276blood_100ng_P_HGCGYBGXX",
+		"Sample_NCI0276blood_200ng_P_HGCGYBGXX",
+		"Sample_NCI0276blood_E_HGCGYBGXX",
+		"Sample_NCI0276tumor_100ng_P_HGCGYBGXX",
+		"Sample_NCI0276tumor_200ng_P_HGCGYBGXX",
+		"Sample_NCI0276tumor_E_HGCGYBGXX"
+	],
+	"sample_references": {
+		"Sample_NCI0276tumor_100ng_P_HGCGYBGXX": [
+			"Sample_NCI0276blood_100ng_P_HGCGYBGXX"
+		],
+		"Sample_NCI0276tumor_200ng_P_HGCGYBGXX": [
+			"Sample_NCI0276blood_200ng_P_HGCGYBGXX"
+		],
+		"Sample_NCI0276tumor_E_HGCGYBGXX": [
+			"Sample_NCI0276blood_E_HGCGYBGXX"
+		]
+	},
+	"sample_captures":{
+		"Sample_NCI0276blood_100ng_P_HGCGYBGXX": "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+		"Sample_NCI0276blood_200ng_P_HGCGYBGXX": "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+		"Sample_NCI0276blood_E_HGCGYBGXX": "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+		"Sample_NCI0276tumor_100ng_P_HGCGYBGXX": "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+		"Sample_NCI0276tumor_200ng_P_HGCGYBGXX": "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+		"Sample_NCI0276tumor_E_HGCGYBGXX": "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed"
+	}
+}

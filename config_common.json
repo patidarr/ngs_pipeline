@@ -12,6 +12,7 @@
 	"platypus"		: "0.8.1",
 	"freebayes"		: "0.9.21",
 	"snpEff"		: "4.1c",
+	"qualimap"		: "2.1.1",
 	"vcf2genotype"		: "/data/khanlab/projects/Genotyping/vcf2genotype.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",

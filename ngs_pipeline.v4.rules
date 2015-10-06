@@ -15,7 +15,7 @@ localrules: Khanlab_Pipeline, Haplotype_Caller
 ####
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
-ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES)
+ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.final.bam.qualimapReport.html", sample = ALL_SAMPLES)
 
 
 ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.snpEff.vcf", sample = ALL_SAMPLES)
@@ -120,10 +120,33 @@ rule Genotyping:
 	cp -f {output.gt} {params.dest} 2>>{log}
 	
 	#######################
+	"""	
+############
+#       BamQC
+############
+rule BamQC:
+	input:
+		bam="{sample}/{sample}.final.bam",
+		bai="{sample}/{sample}.final.bai",
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample].replace('.bed', '.gff')
+	output:
+		"{sample}/{sample}.final.bam.qualimapReport.html"
+	log: "{sample}/pbs_log/{sample}.bamqc.log"
+	version: config["qualimap"]
+	threads: 32
+	message: "Running BamQC on {input[0]}"
+	params: 
+		rulename = "bamqc",
+		batch	 = config["job_qualimap"],
+		outdir	 ="{sample}/{sample}/BamQC",
+	shell: """
+	#######################
+	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+	module load qualimap/{version}
+	export DISPLAY=:0
+	qualimap bamqc -c -bam {input.bam} -outdir {params.outdir} -gff {input.interval} -nt {threads} --java-mem-size=${{MEM}}G > {log} 2>&1
+	#######################
 	"""
-		
-		
-	
 ############
 #       Samtools flagstat
 ############
