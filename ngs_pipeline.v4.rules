@@ -16,7 +16,9 @@ localrules: Khanlab_Pipeline, Haplotype_Caller
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
 ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES)
-ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.vcf", sample = ALL_SAMPLES)
+
+
+ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.snpEff.vcf", sample = ALL_SAMPLES)
 ALL_SOMATIC = []
 somaticPairs = {}
 pairedCapture = {}
@@ -27,9 +29,9 @@ if len(config['sample_references']) > 0:
 			NormalBam = "{sample}/{sample}.final".format(sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
-			ALL_SOMATIC += ["{sample}/{sample}.MuTect.vcf".format(sample=Tumor)]
-			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.vcf".format(sample=Tumor)]
-			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.vcf".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/{sample}.MuTect.snpEff.vcf".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.snpEff.vcf".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.snpEff.vcf".format(sample=Tumor)]
 
 ###########################################################################
 ###########################################################################
@@ -375,12 +377,27 @@ rule  FreeBayes:
 	"""
 
 
-
-
-
-
-
-
-
-
-
+############
+#	snpEff
+############
+rule snpEff:
+	input:
+		vcf="{sample}/{sample}.{base}.vcf",
+		ref=config["reference"],
+		snpEff_config=config["snpEff_config"],
+	output:
+		"{sample}/{sample}.{base}.snpEff.vcf"
+	log: "{sample}/pbs_log/{base}.snpEff"
+	version: config["snpEff"]
+	threads: 32
+	params:
+		rulename   = "snpEff",
+		batch	   = config["job_snpeff"],
+		snpEff_genome=config["snpEff_genome"]
+	shell: """
+	#######################
+	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+	module load snpEff/{version}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output} 2> {log}
+	#######################
+	"""

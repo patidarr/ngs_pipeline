@@ -11,6 +11,7 @@
 	"vcftools"		: "0.1.12b",
 	"platypus"		: "0.8.1",
 	"freebayes"		: "0.9.21",
+	"snpEff"		: "4.1c",
 	"vcf2genotype"		: "/data/khanlab/projects/Genotyping/vcf2genotype.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
@@ -22,6 +23,8 @@
 	"dbsnp"			: "/data/khanlab/ref/GATK/hg19/dbsnp_138.hg19.vcf",
 	"cosmic"		: "/data/khanlab/ref/GATK/hg19/cosmic_v71.b37.vcf",
 	"strelka_config"	: "/data/khanlab/ref/GATK/hg19/Strelka.config.ini",
+	"snpEff_config"		: "/data/khanlab/ref/GATK/hg19/snpEff.config",
+	"snpEff_genome"		: "GRCh37.75",
 	"genotypeBed"		: "/data/Clinomics/Ref/annovar/1000gSites4genotyping.bed",
 	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed"
 }

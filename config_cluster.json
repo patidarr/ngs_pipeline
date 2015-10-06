@@ -9,5 +9,6 @@
 	"job_mutect"     : "--partition=ccr  --time=3-24:00:00 --mem=5G",
 	"job_strelka"	 : "--partition=ccr  --time=10:00:00 --mem=50G --gres=lscratch:100",
 	"job_platypus"	 : "--partition=ccr  --time=10:00:00 --mem=50G --gres=lscratch:100",
-	"job_freebayes"  : "--partition=ccr  --time=10:00:00 --mem=50G "
+	"job_freebayes"  : "--partition=ccr  --time=10:00:00 --mem=50G ",
+	"job_snpeff"	 : "--partition=ccr  --time=10:00:00 --mem=50G --gres=lscratch:100"
 }
