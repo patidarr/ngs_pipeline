@@ -5,7 +5,6 @@ from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 
 shell.prefix("set -eo pipefail; ")
-TEMP="/lscratch/${{SLURM_JOBID}}"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_cluster.json"
 
@@ -52,7 +51,6 @@ rule fastqc:
 		"{sample}/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
 	version: config["fastqc"]
-	threads: 10
 	message: "Running Fastqc on {input[0]}"
 	params:
 		rulename  = "fastqc",
@@ -60,8 +58,8 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc -t {threads} -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
-	fastqc -t {threads} -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
+	fastqc -t ${{SLURM_CPUS_ON_NODE}} -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
+	fastqc -t ${{SLURM_CPUS_ON_NODE}} -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
 	#######################
 	"""
 ############
@@ -77,7 +75,6 @@ rule BWA:
 		"{sample}/{sample}.bam.bai"
 	log: "{sample}/pbs_log/bwa"
 	version: config["bwa"]
-	threads: 32
 	message: "Running bwa on {input[0]}"
 	params:
 		rulename  = "bwa",
@@ -88,7 +85,7 @@ rule BWA:
 	#######################
 	module load bwa/{version}
 	module load samtools/{params.samtools}
-	bwa mem -M  -t {threads} -R \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" {input[ref]} {input[R1]} {input[R2]} 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}
+	bwa mem -M  -t ${{SLURM_CPUS_ON_NODE}} -R \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" {input[ref]} {input.R1} {input.R2} 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}
 	samtools index {wildcards.sample}/{wildcards.sample}.bam
 	#######################
 	"""
@@ -101,14 +98,15 @@ rule Genotyping:
 		bam="{sample}/{sample}.final.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
-		vcf2genotype=config["vcf2genotype"]
+		vcf2genotype=config["vcf2genotype"],
+		vcf2loh=config["vcf2loh"],
 	output:
 		vcf="{sample}/{sample}.samtools.vcf",
-		gt="{sample}/{sample}.gt"
+		gt="{sample}/{sample}.gt",
+		loh="{sample}/{sample}.loh"
 	log: "{sample}/pbs_log/genotyping"
 	version: config["samtools_old"]
-	threads: 2
-	message: "Making Genotyping Input file on {input[0]}"
+	message: "Making Genotyping Input file on {input.bam}"
 	params:
 		rulename  = "genotype",
 		batch     = config["job_genotype"],
@@ -118,7 +116,8 @@ rule Genotyping:
 	module load samtools/{version}
 	samtools mpileup -u -C50 -f {input.ref} -l {input.interval} {input.bam} | bcftools view -gc - >{output.vcf} 2>{log}
 	perl {input.vcf2genotype} {output.vcf} >{output.gt} 2>>{log}
-	cp -f {output.gt} {params.dest}/{output.gt} 2>>{log}
+	cp -f {output.gt} {params.dest}/{wildcards.sample}.gt 2>>{log}
+	perl {input.vcf2loh} {output.vcf} >{output.loh} 2>>{log}
 	#######################
 	"""	
 ############
@@ -133,7 +132,6 @@ rule BamQC:
 		"{sample}/BamQC/qualimapReport.html"
 	log: "{sample}/pbs_log/{sample}.bamqc.log"
 	version: config["qualimap"]
-	threads: 32
 	message: "Running BamQC on {input[0]}"
 	params: 
 		rulename = "bamqc",
@@ -143,7 +141,7 @@ rule BamQC:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load qualimap/{version}
-	qualimap bamqc -c -bam {input.bam} -outdir {params.outdir} -gff {input.interval} -nt {threads} --java-mem-size=${{MEM}}G > {log} 2>&1
+	qualimap bamqc -c -bam {input.bam} -outdir {params.outdir} -gff {input.interval} -nt ${{SLURM_CPUS_ON_NODE}} --java-mem-size=${{MEM}}G > {log} 2>&1
 	#######################
 	"""
 ############
@@ -154,7 +152,6 @@ rule flagstat:
 	output: "{sample}/{sample}.flagstat.txt"
 	log:    "{sample}/pbs_log/flagstat"
 	version: config["samtools"]
-	threads: 1
 	message: "Running samtools flagstat on {input[0]}"
 	params:
 		rulename  = "flagstat",
@@ -175,7 +172,6 @@ rule HotSpotCoverage:
 	output: "{sample}/{sample}.hotspot.depth"
 	log: "{sample}/pbs_log/hotspotCoverage"
 	version: config["bedtools"]
-	threads: 1
 	message: "Running Hotspot Coverage flagstat on {input[0]}"
 	params:
 		rulename  = "HotSpotCov",
@@ -201,7 +197,6 @@ rule Picard_MarkDup:
 		metrics="{sample}/{sample}.markdup.txt"
 	log:    "{sample}/pbs_log/markdup"
 	version: config["picard"]
-	threads: 1
 	message: "Running picard mark duplicates on {input[0]}"
 	params:
 		rulename  = "mark_dup",
@@ -229,7 +224,6 @@ rule GATK:
 		index="{sample}/{sample}.final.bai",
 	log:    "{sample}/pbs_log/gatk"
 	version: config["GATK"]
-	threads: 32
 	message: "Running GATK Best practices on {input.bam}"
 	params:
 		rulename  = "gatk",
@@ -260,7 +254,6 @@ rule MuTect:
 		coverage="{Tumor}/{Tumor}.mutect.coverage.wig.txt"
 	log:	"{Tumor}/pbs_log/mutect"
 	version: config["MuTect"]
-	threads: 10
 	params:
 		rulename  = "MuTect",
 		batch     = config["job_mutect"],
@@ -269,7 +262,7 @@ rule MuTect:
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
 	module load muTect/{version}
-	java -Xmx${{MEM}}g -jar $MUTECTJARPATH -T MuTect \
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $MUTECTJARPATH -T MuTect \
 		--reference_sequence {input.ref} \
 		--cosmic {input.cosmic} \
 		--dbsnp {input.dbsnp} \
@@ -296,7 +289,6 @@ rule Strelka:
 		indels="{Tumor}/{Tumor}.strelka.indels.vcf"
 	log:    "{Tumor}/pbs_log/strelka"
 	version: config["strelka"]
-	threads: 32
 	params:
 		rulename = "Strelka",
 		batch    = config["job_strelka"],
@@ -306,7 +298,7 @@ rule Strelka:
 	module load strelka/{version}
 	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]}\
 	--ref={input.ref} --config={input.config} --output-dir=/lscratch/${{SLURM_JOBID}}/strelka > {log} 2>&1
-	make -j {threads} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2 >> {log}
+	make -j ${{SLURM_CPUS_PER_TASK}} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2>> {log}
 	module load vcftools/{params.vcftools}
 	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {input.interval} --out {output[0]} --recode --keep-INFO-all
 	mv {output[0]}.recode.vcf {output.snps}
@@ -328,7 +320,6 @@ rule Haplotype_Caller :
 		vcf="{sample}/{sample}.hapcaller.vcf"
 	log:    "{sample}/pbs_log/hapcaller"
 	version: config["GATK"]
-	threads: 5
 	params:
 		rulename = "HapCall",
 		batch    = config["job_gatk"]
@@ -354,15 +345,13 @@ rule  Platypus:
 		vcf="{sample}/{sample}.platypus.vcf"
 	log:    "{sample}/pbs_log/platypus"
 	version: config["platypus"]
-	threads: 32
 	params:
 		rulename = "platypus",
 		batch    = config["job_platypus"]
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load platypus/{version}
-	platypus callVariants --nCPU={threads} --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions={input.interval} --output={output.vcf} --refFile={input.ref} --logFileName={log} 
+	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions={input.interval} --output={output.vcf} --refFile={input.ref} --logFileName={log} 
 	#######################
 	"""
 ############
@@ -378,14 +367,12 @@ rule  FreeBayes:
 		vcf="{sample}/{sample}.freebayes.vcf"
 	log:    "{sample}/pbs_log/freebayes"
 	version: config["freebayes"]
-	threads: 32
 	params:
 		rulename = "freebayes",
 		batch    = config["job_freebayes"],
 		vcftools = config["vcftools"]
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load freebayes/{version}
 	freebayes -f {input.ref} --haplotype-length 50 -b {input.bam} -v {output.vcf} > {log} 2>&1
 	
@@ -410,7 +397,6 @@ rule snpEff:
 		"{sample}/{sample}.{base}.snpEff.vcf"
 	log: "{sample}/pbs_log/{base}.snpEff"
 	version: config["snpEff"]
-	threads: 32
 	params:
 		rulename   = "snpEff",
 		batch	   = config["job_snpeff"],
@@ -420,5 +406,23 @@ rule snpEff:
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load snpEff/{version}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output} 2> {log}
+	#######################
+	"""
+############
+#       vcf2txt
+############
+rule vcf2txt:
+	input: 
+		vcf="{sample}/{sample}.{base}.snpEff.vcf",
+		vcf2txt=config["vcf2txt"],
+	output: "{sample}/annotation/{sample}.{base}"
+	log: "{sample}/pbs_log/{base}.vcf2txt"
+	version: config["annovar"]
+	params:
+		rulename   = "vcf2txt",
+		batch	   = config["job_vcf2txt"]
+	shell: """
+	#######################
+	perl {input.vcf2txt} {input.vcf} >{output}
 	#######################
 	"""

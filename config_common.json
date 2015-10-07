@@ -14,7 +14,12 @@
 	"freebayes"		: "0.9.21",
 	"snpEff"		: "4.1c",
 	"qualimap"		: "2.1.1",
-	"vcf2genotype"		: "/data/khanlab/projects/Genotyping/vcf2genotype.pl",
+	"annovar"		: "2015-03-22",
+	"snpEff_genome"         : "GRCh37.75",
+	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
+	"vcf2genotype"		: "/data/khanlab/projects/patidar/Snakemake/scripts/vcf2genotype.pl",
+	"vcf2loh"		: "/data/khanlab/projects/patidar/Snakemake/scripts/vcf2loh.pl",
+	"vcf2txt"               : "/data/khanlab/projects/patidar/Snakemake/scripts/vcf2txt.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
 	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",
@@ -26,7 +31,6 @@
 	"cosmic"		: "/data/khanlab/ref/GATK/hg19/cosmic_v71.b37.vcf",
 	"strelka_config"	: "/data/khanlab/ref/GATK/hg19/Strelka.config.ini",
 	"snpEff_config"		: "/data/khanlab/ref/GATK/hg19/snpEff.config",
-	"snpEff_genome"		: "GRCh37.75",
 	"genotypeBed"		: "/data/Clinomics/Ref/annovar/1000gSites4genotyping.bed",
 	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed"
 }
