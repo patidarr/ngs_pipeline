@@ -1,6 +1,6 @@
 #!/bin/sh
 #BATCH --job-name="NCI0276"
-
+#BATCH --time=10-00:00:00"
 NOW=$(date +"%H%M%S_%m%d%Y")
 module load python/3.4.3
 
@@ -35,6 +35,13 @@ snakemake\
 
 #For saving this to a file
 #snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dag | dot -Tpdf > dag.pdf
+#snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dag | dot -Tpng > ~/dag.png
+
 #snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpng > ~/dag_rajesh.png
+#snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpdf > ~/dag_rajesh.pdf
+
+
 #snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --forceall --dag | dot -Tpdf > dag.pdf
+#snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --forceall --dag | dot -Tpng > dag.png
+
 #echo DAG |mutt -s "DAG" -a dag.pdf -- patidarr@mail.nih.gov

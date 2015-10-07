@@ -15,7 +15,7 @@ localrules: Khanlab_Pipeline
 ####
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
-ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.final.bam.qualimapReport.html", sample = ALL_SAMPLES)
+ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
 
 
 ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.snpEff.vcf", sample = ALL_SAMPLES)
@@ -130,7 +130,7 @@ rule BamQC:
 		bai="{sample}/{sample}.final.bai",
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample].replace('.bed', '.gff')
 	output:
-		"{sample}/{sample}.final.bam.qualimapReport.html"
+		"{sample}/BamQC/qualimapReport.html"
 	log: "{sample}/pbs_log/{sample}.bamqc.log"
 	version: config["qualimap"]
 	threads: 32
@@ -138,7 +138,7 @@ rule BamQC:
 	params: 
 		rulename = "bamqc",
 		batch	 = config["job_qualimap"],
-		outdir	 ="{sample}/{sample}/BamQC",
+		outdir	 ="{sample}/BamQC",
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
@@ -267,6 +267,7 @@ rule MuTect:
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
 	module load muTect/{version}
 	java -Xmx${{MEM}}g -jar $MUTECTJARPATH -T MuTect \
 		--reference_sequence {input.ref} \
@@ -274,7 +275,7 @@ rule MuTect:
 		--dbsnp {input.dbsnp} \
 		--input_file:normal {input[0]} \
 		--input_file:tumor {input[2]} \
-		--intervals {input.interval} \
+		--intervals  /lscratch/${{SLURM_JOBID}}/target_intervals.bed \
 		--coverage_file {output.coverage} \
 		--out {output.call_stats} \
 		--vcf {output.vcf} \
@@ -322,7 +323,7 @@ rule Haplotype_Caller :
 		bai="{sample}/{sample}.final.bai",
 		ref=config["reference"],
                 dbsnp=config["dbsnp"],
-		intervals= lambda wildcards: config['sample_captures'][wildcards.sample]
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
 		vcf="{sample}/{sample}.hapcaller.vcf"
 	log:    "{sample}/pbs_log/hapcaller"
@@ -335,7 +336,7 @@ rule Haplotype_Caller :
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.intervals} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -L /lscratch/${{SLURM_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
 
 	#######################
@@ -348,7 +349,7 @@ rule  Platypus:
 		bam="{sample}/{sample}.final.bam",
 		bai="{sample}/{sample}.final.bai",
 		ref=config["reference"],
-		intervals= lambda wildcards: config['sample_captures'][wildcards.sample]
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
 		vcf="{sample}/{sample}.platypus.vcf"
 	log:    "{sample}/pbs_log/platypus"
@@ -361,7 +362,7 @@ rule  Platypus:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load platypus/{version}
-	platypus callVariants --nCPU={threads} --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions={input.intervals} --output={output.vcf} --refFile={input.ref} --logFileName={log} 
+	platypus callVariants --nCPU={threads} --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions={input.interval} --output={output.vcf} --refFile={input.ref} --logFileName={log} 
 	#######################
 	"""
 ############
@@ -372,7 +373,7 @@ rule  FreeBayes:
 		bam="{sample}/{sample}.final.bam",
 		bai="{sample}/{sample}.final.bai",
 		ref=config["reference"],
-		intervals= lambda wildcards: config['sample_captures'][wildcards.sample]
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
 		vcf="{sample}/{sample}.freebayes.vcf"
 	log:    "{sample}/pbs_log/freebayes"
@@ -390,7 +391,7 @@ rule  FreeBayes:
 	
 	
 	module load vcftools/{params.vcftools}
-	vcftools --vcf {output} --bed {input.intervals} --out {output.vcf} --recode --keep-INFO-all
+	vcftools --vcf {output} --bed {input.interval} --out {output.vcf} --recode --keep-INFO-all
 	mv {output.vcf}.recode.vcf {output.vcf}
 	
 	#######################
