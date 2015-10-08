@@ -17,7 +17,8 @@ ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAM
 ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
 
 
-ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.snpEff.vcf", sample = ALL_SAMPLES)
+ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES)
+#ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.snpEff.vcf", sample = ALL_SAMPLES)
 ALL_SOMATIC = []
 somaticPairs = {}
 pairedCapture = {}
@@ -28,14 +29,24 @@ if len(config['sample_references']) > 0:
 			NormalBam = "{sample}/{sample}.final".format(sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
-			ALL_SOMATIC += ["{sample}/{sample}.MuTect.snpEff.vcf".format(sample=Tumor)]
-			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.snpEff.vcf".format(sample=Tumor)]
-			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.snpEff.vcf".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/annotation/{sample}.MuTect".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/annotation/{sample}.strelka.snvs".format(sample=Tumor)]
+			ALL_SOMATIC += ["{sample}/annotation/{sample}.strelka.indels".format(sample=Tumor)]
+
+#			ALL_SOMATIC += ["{sample}/{sample}.MuTect.snpEff.vcf".format(sample=Tumor)]
+#			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.snpEff.vcf".format(sample=Tumor)]
+#			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.snpEff.vcf".format(sample=Tumor)]
 
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
-	input: ALL_QC, ALL_FASTQC, ALL_GERMLINE, ALL_SOMATIC
+	input: 
+		ALL_QC,
+		ALL_FASTQC,
+		"annotation/AnnotationInput.annotations.final.txt"
+	
+#input: ALL_QC, ALL_FASTQC, "annotation/AnnotationInput.germline", "annotation/AnnotationInput.sift.out", "annotation/AnnotationInput.pph2.out"
+#	input: ALL_QC, ALL_FASTQC, ALL_GERMLINE, ALL_SOMATIC, "annotation/Test"
 #ALL_FASTQC, ALL_SOMATIC, ALL_GERMLINE
 ############
 #	FASTQC
@@ -386,43 +397,157 @@ rule  FreeBayes:
 
 
 ############
-#	snpEff
+#	snpEff and vcf2txt
 ############
 rule snpEff:
 	input:
 		vcf="{sample}/{sample}.{base}.vcf",
 		ref=config["reference"],
 		snpEff_config=config["snpEff_config"],
+		vcf2txt=config["vcf2txt"],
 	output:
-		"{sample}/{sample}.{base}.snpEff.vcf"
+		eff="{sample}/{sample}.{base}.snpEff.vcf",
+		txt="{sample}/annotation/{sample}.{base}"
 	log: "{sample}/pbs_log/{base}.snpEff"
 	version: config["snpEff"]
 	params:
-		rulename   = "snpEff",
-		batch	   = config["job_snpeff"],
-		snpEff_genome=config["snpEff_genome"]
+		rulename      ="snpEff",
+		batch	      =config["job_snpeff"],
+		snpEff_genome =config["snpEff_genome"]
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load snpEff/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output} 2> {log}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff} 2> {log}
+	perl {input.vcf2txt} {output.eff} >{output.txt}
 	#######################
 	"""
 ############
-#       vcf2txt
+#	MakeList
 ############
-rule vcf2txt:
-	input: 
-		vcf="{sample}/{sample}.{base}.snpEff.vcf",
-		vcf2txt=config["vcf2txt"],
-	output: "{sample}/annotation/{sample}.{base}"
-	log: "{sample}/pbs_log/{base}.vcf2txt"
+rule FormatInput:
+	input: ALL_SOMATIC, ALL_GERMLINE
+	output: 
+		"annotation/AnnotationInput.anno", 
+		"annotation/AnnotationInput.pph",
+		"annotation/AnnotationInput.sift",
+	log: "log/FormatInput"
 	version: config["annovar"]
 	params:
-		rulename   = "vcf2txt",
-		batch	   = config["job_vcf2txt"]
+		rulename   = "FormatInput",
+		batch      = config["job_annovar"],
+		convertor  = config["annoInput"],
 	shell: """
 	#######################
-	perl {input.vcf2txt} {input.vcf} >{output}
+	module load annovar/{version}
+	LIST=`echo {input} |sed -e 's/,//g'`
+	cut -f 1-5 ${{LIST}}|sort |uniq >"annotation/AnnotationInput"
+	perl {params.convertor} "annotation/AnnotationInput" 2>{log}
+	#######################
+	"""
+############
+#       MakeList
+############
+rule Annotation:
+	input: "annotation/AnnotationInput.anno",
+	output:
+		"annotation/AnnotationInput.germline"
+	log: "log/Annovar"
+	version: config["annovar"]
+	params:
+		rulename   = "Annotation",
+		batch      = config["job_annovar"],
+		RefData    = config["annovar_data"],
+		build      = config["build"],
+		TableAnnovar=config["Annovar"]
+	shell: """
+	#######################
+	module load annovar/{version}
+	perl {params.TableAnnovar} annotation AnnotationInput /data/Clinomics/Tools/annovar/ 2>>{log}
+	#######################
+	"""
+
+
+
+############
+#       SIFT
+############
+rule SIFT:
+	input: "annotation/AnnotationInput.sift",
+	output: "annotation/AnnotationInput.sift.out"
+	log: "log/SIFT"
+	version: config["SIFT"]
+	params:
+		rulename   = "SIFT",
+		batch      = config["job_SIFT"],
+		convertor  = config["SiftParse"],
+		build      = config["SIFTbuild"]
+	shell: """
+	#######################
+	module load python/2.7.4
+	module load SIFT/{version}
+	DIR=`pwd`
+	cd ${{DIR}}/`dirname {input}`
+	FILE=`basename {input}`
+	SIFT_exome_nssnvs.pl -i ${{FILE}} -d /fdb/sift/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv
+	{params.convertor} ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input}`/${{FILE}}.out
+	#######################
+	"""
+############
+#       PPH2
+############
+rule PPH2:
+	input: "annotation/AnnotationInput.pph",
+	output: "annotation/AnnotationInput.pph2.out"
+	log: "log/PPH2"
+	version: config["polyphen2"]
+	params:
+		rulename   = "PPH2",
+		batch      = config["job_PPH2"],
+		convertor  = config["PPH2Parse"],
+		build      = config["SIFTbuild"]
+	shell: """
+	#######################
+	module load polyphen2/{version}
+	mapsnps.pl -c -g hg19 -U -y {input}.intermediate {input} 2>{log}
+	pph_swarm.pl {input}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
+	perl {params.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
+	rm -rf {input}.intermediate annotation/AnnotationInput.pph2.intermediate.txt
+	mv pph_* log/ 
+	#######################
+	"""
+############
+#	Combine Annotation
+############
+rule CombineAnnotation:
+	input:
+		anno="annotation/AnnotationInput.germline", 
+		sift="annotation/AnnotationInput.sift.out", 
+		pph2="annotation/AnnotationInput.pph2.out"
+	output: "annotation/AnnotationInput.annotations.final.txt"
+	log: "log/CombineAnnotation"
+	version: "1.0"
+	params:
+		rulename   = "combine",
+		batch	   = config["job_Combine"],
+		convertor  = config["CombineAnno"]
+	shell: """
+	#######################
+	echo "annotation/AnnotationInput
+annotation/AnnotationInput.anno.gene
+annotation/AnnotationInput.anno.exac.3
+annotation/AnnotationInput.anno.clinseq
+annotation/AnnotationInput.anno.cadd
+annotation/AnnotationInput.sift.out
+annotation/AnnotationInput.pph2.out
+annotation/AnnotationInput.anno.clinvar
+annotation/AnnotationInput.hgmd
+annotation/AnnotationInput.match
+annotation/AnnotationInput.docm
+annotation/AnnotationInput.mcg
+annotation/AnnotationInput.anno.pcg
+annotation/AnnotationInput.germline" >annotation/list
+	cat annotation/list >{output}
+#	perl {params.convertor} 
 	#######################
 	"""

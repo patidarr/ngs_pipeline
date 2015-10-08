@@ -18,7 +18,7 @@ snakemake\
 	-k -p -T \
 	-j 3000 \
 	--stats ngs_pipeline_${NOW}.stats \
-	--cluster "sbatch -e log/{params.rulename}.%j.e -o log/{params.rulename}.%j.o {params.batch}" \
+	--cluster "sbatch -o log/{params.rulename}.%j.o {params.batch}" \
         >& ngs_pipeline_${NOW}.log
 
 
