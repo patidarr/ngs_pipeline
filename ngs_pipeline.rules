@@ -85,8 +85,8 @@ rule BWA:
 		R2="{sample}/{sample}_R2.fastq.gz",
 		ref=config["bwaIndex"]
 	output: 
-		"{sample}/{sample}.bam", 
-		"{sample}/{sample}.bam.bai"
+		temp("{sample}/{sample}.bam"),
+		temp("{sample}/{sample}.bam.bai")
 	log: "{sample}/pbs_log/bwa"
 	version: config["bwa"]
 	message: "Running bwa on {input[0]}"
@@ -206,8 +206,8 @@ rule HotSpotCoverage:
 rule Picard_MarkDup:
 	input: bam="{sample}/{sample}.bam"
 	output: 
-		bam="{sample}/{sample}.dd.bam",
-		index="{sample}/{sample}.dd.bam.bai",
+		bam=temp("{sample}/{sample}.dd.bam"),
+		index=temp("{sample}/{sample}.dd.bam.bai"),
 		metrics="{sample}/{sample}.markdup.txt"
 	log:    "{sample}/pbs_log/markdup"
 	version: config["picard"]
