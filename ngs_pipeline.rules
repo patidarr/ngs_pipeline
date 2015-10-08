@@ -18,7 +18,8 @@ ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expa
 
 
 ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES)
-#ALL_GERMLINE= expand("{sample}/{sample}.hapcaller.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.platypus.snpEff.vcf", sample = ALL_SAMPLES) + expand("{sample}/{sample}.freebayes.snpEff.vcf", sample = ALL_SAMPLES)
+
+ALL_ANNOTATED= expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
 ALL_SOMATIC = []
 somaticPairs = {}
 pairedCapture = {}
@@ -29,13 +30,14 @@ if len(config['sample_references']) > 0:
 			NormalBam = "{sample}/{sample}.final".format(sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
+			ALL_ANNOTATED += ["{sample}/annotation/{sample}.MuTect.annotated.txt".format(sample=Tumor)]
+			ALL_ANNOTATED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.txt".format(sample=Tumor)]
+			ALL_ANNOTATED += ["{sample}/annotation/{sample}.strelka.indels.annotated.txt".format(sample=Tumor)]
+
+			## Need these for FormatInput.
 			ALL_SOMATIC += ["{sample}/annotation/{sample}.MuTect".format(sample=Tumor)]
 			ALL_SOMATIC += ["{sample}/annotation/{sample}.strelka.snvs".format(sample=Tumor)]
 			ALL_SOMATIC += ["{sample}/annotation/{sample}.strelka.indels".format(sample=Tumor)]
-
-#			ALL_SOMATIC += ["{sample}/{sample}.MuTect.snpEff.vcf".format(sample=Tumor)]
-#			ALL_SOMATIC += ["{sample}/{sample}.strelka.snvs.snpEff.vcf".format(sample=Tumor)]
-#			ALL_SOMATIC += ["{sample}/{sample}.strelka.indels.snpEff.vcf".format(sample=Tumor)]
 
 ###########################################################################
 ###########################################################################
@@ -43,9 +45,10 @@ rule Khanlab_Pipeline:
 	input: 
 		ALL_QC,
 		ALL_FASTQC,
-		"annotation/AnnotationInput.annotations.final.txt"
-	
-#input: ALL_QC, ALL_FASTQC, "annotation/AnnotationInput.germline", "annotation/AnnotationInput.sift.out", "annotation/AnnotationInput.pph2.out"
+		ALL_ANNOTATED,
+#		"annotation/AnnotationInput.annotations.final.txt",
+#		"annotation/AnnotationInput.anno",
+#		"annotation/AnnotationInput.pph2.out"
 #	input: ALL_QC, ALL_FASTQC, ALL_GERMLINE, ALL_SOMATIC, "annotation/Test"
 #ALL_FASTQC, ALL_SOMATIC, ALL_GERMLINE
 ############
@@ -311,10 +314,10 @@ rule Strelka:
 	--ref={input.ref} --config={input.config} --output-dir=/lscratch/${{SLURM_JOBID}}/strelka > {log} 2>&1
 	make -j ${{SLURM_CPUS_PER_TASK}} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2>> {log}
 	module load vcftools/{params.vcftools}
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {input.interval} --out {output[0]} --recode --keep-INFO-all
-	mv {output[0]}.recode.vcf {output.snps}
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.indels.vcf --bed {input.interval} --out {output[1]} --recode --keep-INFO-all
-	mv {output[1]}.recode.vcf {output[1]}
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
+	mv {output.snps}.recode.vcf {output.snps}
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.indels.vcf --bed {input.interval} --out {output.indels} --recode --keep-INFO-all
+	mv {output.indels}.recode.vcf {output.indels}
 	#######################
 	"""
 ############
@@ -426,7 +429,8 @@ rule snpEff:
 #	MakeList
 ############
 rule FormatInput:
-	input: ALL_SOMATIC, ALL_GERMLINE
+	input:	somatic=ALL_SOMATIC, 
+		germline=ALL_GERMLINE
 	output: 
 		"annotation/AnnotationInput.anno", 
 		"annotation/AnnotationInput.pph",
@@ -440,7 +444,9 @@ rule FormatInput:
 	shell: """
 	#######################
 	module load annovar/{version}
-	LIST=`echo {input} |sed -e 's/,//g'`
+	echo {input.germline}
+	echo {input.somatic}
+	LIST=`echo {input.germline} {input.somatic}|sed -e 's/,//g'`
 	cut -f 1-5 ${{LIST}}|sort |uniq >"annotation/AnnotationInput"
 	perl {params.convertor} "annotation/AnnotationInput" 2>{log}
 	#######################
@@ -459,16 +465,14 @@ rule Annotation:
 		batch      = config["job_annovar"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
-		TableAnnovar=config["Annovar"]
+		TableAnnovar=config["Annovar"],
+		custom     =config["customAnno"]
 	shell: """
 	#######################
 	module load annovar/{version}
-	perl {params.TableAnnovar} annotation AnnotationInput /data/Clinomics/Tools/annovar/ 2>>{log}
+	perl {params.TableAnnovar} annotation AnnotationInput {params.custom} 2>>{log}
 	#######################
 	"""
-
-
-
 ############
 #       SIFT
 ############
@@ -523,7 +527,7 @@ rule CombineAnnotation:
 	input:
 		anno="annotation/AnnotationInput.docm", 
 		sift="annotation/AnnotationInput.sift.out", 
-		pph2="annotation/AnnotationInput.pph2.out"
+		pph2="annotation/AnnotationInput.pph2.out",
 	output: "annotation/AnnotationInput.annotations.final.txt"
 	log: "log/CombineAnnotation"
 	version: "1.0"
@@ -551,5 +555,25 @@ annotation/AnnotationInput.anno.pcg" >annotation/list
 	perl {params.convertor} annotation/list >{output}.tmp
 	perl {params.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
 	rm -rf {output}.tmp
+	#######################
+	"""
+############
+#	Add Annotation back to sample level file 
+############
+rule AttachAnnotation:
+	input:
+		txt="{sample}/annotation/{sample}.{base}",
+		ref="annotation/AnnotationInput.annotations.final.txt"
+	output:
+		txt="{sample}/annotation/{sample}.{base}.annotated.txt"
+	log: "log/attach_annotation"
+	version: "1.0"
+	params:
+		rulename   = "add",
+		batch      = config["job_addbackann"],
+		convertor  = config["addBack"]
+	shell: """
+	#######################
+	perl {params.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
 	#######################
 	"""

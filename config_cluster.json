@@ -16,5 +16,6 @@
 	"job_annovar"    : "--partition=ccr  --time=05:00:00   --mem=10G --cpus-per-task=32 --gres=lscratch:10",
 	"job_SIFT"       : "--partition=ccr  --time=2-24:00:00 --mem=10G --cpus-per-task=10 --gres=lscratch:20",
 	"job_PPH2"       : "--partition=ccr  --time=2-24:00:00 --mem=10G --cpus-per-task=10 --gres=lscratch:20",
-	"job_Combine"    : "--partition=ccr  --time=05:00:00   --mem=20G --cpus-per-task=10 "
+	"job_Combine"    : "--partition=ccr  --time=05:00:00   --mem=20G --cpus-per-task=10 ",
+	"job_addbackann" : "--partition=ccr  --time=00:20:00   --mem=2G --cpus-per-task=1 "
 }

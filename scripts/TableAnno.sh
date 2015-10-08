@@ -3,15 +3,14 @@
 cd $1 ###
 file="$2.anno"   ###
 DATADIR="/data/Clinomics/Ref/annovar/"
-TOOL="/usr/local/apps/ANNOVAR/2015-03-22/"
-CUSTOM="$3/addAnnotation.pl"    ###
+CUSTOM=$3    ###
 BUILD=hg19
 ###############################
 # Add gene, cytoband,dbsnp, 1000g, ESP, CG69, NCI60 annotations
 #
 ###############################
 #       --dot2underline\
-$TOOL/table_annovar.pl\
+table_annovar.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
@@ -27,7 +26,7 @@ sed -i '1s/\./_/g' $file.gene
 # Add ExAC annotation
 #
 ###############################
-$TOOL/annotate_variation.pl\
+annotate_variation.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
@@ -42,7 +41,7 @@ rm -rf $file.${BUILD}_exac03_dropped $file.${BUILD}_exac03_filtered
 # Add clinseq annotation
 #
 ################################
-$TOOL/annotate_variation.pl\
+annotate_variation.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
@@ -58,7 +57,7 @@ rm -rf $file.${BUILD}_generic_dropped $file.${BUILD}_generic_filtered
 # Add CADD annotation
 #
 ################################
-$TOOL/annotate_variation.pl\
+annotate_variation.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
@@ -67,7 +66,7 @@ $TOOL/annotate_variation.pl\
 	-dbtype cadd
 
 
-$TOOL/annotate_variation.pl\
+annotate_variation.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
@@ -82,7 +81,7 @@ rm -rf $file.${BUILD}_cadd_dropped $file.${BUILD}_cadd_filtered $file.${BUILD}_c
 # Add Clinvar and COSMIC
 #
 ################################
-$TOOL/table_annovar.pl\
+table_annovar.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
@@ -97,7 +96,7 @@ mv $file.hg19_multianno.txt $file.clinvar
 # Add PCG 
 #
 ################################
-$TOOL/annotate_variation.pl\
+annotate_variation.pl\
 	$file\
 	$DATADIR\
 	-buildver ${BUILD}\
