@@ -28,6 +28,7 @@
 	"SiftParse"		: "/data/khanlab/projects/patidar/Snakemake/scripts/ParseSIFT.pl",
 	"PPH2Parse"		: "/data/khanlab/projects/patidar/Snakemake/scripts/ParsePPH2.pl",
 	"CombineAnno"		: "/data/khanlab/projects/patidar/Snakemake/scripts/CombineAnnotations.pl",
+	"GeneAnno"		: "/data/khanlab/projects/patidar/Snakemake/scripts/GeneAnnotation.pl",
 	"annoInput"		: "/data/Clinomics/Tools/annovar/MakeAnnotationInputs.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",

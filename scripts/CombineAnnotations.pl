@@ -4,79 +4,62 @@ use warnings;
 use List::Util qw(sum);
 ###################################
 # Author: Rajesh Patidar (rajbtpatidar@gmail.com)
-# This takes a file list. and generate a Variant Matrix
-# 	every file is in same variant format where last column have value for that file (article in this case)
-# 
+# Combine annotations 
 ###################################
-
 unless (open(LIST, $ARGV[0])){
-	print STDERR "Please give a file containing list of pediatric studies;";
+	print STDERR "Please give a file containing list of individual files studies;";
 	exit;
 }
 chomp(my @files = <LIST>);
 close LIST;
 my %ALL_SITES;
-my @files2 = @files;
-foreach my $file (@files){ # Make the union of all the keys 
-	print STDERR "Processing $file\n";
-	fillHash($file); 
+unless (open(FH, "$files[0]")){
+	print STDOUT "$files[0]";
+	die;
 }
-
-print STDERR "Created big hash\n";
+while(<FH>){
+	chomp;
+	my @temp = split ("\t", $_);
+	my $key = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
+	$ALL_SITES{"$key"} = "";
+}
+close FH;
+shift @files;
 # Add  column for every file. defaule space holder is "0";
 foreach my $file (@files){
+	my $cols=0;
 	my %TMP_HASH;
-	print STDERR "Adding $file to big hash\n";
 	unless (open (TMP, $file)){
 		print STDERR "Can not open file $file\n";
 		exit;
 	}
 	while(<TMP>){ # Read Files 
-		my $line = $_;
-		chomp $line;
-		my @arr = split("\t", $line);
-		my $key = "$arr[0]\t$arr[1]\t$arr[2]\t$arr[3]\t$arr[4]";
-		$TMP_HASH{"$key"} = "$arr[5]";
+		chomp $_;
+		$_ =~ s/^#//g;
+		my @arr = split("\t", $_);
+		my $key = join "\t", @arr[0..4];
+		my $end = @arr - 1 ;
+		$cols = $end - 5 + 1;
+		my $value = join "\t", @arr[5..$end];
+		if (! exists$TMP_HASH{"$key"} ){
+			$TMP_HASH{"$key"} = "$value";
+		}
 	}
 	close TMP;
-
+	my $string="0\t"x$cols;
 	# Add new file to the big HASH
 	foreach my $key (keys %ALL_SITES){
 		if (exists $TMP_HASH{$key}){
-			$ALL_SITES{$key} = "$ALL_SITES{$key}$TMP_HASH{$key},";
+			$ALL_SITES{$key} = "$ALL_SITES{$key}$TMP_HASH{$key}\t";
 			delete $TMP_HASH{$key};
 		}
 		else{
-			$ALL_SITES{$key} = "$ALL_SITES{$key}0,"; # Change default placeholder here.
+			$ALL_SITES{$key} = "$ALL_SITES{$key}$string";
 		}
-		
 	}
-	
 }
 # Final printing and some manipulations
 foreach my $key (sort keys %ALL_SITES){
 	chop($ALL_SITES{$key});
-	my @values = split(",", $ALL_SITES{$key});
-	if ($key =~ /^Chr/){
-		print "$key\t".join("\t", @values)."\tPCG_TOTAL\tGRAND_TOTAL\n"; # 
-		next;
-	}
-	my $pcg = sum(@values[1..$#values]);
-	my $gt  = sum(@values);
-	print "$key\t".join("\t", @values)."\t$pcg\t$gt\n";
-}
-###########################
-### Make Big Hash
-###########################
-sub fillHash{
-	my ($f) = @_;
-	open(FH, $f);
-	while(<FH>){
-        	chomp;
-        	my @temp = split ("\t", $_);
-		my $key = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
-		$ALL_SITES{"$key"} = "";
-	}
-	close FH;
-	return($f);
+	print "$key\t$ALL_SITES{$key}\n";
 }

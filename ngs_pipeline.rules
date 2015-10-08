@@ -451,7 +451,7 @@ rule FormatInput:
 rule Annotation:
 	input: "annotation/AnnotationInput.anno",
 	output:
-		"annotation/AnnotationInput.germline"
+		"annotation/AnnotationInput.docm"
 	log: "log/Annovar"
 	version: config["annovar"]
 	params:
@@ -521,7 +521,7 @@ rule PPH2:
 ############
 rule CombineAnnotation:
 	input:
-		anno="annotation/AnnotationInput.germline", 
+		anno="annotation/AnnotationInput.docm", 
 		sift="annotation/AnnotationInput.sift.out", 
 		pph2="annotation/AnnotationInput.pph2.out"
 	output: "annotation/AnnotationInput.annotations.final.txt"
@@ -530,7 +530,9 @@ rule CombineAnnotation:
 	params:
 		rulename   = "combine",
 		batch	   = config["job_Combine"],
-		convertor  = config["CombineAnno"]
+		convertor  = config["CombineAnno"],
+		geneanno   = config["GeneAnno"],
+		dataDir    = config["annovar_data"]
 	shell: """
 	#######################
 	echo "annotation/AnnotationInput
@@ -545,9 +547,9 @@ annotation/AnnotationInput.hgmd
 annotation/AnnotationInput.match
 annotation/AnnotationInput.docm
 annotation/AnnotationInput.mcg
-annotation/AnnotationInput.anno.pcg
-annotation/AnnotationInput.germline" >annotation/list
-	cat annotation/list >{output}
-#	perl {params.convertor} 
+annotation/AnnotationInput.anno.pcg" >annotation/list
+	perl {params.convertor} annotation/list >{output}.tmp
+	perl {params.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
+	rm -rf {output}.tmp
 	#######################
 	"""
