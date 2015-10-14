@@ -56,8 +56,8 @@ rule Khanlab_Pipeline:
 ############
 rule fastqc:
 	input:
-		R1="{sample}/{sample}_R1.fastq.gz",
-		R2="{sample}/{sample}_R2.fastq.gz"
+		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
+		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz"
 	output: 
 		"{sample}/fastqc/{sample}_R1_fastqc.zip", 
 		"{sample}/fastqc/{sample}_R2_fastqc.zip", 
@@ -72,8 +72,8 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc -t ${{SLURM_CPUS_ON_NODE}} -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
-	fastqc -t ${{SLURM_CPUS_ON_NODE}} -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
+	fastqc -t 6 -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
+	fastqc -t 6 -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
 	#######################
 	"""
 ############
@@ -81,8 +81,8 @@ rule fastqc:
 ############
 rule BWA:
 	input: 
-		R1="{sample}/{sample}_R1.fastq.gz", 
-		R2="{sample}/{sample}_R2.fastq.gz",
+		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz", 
+		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
 		ref=config["bwaIndex"]
 	output: 
 		temp("{sample}/{sample}.bam"),
