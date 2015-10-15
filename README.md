@@ -17,7 +17,13 @@ git clone https://github.com/patidarr/ngs_pipeline.git
 
 
 Rulegraph
+
+
 ![alt tag](rulegraph_NCI0231.png)
+
+
+
+
 
 DAG for example Sample
 ![alt tag](DAG_NCI0231.png)
