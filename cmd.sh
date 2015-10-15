@@ -17,7 +17,7 @@ snakemake\
 	--snakefile $SNAKEFILE \
 	--configfile $SAM_CONFIG \
 	--jobname '{rulename}.{jobid}' \
-	--nolock --notemp \
+	--nolock \
 	-k -p -T \
 	-j 3000 \
 	--stats ngs_pipeline_${NOW}.stats \

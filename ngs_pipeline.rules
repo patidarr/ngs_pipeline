@@ -342,9 +342,9 @@ rule Strelka:
 	--ref={input.ref} --config={input.config} --output-dir=/lscratch/${{SLURM_JOBID}}/strelka > {log} 2>&1
 	make -j ${{SLURM_CPUS_PER_TASK}} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2>> {log}
 	module load vcftools/{params.vcftools}
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/passed.somatic.snvs.vcf --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
 	mv {output.snps}.recode.vcf {output.snps}
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/all.somatic.indels.vcf --bed {input.interval} --out {output.indels} --recode --keep-INFO-all
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/passed.somatic.indels.vcf --bed {input.interval} --out {output.indels} --recode --keep-INFO-all
 	mv {output.indels}.recode.vcf {output.indels}
 	#######################
 	"""
