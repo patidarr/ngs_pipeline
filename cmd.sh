@@ -9,7 +9,7 @@ export NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
 
 WORK_DIR=/data/khanlab/projects/patidar/Testing/
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
-SAM_CONFIG=$NGS_PIPELINE/config_NCI0276.json
+SAM_CONFIG=$NGS_PIPELINE/config_NCI0231.json
 
 cd $WORK_DIR
 snakemake\
