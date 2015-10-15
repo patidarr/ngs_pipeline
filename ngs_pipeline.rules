@@ -3,6 +3,11 @@ import os
 import collections
 from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
+try:
+    NGS_PIPELINE=os.environ['NGS_PIPELINE']
+except KeyError:
+    NGS_PIPELINE="/data/khanlab/projects/patidar/Serpentine"
+    pass
 
 shell.prefix("set -eo pipefail; ")
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
@@ -20,6 +25,8 @@ ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expa
 ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES)
 
 ALL_ANNOTATED= expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
+###########################################################################
+###########################################################################
 ALL_SOMATIC = []
 somaticPairs = {}
 pairedCapture = {}
@@ -38,14 +45,35 @@ if len(config['sample_references']) > 0:
 			ALL_SOMATIC += ["{sample}/annotation/{sample}.MuTect".format(sample=Tumor)]
 			ALL_SOMATIC += ["{sample}/annotation/{sample}.strelka.snvs".format(sample=Tumor)]
 			ALL_SOMATIC += ["{sample}/annotation/{sample}.strelka.indels".format(sample=Tumor)]
+###########################################################################
+###########################################################################
+ALL_EXPRESSED =[]
+expressedPairs = {}
+if len(config['sample_RNASeq']) > 0:
+	for Tumor in config['sample_RNASeq']:
+		for RNASample in config['sample_RNASeq'][Tumor]:
+		#	MutationFile = "{sample}/annotation/{sample}.MuTect.annotated.txt".format(sample=Tumor)
+			RNASeqBam    = "/data/khanlab/projects/working_DATA/" + RNASample + "/" + RNASample + ".Processed/" + RNASample + ".bam" 
+		#	expressedPairs[Tumor] = [MutationFile, RNASeqBam]
+			expressedPairs[Tumor] = RNASeqBam
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.indels.annotated.expressed.txt".format(sample=Tumor)]	
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.hapcaller.annotated.expressed.txt".format(sample=Tumor)]
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.platypus.annotated.expressed.txt".format(sample=Tumor)]
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
+###########################################################################
+###########################################################################
+#print(ALL_EXPRESSED)
+#print(expressedPairs)
 
-###########################################################################
-###########################################################################
+
 rule Khanlab_Pipeline:
 	input: 
-		ALL_QC,
+#		ALL_QC,
 		ALL_FASTQC,
 		ALL_ANNOTATED,
+		ALL_EXPRESSED,
 #		"annotation/AnnotationInput.annotations.final.txt",
 #		"annotation/AnnotationInput.anno",
 #		"annotation/AnnotationInput.pph2.out"
@@ -112,8 +140,8 @@ rule Genotyping:
 		bam="{sample}/{sample}.final.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
-		vcf2genotype=config["vcf2genotype"],
-		vcf2loh=config["vcf2loh"],
+		vcf2genotype=NGS_PIPELINE + "/scripts/" + config["vcf2genotype"],
+		vcf2loh=NGS_PIPELINE + "/scripts/" + config["vcf2loh"],
 	output:
 		vcf="{sample}/{sample}.samtools.vcf",
 		gt="{sample}/{sample}.gt",
@@ -407,7 +435,7 @@ rule snpEff:
 		vcf="{sample}/{sample}.{base}.vcf",
 		ref=config["reference"],
 		snpEff_config=config["snpEff_config"],
-		vcf2txt=config["vcf2txt"],
+		vcf2txt=NGS_PIPELINE + "/scripts/" + config["vcf2txt"]
 	output:
 		eff="{sample}/{sample}.{base}.snpEff.vcf",
 		txt="{sample}/annotation/{sample}.{base}"
@@ -416,7 +444,7 @@ rule snpEff:
 	params:
 		rulename      ="snpEff",
 		batch	      =config["job_snpeff"],
-		snpEff_genome =config["snpEff_genome"]
+		snpEff_genome =config["snpEff_genome"],
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
@@ -455,7 +483,10 @@ rule FormatInput:
 #       MakeList
 ############
 rule Annotation:
-	input: "annotation/AnnotationInput.anno",
+	input: 
+		"annotation/AnnotationInput.anno",
+		TableAnnovar=NGS_PIPELINE + "/scripts/" + config["Annovar"],
+		custom     =NGS_PIPELINE + "/scripts/" + config["customAnno"]
 	output:
 		"annotation/AnnotationInput.docm"
 	log: "log/Annovar"
@@ -465,26 +496,25 @@ rule Annotation:
 		batch      = config["job_annovar"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
-		TableAnnovar=config["Annovar"],
-		custom     =config["customAnno"]
 	shell: """
 	#######################
 	module load annovar/{version}
-	perl {params.TableAnnovar} annotation AnnotationInput {params.custom} 2>>{log}
+	perl {input.TableAnnovar} annotation AnnotationInput {input.custom} 2>>{log}
 	#######################
 	"""
 ############
 #       SIFT
 ############
 rule SIFT:
-	input: "annotation/AnnotationInput.sift",
+	input:
+		"annotation/AnnotationInput.sift",
+		convertor  = NGS_PIPELINE + "/scripts/" + config["SiftParse"]
 	output: "annotation/AnnotationInput.sift.out"
 	log: "log/SIFT"
 	version: config["SIFT"]
 	params:
 		rulename   = "SIFT",
 		batch      = config["job_SIFT"],
-		convertor  = config["SiftParse"],
 		build      = config["SIFTbuild"]
 	shell: """
 	#######################
@@ -494,28 +524,29 @@ rule SIFT:
 	cd ${{DIR}}/`dirname {input}`
 	FILE=`basename {input}`
 	SIFT_exome_nssnvs.pl -i ${{FILE}} -d /fdb/sift/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv
-	{params.convertor} ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input}`/${{FILE}}.out
+	perl {input.convertor} ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input}`/${{FILE}}.out
 	#######################
 	"""
 ############
 #       PPH2
 ############
 rule PPH2:
-	input: "annotation/AnnotationInput.pph",
+	input:
+		"annotation/AnnotationInput.pph",
+		convertor  = NGS_PIPELINE + "/scripts/" + config["PPH2Parse"]
 	output: "annotation/AnnotationInput.pph2.out"
 	log: "log/PPH2"
 	version: config["polyphen2"]
 	params:
 		rulename   = "PPH2",
 		batch      = config["job_PPH2"],
-		convertor  = config["PPH2Parse"],
 		build      = config["SIFTbuild"]
 	shell: """
 	#######################
 	module load polyphen2/{version}
 	mapsnps.pl -c -g hg19 -U -y {input}.intermediate {input} 2>{log}
 	pph_swarm.pl {input}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
-	perl {params.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
+	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
 	rm -rf {input}.intermediate annotation/AnnotationInput.pph2.intermediate.txt
 	mv pph_* log/ 
 	#######################
@@ -528,14 +559,14 @@ rule CombineAnnotation:
 		anno="annotation/AnnotationInput.docm", 
 		sift="annotation/AnnotationInput.sift.out", 
 		pph2="annotation/AnnotationInput.pph2.out",
+		convertor  = NGS_PIPELINE + "/scripts/" + config["CombineAnno"],
+		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"]
 	output: "annotation/AnnotationInput.annotations.final.txt"
 	log: "log/CombineAnnotation"
 	version: "1.0"
 	params:
 		rulename   = "combine",
 		batch	   = config["job_Combine"],
-		convertor  = config["CombineAnno"],
-		geneanno   = config["GeneAnno"],
 		dataDir    = config["annovar_data"]
 	shell: """
 	#######################
@@ -552,8 +583,8 @@ annotation/AnnotationInput.match
 annotation/AnnotationInput.docm
 annotation/AnnotationInput.mcg
 annotation/AnnotationInput.anno.pcg" >annotation/list
-	perl {params.convertor} annotation/list >{output}.tmp
-	perl {params.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
+	perl {input.convertor} annotation/list >{output}.tmp
+	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
 	rm -rf {output}.tmp
 	#######################
 	"""
@@ -563,7 +594,8 @@ annotation/AnnotationInput.anno.pcg" >annotation/list
 rule AttachAnnotation:
 	input:
 		txt="{sample}/annotation/{sample}.{base}",
-		ref="annotation/AnnotationInput.annotations.final.txt"
+		ref="annotation/AnnotationInput.annotations.final.txt",
+		convertor  = NGS_PIPELINE + "/scripts/" + config["addBack"]
 	output:
 		txt="{sample}/annotation/{sample}.{base}.annotated.txt"
 	log: "log/attach_annotation"
@@ -571,9 +603,31 @@ rule AttachAnnotation:
 	params:
 		rulename   = "add",
 		batch      = config["job_addbackann"],
-		convertor  = config["addBack"]
 	shell: """
 	#######################
-	perl {params.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
+	perl {input.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
 	#######################
 	"""
+############
+#       Expressed
+############
+rule Expressed:
+	input: 
+		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
+		Mutation="{sample}/annotation/{sample}.{base}.annotated.txt",
+		convertor = NGS_PIPELINE + "/scripts/" + config["mpileup"]
+	output: "{sample}/annotation/{sample}.{base}.annotated.expressed.txt"
+	log: "{sample}/pbs_log/expressed"
+	version: 1.0
+	params:
+		rulename  = "Expressed",
+		batch     = config["job_expressed"],
+		convertor = config["mpileup"]
+	shell: """
+	#######################
+	perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
+	#######################
+	"""
+############
+#
+############
