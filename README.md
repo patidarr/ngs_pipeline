@@ -12,7 +12,7 @@ git clone https://github.com/patidarr/ngs_pipeline.git
 - Sample names cannot have "/" or "." in them
 - fastq files end in ".fastq.gz"
 - fastq files are stored on biowulf @ /data/khanlab/projects/DATA/
-- Corresponsing RNASeq file is stored @ /data/khanlab/projects/working_DATA/{SAMPLE}/{SAMPLE}.Processed/{SAMPLE}.bam
+- Corresponding RNASeq file is stored @ /data/khanlab/projects/working_DATA/{SAMPLE}/{SAMPLE}.Processed/{SAMPLE}.bam
 
 
 
