@@ -1,9 +1,10 @@
 {
 	"job_fastqc"     : "--partition=ccr --time=01:00:00    --mem=20G --cpus-per-task=10 ",
 	"job_bwa"        : "--partition=ccr --time=10:00:00    --mem=50G --cpus-per-task=32 --exclusive",
+	"job_novoalign"  : "--partition=ccr --time=10:00:00    --mem=50G --nodes=3 --ntasks=4 --exclusive",
 	"job_flagstat"   : "--partition=norm --time=02:00:00   --mem=2G  --cpus-per-task=2 ",
 	"job_genotype"   : "--partition=norm --time=05:00:00   --mem=2G  --cpus-per-task=2 ",
-	"job_expressed"   : "--partition=norm --time=05:00:00   --mem=2G  --cpus-per-task=1 ",
+	"job_expressed"  : "--partition=norm --time=05:00:00   --mem=2G  --cpus-per-task=1 ",
 	"job_hotspot"    : "--partition=norm --time=01:00:00   --mem=2G  --cpus-per-task=2 ",
 	"job_markdup"    : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=15 --gres=lscratch:40",
 	"job_qualimap"   : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=32 --gres=lscratch:40",

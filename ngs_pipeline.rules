@@ -58,7 +58,7 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.indels.annotated.expressed.txt".format(sample=Tumor)]	
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.indels.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.hapcaller.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.platypus.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
@@ -70,6 +70,7 @@ rule Khanlab_Pipeline:
 		ALL_FASTQC,
 		ALL_ANNOTATED,
 		ALL_EXPRESSED,
+		expand("{sample}/{sample}.novo.bam", sample = ALL_SAMPLES)
 ############
 #	FASTQC
 ############
@@ -120,6 +121,31 @@ rule BWA:
 	module load samtools/{params.samtools}
 	bwa mem -M  -t ${{SLURM_CPUS_ON_NODE}} -R \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" {input[ref]} {input.R1} {input.R2} 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}
 	samtools index {wildcards.sample}/{wildcards.sample}.bam
+	#######################
+	"""
+############
+#	Novoalign
+############
+rule Novoalign:
+	input:
+		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
+		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
+		index="/fdb/novoalign/chr_all_hg19.nbx"
+	output:
+		"{sample}/{sample}.novo.bam",
+		"{sample}/{sample}.novo.bam.bai"
+	log: "{sample}/pbs_log/novoalign"
+	version: config["novocraft"]
+	params:
+		rulename  = "novoalign",
+		batch     = config["job_novoalign"],
+		samtools  = config["samtools"]
+	shell: """
+	#######################
+	module load samtools/{params.samtools}
+	module load novocraft/{version}
+	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM -t 250 --hlimit 7 -p 5,2 -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}.novo
+	samtools index {wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
 	"""
 ############
