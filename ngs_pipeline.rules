@@ -64,21 +64,12 @@ if len(config['sample_RNASeq']) > 0:
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
 ###########################################################################
 ###########################################################################
-#print(ALL_EXPRESSED)
-#print(expressedPairs)
-
-
 rule Khanlab_Pipeline:
 	input: 
-#		ALL_QC,
+		ALL_QC,
 		ALL_FASTQC,
 		ALL_ANNOTATED,
 		ALL_EXPRESSED,
-#		"annotation/AnnotationInput.annotations.final.txt",
-#		"annotation/AnnotationInput.anno",
-#		"annotation/AnnotationInput.pph2.out"
-#	input: ALL_QC, ALL_FASTQC, ALL_GERMLINE, ALL_SOMATIC, "annotation/Test"
-#ALL_FASTQC, ALL_SOMATIC, ALL_GERMLINE
 ############
 #	FASTQC
 ############
@@ -232,7 +223,10 @@ rule HotSpotCoverage:
 #       Picard Mark Duplicates
 ############
 rule Picard_MarkDup:
-	input: bam="{sample}/{sample}.bam"
+	input:
+		bam="{sample}/{sample}.bam",
+		bai="{sample}/{sample}.bam.bai"
+		
 	output: 
 		bam=temp("{sample}/{sample}.dd.bam"),
 		index=temp("{sample}/{sample}.dd.bam.bai"),
@@ -251,6 +245,7 @@ rule Picard_MarkDup:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $PICARDJARPATH/MarkDuplicates.jar AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 	module load samtools/{params.samtools}
 	samtools index {output.bam}
+	ls -la {wildcards.sample}
 	######################
 	"""
 ############
@@ -258,6 +253,7 @@ rule Picard_MarkDup:
 ############
 rule GATK:
 	input: 	bam="{sample}/{sample}.dd.bam",
+		bai="{sample}/{sample}.dd.bam.bai",
 		ref=config["reference"],
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
@@ -458,7 +454,8 @@ rule snpEff:
 ############
 rule FormatInput:
 	input:	somatic=ALL_SOMATIC, 
-		germline=ALL_GERMLINE
+		germline=ALL_GERMLINE,
+		convertor= NGS_PIPELINE + "/scripts/" + config["annoInput"]
 	output: 
 		"annotation/AnnotationInput.anno", 
 		"annotation/AnnotationInput.pph",
@@ -468,15 +465,14 @@ rule FormatInput:
 	params:
 		rulename   = "FormatInput",
 		batch      = config["job_annovar"],
-		convertor  = config["annoInput"],
 	shell: """
 	#######################
 	module load annovar/{version}
 	echo {input.germline}
 	echo {input.somatic}
-	LIST=`echo {input.germline} {input.somatic}|sed -e 's/,//g'`
+	LIST=`echo {input.germline} {input.somatic}|sed -e 's/,/ /g'`
 	cut -f 1-5 ${{LIST}}|sort |uniq >"annotation/AnnotationInput"
-	perl {params.convertor} "annotation/AnnotationInput" 2>{log}
+	perl {input.convertor} "annotation/AnnotationInput" 2>{log}
 	#######################
 	"""
 ############
@@ -507,7 +503,7 @@ rule Annotation:
 ############
 rule SIFT:
 	input:
-		"annotation/AnnotationInput.sift",
+		sift="annotation/AnnotationInput.sift",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["SiftParse"]
 	output: "annotation/AnnotationInput.sift.out"
 	log: "log/SIFT"
@@ -521,10 +517,10 @@ rule SIFT:
 	module load python/2.7.4
 	module load SIFT/{version}
 	DIR=`pwd`
-	cd ${{DIR}}/`dirname {input}`
-	FILE=`basename {input}`
-	SIFT_exome_nssnvs.pl -i ${{FILE}} -d /fdb/sift/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv
-	perl {input.convertor} ${{DIR}}/`dirname {input}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input}`/${{FILE}}.out
+	cd ${{DIR}}/`dirname {input.sift}`
+	FILE=`basename {input.sift}`
+	SIFT_exome_nssnvs.pl -i ${{FILE}} -d /fdb/sift/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+	perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
 	#######################
 	"""
 ############
@@ -532,7 +528,7 @@ rule SIFT:
 ############
 rule PPH2:
 	input:
-		"annotation/AnnotationInput.pph",
+		pph="annotation/AnnotationInput.pph",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["PPH2Parse"]
 	output: "annotation/AnnotationInput.pph2.out"
 	log: "log/PPH2"
@@ -540,14 +536,13 @@ rule PPH2:
 	params:
 		rulename   = "PPH2",
 		batch      = config["job_PPH2"],
-		build      = config["SIFTbuild"]
 	shell: """
 	#######################
 	module load polyphen2/{version}
-	mapsnps.pl -c -g hg19 -U -y {input}.intermediate {input} 2>{log}
-	pph_swarm.pl {input}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
+	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
+	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
-	rm -rf {input}.intermediate annotation/AnnotationInput.pph2.intermediate.txt
+	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
 	mv pph_* log/ 
 	#######################
 	"""
