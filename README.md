@@ -2,7 +2,7 @@
 This is the implimentation of KhanLab NGS Pipeline using Snakemake.
 ## Installation
 
-The easiest way to get serpentine is to clone the repository.
+The easiest way to get this pipeline is to clone the repository.
 
 ```
 git clone https://github.com/patidarr/ngs_pipeline.git
