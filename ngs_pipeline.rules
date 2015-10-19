@@ -18,8 +18,8 @@ localrules: Khanlab_Pipeline
 #### Targets
 ####
 ALL_SAMPLES = config["samples"]
-ALL_FASTQC  = expand("{sample}/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
-ALL_QC   = expand("{sample}/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
+ALL_FASTQC  = expand("{sample}/qc/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
+ALL_QC   = expand("{sample}/qc/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/qc/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
 
 
 ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES)
@@ -33,8 +33,8 @@ pairedCapture = {}
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
-			TumorBam = "{sample}/{sample}.final".format(sample=Tumor)
-			NormalBam = "{sample}/{sample}.final".format(sample=Normal)
+			TumorBam = "{sample}/{sample}.bwa.final".format(sample=Tumor)
+			NormalBam = "{sample}/{sample}.bwa.final".format(sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
 			ALL_ANNOTATED += ["{sample}/annotation/{sample}.MuTect.annotated.txt".format(sample=Tumor)]
@@ -70,7 +70,8 @@ rule Khanlab_Pipeline:
 		ALL_FASTQC,
 		ALL_ANNOTATED,
 		ALL_EXPRESSED,
-		expand("{sample}/{sample}.novo.bam", sample = ALL_SAMPLES)
+		expand("{sample}/{sample}.novo.dd.bam", sample = ALL_SAMPLES),
+		expand("{sample}/{sample}.novo.dd.bam.bai", sample = ALL_SAMPLES),
 ############
 #	FASTQC
 ############
@@ -79,10 +80,10 @@ rule fastqc:
 		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
 		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz"
 	output: 
-		"{sample}/fastqc/{sample}_R1_fastqc.zip", 
-		"{sample}/fastqc/{sample}_R2_fastqc.zip", 
-		"{sample}/fastqc/{sample}_R1_fastqc.html", 
-		"{sample}/fastqc/{sample}_R2_fastqc.html"
+		"{sample}/qc/fastqc/{sample}_R1_fastqc.zip", 
+		"{sample}/qc/fastqc/{sample}_R2_fastqc.zip", 
+		"{sample}/qc/fastqc/{sample}_R1_fastqc.html", 
+		"{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
 	version: config["fastqc"]
 	message: "Running Fastqc on {input[0]}"
@@ -92,8 +93,8 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc -t 6 -o {wildcards.sample}/fastqc/ -d /scratch {input[R1]} 2>> {log}
-	fastqc -t 6 -o {wildcards.sample}/fastqc/ -d /scratch {input[R2]} 2>> {log}
+	fastqc -t 6 -o {wildcards.sample}/qc/fastqc/ -d /scratch {input[R1]} 2>> {log}
+	fastqc -t 6 -o {wildcards.sample}/qc/fastqc/ -d /scratch {input[R2]} 2>> {log}
 	#######################
 	"""
 ############
@@ -105,8 +106,8 @@ rule BWA:
 		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
 		ref=config["bwaIndex"]
 	output: 
-		temp("{sample}/{sample}.bam"),
-		temp("{sample}/{sample}.bam.bai")
+		temp("{sample}/{sample}.bwa.bam"),
+		temp("{sample}/{sample}.bwa.bam.bai")
 	log: "{sample}/pbs_log/bwa"
 	version: config["bwa"]
 	message: "Running bwa on {input[0]}"
@@ -119,8 +120,8 @@ rule BWA:
 	#######################
 	module load bwa/{version}
 	module load samtools/{params.samtools}
-	bwa mem -M  -t ${{SLURM_CPUS_ON_NODE}} -R \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" {input[ref]} {input.R1} {input.R2} 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}
-	samtools index {wildcards.sample}/{wildcards.sample}.bam
+	bwa mem -M  -t ${{SLURM_CPUS_ON_NODE}} -R \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" {input[ref]} {input.R1} {input.R2} 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}.bwa
+	samtools index {wildcards.sample}/{wildcards.sample}.bwa.bam
 	#######################
 	"""
 ############
@@ -139,12 +140,13 @@ rule Novoalign:
 	params:
 		rulename  = "novoalign",
 		batch     = config["job_novoalign"],
-		samtools  = config["samtools"]
+		samtools  = config["samtools"],
+		platform  = config["platform"]
 	shell: """
 	#######################
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
-	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM -t 250 --hlimit 7 -p 5,2 -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}.novo
+	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.sample}/{wildcards.sample}.novo
 	samtools index {wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
 	"""
@@ -154,15 +156,15 @@ rule Novoalign:
 # Using Older version of samtools for this purpose
 rule Genotyping:
 	input:
-		bam="{sample}/{sample}.final.bam",
+		bam="{sample}/{sample}.bwa.final.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
 		vcf2genotype=NGS_PIPELINE + "/scripts/" + config["vcf2genotype"],
 		vcf2loh=NGS_PIPELINE + "/scripts/" + config["vcf2loh"],
 	output:
-		vcf="{sample}/{sample}.samtools.vcf",
-		gt="{sample}/{sample}.gt",
-		loh="{sample}/{sample}.loh"
+		vcf="{sample}/calls/{sample}.samtools.vcf",
+		gt="{sample}/qc/{sample}.gt",
+		loh="{sample}/qc/{sample}.loh"
 	log: "{sample}/pbs_log/genotyping"
 	version: config["samtools_old"]
 	message: "Making Genotyping Input file on {input.bam}"
@@ -184,18 +186,18 @@ rule Genotyping:
 ############
 rule BamQC:
 	input:
-		bam="{sample}/{sample}.final.bam",
-		bai="{sample}/{sample}.final.bai",
+		bam="{sample}/{sample}.bwa.final.bam",
+		bai="{sample}/{sample}.bwa.final.bai",
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample].replace('.bed', '.gff')
 	output:
-		"{sample}/BamQC/qualimapReport.html"
+		"{sample}/qc/BamQC/qualimapReport.html"
 	log: "{sample}/pbs_log/{sample}.bamqc.log"
 	version: config["qualimap"]
 	message: "Running BamQC on {input[0]}"
 	params: 
 		rulename = "bamqc",
 		batch	 = config["job_qualimap"],
-		outdir	 ="{sample}/BamQC",
+		outdir	 ="{sample}/qc/BamQC",
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
@@ -207,8 +209,8 @@ rule BamQC:
 #       Samtools flagstat
 ############
 rule flagstat:
-	input:	"{sample}/{sample}.bam"
-	output: "{sample}/{sample}.flagstat.txt"
+	input:	"{sample}/{sample}.bwa.bam"
+	output: "{sample}/qc/{sample}.flagstat.txt"
 	log:    "{sample}/pbs_log/flagstat"
 	version: config["samtools"]
 	message: "Running samtools flagstat on {input[0]}"
@@ -226,9 +228,9 @@ rule flagstat:
 ############
 rule HotSpotCoverage:
 	input:	
-		bam="{sample}/{sample}.final.bam",
+		bam="{sample}/{sample}.bwa.final.bam",
 		interval=config["hotspot_intervals"]
-	output: "{sample}/{sample}.hotspot.depth"
+	output: "{sample}/qc/{sample}.hotspot.depth"
 	log: "{sample}/pbs_log/hotspotCoverage"
 	version: config["bedtools"]
 	message: "Running Hotspot Coverage flagstat on {input[0]}"
@@ -241,23 +243,21 @@ rule HotSpotCoverage:
 	module load samtools/{params.samtools} 
 	module load bedtools/{version}
 	samtools view -hF 0x400 -q 30 {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
-	
 	#######################
 	"""
-
 ############
 #       Picard Mark Duplicates
 ############
 rule Picard_MarkDup:
 	input:
-		bam="{sample}/{sample}.bam",
-		bai="{sample}/{sample}.bam.bai"
+		bam="{sample}/{sample}.{base}.bam",
+		bai="{sample}/{sample}.{base}.bam.bai"
 		
 	output: 
-		bam=temp("{sample}/{sample}.dd.bam"),
-		index=temp("{sample}/{sample}.dd.bam.bai"),
-		metrics="{sample}/{sample}.markdup.txt"
-	log:    "{sample}/pbs_log/markdup"
+		bam=temp("{sample}/{sample}.{base}.dd.bam"),
+		index=temp("{sample}/{sample}.{base}.dd.bam.bai"),
+		metrics="{sample}/qc/{base}.markdup.txt"
+	log:    "{sample}/pbs_log/{base}.markdup"
 	version: config["picard"]
 	message: "Running picard mark duplicates on {input[0]}"
 	params:
@@ -271,21 +271,20 @@ rule Picard_MarkDup:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $PICARDJARPATH/MarkDuplicates.jar AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 	module load samtools/{params.samtools}
 	samtools index {output.bam}
-	ls -la {wildcards.sample}
 	######################
 	"""
 ############
 #       GATK Best Practices
 ############
 rule GATK:
-	input: 	bam="{sample}/{sample}.dd.bam",
-		bai="{sample}/{sample}.dd.bam.bai",
+	input: 	bam="{sample}/{sample}.bwa.dd.bam",
+		bai="{sample}/{sample}.bwa.dd.bam.bai",
 		ref=config["reference"],
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
 	output:
-		bam="{sample}/{sample}.final.bam",
-		index="{sample}/{sample}.final.bai",
+		bam="{sample}/{sample}.bwa.final.bam",
+		index="{sample}/{sample}.bwa.final.bai",
 	log:    "{sample}/pbs_log/gatk"
 	version: config["GATK"]
 	message: "Running GATK Best practices on {input.bam}"
@@ -313,9 +312,9 @@ rule MuTect:
 		cosmic=config["cosmic"],
 		interval=pairedCapture[Tumor]
 	output:
-		vcf="{Tumor}/{Tumor}.MuTect.vcf",
-		call_stats="{Tumor}/{Tumor}.mutect.call_stats.txt",
-		coverage="{Tumor}/{Tumor}.mutect.coverage.wig.txt"
+		vcf="{Tumor}/calls/{Tumor}.MuTect.vcf",
+		call_stats="{Tumor}/qc/{Tumor}.mutect.call_stats.txt",
+		coverage="{Tumor}/qc/{Tumor}.mutect.coverage.wig.txt"
 	log:	"{Tumor}/pbs_log/mutect"
 	version: config["MuTect"]
 	params:
@@ -349,8 +348,8 @@ rule Strelka:
 		config=config["strelka_config"],
 		interval=pairedCapture[Tumor]
 	output:
-		snps="{Tumor}/{Tumor}.strelka.snvs.vcf",
-		indels="{Tumor}/{Tumor}.strelka.indels.vcf"
+		snps="{Tumor}/calls/{Tumor}.strelka.snvs.vcf",
+		indels="{Tumor}/calls/{Tumor}.strelka.indels.vcf"
 	log:    "{Tumor}/pbs_log/strelka"
 	version: config["strelka"]
 	params:
@@ -375,13 +374,13 @@ rule Strelka:
 ############
 rule Haplotype_Caller :
 	input:
-		bam="{sample}/{sample}.final.bam",
-		bai="{sample}/{sample}.final.bai",
+		bam="{sample}/{sample}.bwa.final.bam",
+		bai="{sample}/{sample}.bwa.final.bai",
 		ref=config["reference"],
                 dbsnp=config["dbsnp"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
-		vcf="{sample}/{sample}.hapcaller.vcf"
+		vcf="{sample}/calls/{sample}.hapcaller.vcf"
 	log:    "{sample}/pbs_log/hapcaller"
 	version: config["GATK"]
 	params:
@@ -401,12 +400,12 @@ rule Haplotype_Caller :
 ############
 rule  Platypus:
 	input:
-		bam="{sample}/{sample}.final.bam",
-		bai="{sample}/{sample}.final.bai",
+		bam="{sample}/{sample}.bwa.final.bam",
+		bai="{sample}/{sample}.bwa.final.bai",
 		ref=config["reference"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
-		vcf="{sample}/{sample}.platypus.vcf"
+		vcf="{sample}/calls/{sample}.platypus.vcf"
 	log:    "{sample}/pbs_log/platypus"
 	version: config["platypus"]
 	params:
@@ -423,12 +422,12 @@ rule  Platypus:
 ############
 rule  FreeBayes:
 	input:
-		bam="{sample}/{sample}.final.bam",
-		bai="{sample}/{sample}.final.bai",
+		bam="{sample}/{sample}.bwa.final.bam",
+		bai="{sample}/{sample}.bwa.final.bai",
 		ref=config["reference"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
-		vcf="{sample}/{sample}.freebayes.vcf"
+		vcf="{sample}/calls/{sample}.freebayes.vcf"
 	log:    "{sample}/pbs_log/freebayes"
 	version: config["freebayes"]
 	params:
@@ -454,13 +453,13 @@ rule  FreeBayes:
 ############
 rule snpEff:
 	input:
-		vcf="{sample}/{sample}.{base}.vcf",
+		vcf="{sample}/calls/{sample}.{base}.vcf",
 		ref=config["reference"],
 		snpEff_config=config["snpEff_config"],
 		vcf2txt=NGS_PIPELINE + "/scripts/" + config["vcf2txt"]
 	output:
-		eff="{sample}/{sample}.{base}.snpEff.vcf",
-		txt="{sample}/annotation/{sample}.{base}"
+		eff="{sample}/calls/{sample}.{base}.snpEff.vcf",
+		txt=temp("{sample}/annotation/{sample}.{base}")
 	log: "{sample}/pbs_log/{base}.snpEff"
 	version: config["snpEff"]
 	params:
@@ -502,7 +501,7 @@ rule FormatInput:
 	#######################
 	"""
 ############
-#       MakeList
+#	Custom Annotation
 ############
 rule Annotation:
 	input: 
