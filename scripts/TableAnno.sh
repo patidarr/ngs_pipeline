@@ -112,7 +112,7 @@ rm -rf $file.${BUILD}_generic_dropped $file.${BUILD}_generic_filtered
 #
 ################################
 OUT=`echo $file |sed -e 's/.anno//g'`
-$CUSTOM $DATADIR/${BUILD}_hgmd.2014.3.txt $file >$OUT.hgmd
+$CUSTOM $DATADIR/${BUILD}_hgmd.2015.3.txt $file >$OUT.hgmd
 ################################
 # Add MATCH Trial
 #

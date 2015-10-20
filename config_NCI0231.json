@@ -1,4 +1,10 @@
 {
+	"subject": {
+		"NCI0231": [
+			"Sample_NCI0231blood_E_C628WANXX",
+			"Sample_NCI0231tumor_E_C6FECANXX"
+		]
+	},
 	"samples": [
 		"Sample_NCI0231blood_E_C628WANXX",
 		"Sample_NCI0231tumor_E_C6FECANXX"

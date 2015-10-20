@@ -17,14 +17,24 @@ localrules: Khanlab_Pipeline
 ####
 #### Targets
 ####
+SUBS  = []
+for subject,samples in config['subject'].items():
+	SUBS.append(subject)
+
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = expand("{sample}/qc/fastqc/{sample}_R2_fastqc.html", sample = ALL_SAMPLES)
 ALL_QC   = expand("{sample}/qc/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/qc/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
 
 
-ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES)
+ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.bam2mpg.snps", sample = ALL_SAMPLES),
 
 ALL_ANNOTATED= expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
+###########################################################################
+###########################################################################
+ALL_SUBJECT_BAMS = {} 
+for Subject  in config['subject']:
+	ALL_SUBJECT_BAMS[Subject] = expand("{sample}/{sample}.bwa.final.bam", sample = config['subject'][Subject])
+#print(ALL_SUBJECT_BAMS)
 ###########################################################################
 ###########################################################################
 ALL_SOMATIC = []
@@ -68,10 +78,9 @@ rule Khanlab_Pipeline:
 	input: 
 		ALL_QC,
 		ALL_FASTQC,
+		expand("{subject}/{subject}.hapcaller.snvs.vcf", subject= SUBS),
 		ALL_ANNOTATED,
 		ALL_EXPRESSED,
-		expand("{sample}/{sample}.novo.dd.bam", sample = ALL_SAMPLES),
-		expand("{sample}/{sample}.novo.dd.bam.bai", sample = ALL_SAMPLES),
 ############
 #	FASTQC
 ############
@@ -133,8 +142,8 @@ rule Novoalign:
 		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
 		index="/fdb/novoalign/chr_all_hg19.nbx"
 	output:
-		"{sample}/{sample}.novo.bam",
-		"{sample}/{sample}.novo.bam.bai"
+		temp("{sample}/{sample}.novo.bam"),
+		temp("{sample}/{sample}.novo.bam.bai")
 	log: "{sample}/pbs_log/novoalign"
 	version: config["novocraft"]
 	params:
@@ -283,8 +292,8 @@ rule GATK:
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
 	output:
-		bam="{sample}/{sample}.bwa.final.bam",
-		index="{sample}/{sample}.bwa.final.bai",
+		bam=protected("{sample}/{sample}.bwa.final.bam"),
+		index=protected("{sample}/{sample}.bwa.final.bai"),
 	log:    "{sample}/pbs_log/gatk"
 	version: config["GATK"]
 	message: "Running GATK Best practices on {input.bam}"
@@ -300,6 +309,44 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	######################
+	"""
+############
+#	Bam2MPG
+############
+rule Bam2MPG:
+	input:
+		bam="{sample}/{sample}.novo.dd.bam",
+		bai="{sample}/{sample}.novo.dd.bam.bai",
+		ref=config["reference"],
+	output:
+		snps="{sample}/calls/{sample}.bam2mpg.snps.vcf",
+		indel="{sample}/calls/{sample}.bam2mpg.indels.vcf"
+	log: "{sample}/pbs_log/bam2mpg"
+	version: config["bam2mpg"]
+	message: "Running Bam2MPG on {input.bam}"
+	params:
+		rulename  = "bam2mpg",
+		batch     = config["job_bam2mpg"],
+		samtools  = config["samtools"],
+		vcftools  = config["vcftools"]
+	shell: """
+	#######################
+	module load bam2mpg/{version}
+	for CHR in `seq 1 22` X Y;
+	do
+	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam}
+	done
+
+	for CHR in `seq 1 22` X Y
+	do
+		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
+		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
+		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
+	done
+	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.snps.vcf.gz >{output.snps}
+	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.indel.vcf.gz >{output.indel}
+	#######################
 	"""
 ############
 #       MuTect
@@ -396,6 +443,30 @@ rule Haplotype_Caller :
 	#######################
 	"""
 ############
+# Subject Hapcaller
+############
+rule HapCall_Subject:
+	input:
+		bams=lambda wildcards: ALL_SUBJECT_BAMS[wildcards.subject],
+		ref=config["reference"],
+		dbsnp=config["dbsnp"]
+	output:
+		vcf="{subject}/{subject}.hapcaller.snvs.vcf"
+	log: "log/{subject}.hapcaller"
+	version: config["GATK"]
+	params:
+		rulename = "HC",
+		batch    = config["job_gatk"]
+	run:
+		bamFiles = " ".join('-I ' + bam for bam in input.bams)
+		shell("""
+	#######################
+	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
+	module load GATK/{version}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} {bamFiles} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
+	#######################
+	""")
+############
 #       Platypus
 ############
 rule  Platypus:
@@ -438,16 +509,11 @@ rule  FreeBayes:
 	#######################
 	module load freebayes/{version}
 	freebayes -f {input.ref} --haplotype-length 50 -b {input.bam} -v {output.vcf} > {log} 2>&1
-	
-	
 	module load vcftools/{params.vcftools}
 	vcftools --vcf {output} --bed {input.interval} --out {output.vcf} --recode --keep-INFO-all
 	mv {output.vcf}.recode.vcf {output.vcf}
-	
 	#######################
 	"""
-
-
 ############
 #	snpEff and vcf2txt
 ############
