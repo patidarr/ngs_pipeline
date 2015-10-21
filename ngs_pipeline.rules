@@ -344,6 +344,7 @@ rule Bam2MPG:
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
 	done
+	module load vcftools/{params.vcftools}
 	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.snps.vcf.gz >{output.snps}
 	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.indel.vcf.gz >{output.indel}
 	#######################
