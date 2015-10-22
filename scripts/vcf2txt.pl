@@ -87,6 +87,9 @@ while (<VAR>) {
 		elsif($_ =~ /VarScan2/){
 			$CALLER = "varscan";
 		}
+		elsif($_ =~ /##source=bam2mpg/){
+			$CALLER = "bam2mpg";
+		}
 	}
 	else{
 		last;
@@ -346,6 +349,20 @@ elsif($CALLER eq 'freeBayes'){
 	`rm -rf /scratch/$sname.fb /scratch/.err_$sname.fb`;	
 
 }
+elsif($CALLER eq 'bam2mpg'){
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
+	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\t$sname.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+	open(FH, "/scratch/$sname.mpg");
+	while(<FH>){
+		chomp;
+		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, $samples) = split("\t", $_);
+		print "$chr\t$start\t$end\t$ref\t$alt\t$qual\t$filter\t$info\t$sname";
+		my @out = BAM2MPG($format, $samples);
+		print "\t`$out[0]\t$out[1]\t$out[2]\t$out[3]\t$out[4]\n";
+	}
+	close FH;
+	`rm -rf /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
+}
 else{
 	print STDERR "This vcf file is not supproted.\n";
 	print STDERR "Can not determine the type of VCF file\n";
@@ -419,6 +436,31 @@ sub FREEBAYES{
 	}
 	else{
 		return ($arr[$idx_GT], $arr[$idx_DP], $arr[$idx_RO], $arr[$idx_AO], $vaf);
+	}
+}
+sub BAM2MPG{
+	my ($form, $sample) = @_;
+	if($sample =~ /^\.$/){
+		return (0, 0, 0, 0, 0);
+	}
+	my @format =  split(":", $form);
+	my @arr = split(":", $sample);
+	my $vaf = 0;
+	my $idx_GT = first { $format[$_] eq 'GT' } 0..$#format;
+	my $idx_DP = first { $format[$_] eq 'DP' } 0..$#format;
+	my $idx_AD = first { $format[$_] eq 'AD' } 0..$#format;
+	if(defined $idx_GT and defined $idx_AD and defined $idx_DP){
+		my @AD = split(",", $arr[$idx_AD]);
+		if($#AD eq '1' and $AD[1] >=1 and $arr[$idx_DP] >=1){
+			$vaf = sprintf("%.2f", $AD[1]/$arr[$idx_DP]);
+			return($arr[$idx_GT], $arr[$idx_DP], $AD[0], $AD[1], $vaf);
+		}
+		else{
+			return($arr[$idx_GT], $arr[$idx_DP], $arr[$idx_AD], $arr[$idx_AD], $vaf);
+		}
+	}
+	else{
+		return($sample, "NA", "NA", "NA", "NA");
 	}
 }
 sub Platypus{

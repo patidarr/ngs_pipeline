@@ -17,7 +17,7 @@ snakemake\
 	--jobname '{rulename}.{jobid}' \
 	--nolock -k -p -T -j 3000 \
 	--stats ngs_pipeline_${NOW}.stats \
-	--cluster "sbatch -o log/{params.rulename}.%j.o {params.batch}" >& ngs_pipeline_${NOW}.log
+	--cluster "sbatch -o log/{params.rulename}.{jobid}.%j.o {params.batch}" >& ngs_pipeline_${NOW}.log
 
 # Summary 
 #snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
