@@ -35,6 +35,7 @@
 	"mpileup"		: "mpileup.pl",
 	"customAnno"		: "addAnnotation.pl",
 	"annoInput"		: "MakeAnnotationInputs.pl",
+	"filterVars"		: "filterVariants.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
 	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",

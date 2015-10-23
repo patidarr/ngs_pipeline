@@ -387,8 +387,8 @@ rule MuTect:
 		--reference_sequence {input.ref} \
 		--cosmic {input.cosmic} \
 		--dbsnp {input.dbsnp} \
-		--input_file:normal {input[0]} \
-		--input_file:tumor {input[2]} \
+		--input_file:normal {input[2]} \
+		--input_file:tumor {input[0]} \
 		--intervals  /lscratch/${{SLURM_JOBID}}/target_intervals.bed \
 		--coverage_file {output.coverage} \
 		--out {output.call_stats} \
@@ -417,7 +417,7 @@ rule Strelka:
 	shell: """
 	#######################
 	module load strelka/{version}
-	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]}\
+	configureStrelkaWorkflow.pl --normal={input[2]} --tumor={input[0]}\
 	--ref={input.ref} --config={input.config} --output-dir=/lscratch/${{SLURM_JOBID}}/strelka > {log} 2>&1
 	make -j ${{SLURM_CPUS_PER_TASK}} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2>> {log}
 	module load vcftools/{params.vcftools}
@@ -570,6 +570,7 @@ rule FormatInput:
 	shell: """
 	#######################
 	module load annovar/{version}
+	rm -rf annotation
 	echo {input.germline}
 	echo {input.somatic}
 	LIST=`echo {input.germline} {input.somatic}|sed -e 's/,/ /g'`
@@ -657,7 +658,8 @@ rule CombineAnnotation:
 		sift="annotation/AnnotationInput.sift.out", 
 		pph2="annotation/AnnotationInput.pph2.out",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["CombineAnno"],
-		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"]
+		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"],
+		filter     = NGS_PIPELINE + "/scripts/" + config["filterVars"]
 	output: "annotation/AnnotationInput.annotations.final.txt"
 	log: "log/CombineAnnotation"
 	version: "1.0"
@@ -681,7 +683,7 @@ annotation/AnnotationInput.docm
 annotation/AnnotationInput.mcg
 annotation/AnnotationInput.anno.pcg" >annotation/list
 	perl {input.convertor} annotation/list >{output}.tmp
-	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
+	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp |perl {input.filter} - 0.1 >{output}
 	rm -rf {output}.tmp
 	#######################
 	"""

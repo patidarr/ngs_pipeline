@@ -4,7 +4,7 @@
 	"job_novoalign"  : "--partition=ccr  --time=10:00:00   --mem=50G --nodes=3 --ntasks=4 --exclusive",
 	"job_flagstat"   : "--partition=ccr  --time=02:00:00   --mem=2G  --cpus-per-task=2 ",
 	"job_genotype"   : "--partition=ccr  --time=05:00:00   --mem=2G  --cpus-per-task=2 ",
-	"job_expressed"  : "--partition=ccr  --time=05:00:00   --mem=2G  --cpus-per-task=1 ",
+	"job_expressed"  : "--partition=ccr  --time=1-05:00:00   --mem=2G  --cpus-per-task=1 ",
 	"job_hotspot"    : "--partition=ccr  --time=01:00:00   --mem=2G  --cpus-per-task=2 ",
 	"job_markdup"    : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=15 --gres=lscratch:40",
 	"job_qualimap"   : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=32 --gres=lscratch:40",
