@@ -356,9 +356,11 @@ elsif($CALLER eq 'bam2mpg'){
 	while(<FH>){
 		chomp;
 		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, $samples) = split("\t", $_);
-		print "$chr\t$start\t$end\t$ref\t$alt\t$qual\t$filter\t$info\t$sname";
-		my @out = BAM2MPG($format, $samples);
-		print "\t`$out[0]\t$out[1]\t$out[2]\t$out[3]\t$out[4]\n";
+		if($qual >=10){
+			print "$chr\t$start\t$end\t$ref\t$alt\t$qual\t$filter\t$info\t$sname";
+			my @out = BAM2MPG($format, $samples);
+			print "\t`$out[0]\t$out[1]\t$out[2]\t$out[3]\t$out[4]\n";
+		}
 	}
 	close FH;
 	`rm -rf /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;

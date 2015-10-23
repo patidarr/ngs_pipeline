@@ -26,9 +26,18 @@ ALL_FASTQC  = expand("{sample}/qc/fastqc/{sample}_R2_fastqc.html", sample = ALL_
 ALL_QC   = expand("{sample}/qc/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/qc/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
 
 
-ALL_GERMLINE= expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.bam2mpg.snps", sample = ALL_SAMPLES),
+ALL_GERMLINE =  expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) 
+ALL_GERMLINE += expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) 
+ALL_GERMLINE += expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES) 
+ALL_GERMLINE += expand("{sample}/annotation/{sample}.bam2mpg.snps", sample = ALL_SAMPLES)
+ALL_GERMLINE += expand("{sample}/annotation/{sample}.bam2mpg.indels", sample = ALL_SAMPLES)	
 
-ALL_ANNOTATED= expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) + expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
+ALL_ANNOTATED  = expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) 
+ALL_ANNOTATED += expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) 
+ALL_ANNOTATED += expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
+ALL_ANNOTATED += expand("{sample}/annotation/{sample}.bam2mpg.snps.annotated.txt", sample = ALL_SAMPLES)
+ALL_ANNOTATED += expand("{sample}/annotation/{sample}.bam2mpg.indels.annotated.txt", sample = ALL_SAMPLES)
+
 ###########################################################################
 ###########################################################################
 ALL_SUBJECT_BAMS = {} 
@@ -68,10 +77,10 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.indels.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.hapcaller.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.platypus.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
+			ALL_EXPRESSED += ["{sample}/annotation/{sample}.bam2mpg.snps.annotated.expressed.txt".format(sample=Tumor)]
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
@@ -292,8 +301,8 @@ rule GATK:
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
 	output:
-		bam=protected("{sample}/{sample}.bwa.final.bam"),
-		index=protected("{sample}/{sample}.bwa.final.bai"),
+		bam="{sample}/{sample}.bwa.final.bam",
+		index="{sample}/{sample}.bwa.final.bai",
 	log:    "{sample}/pbs_log/gatk"
 	version: config["GATK"]
 	message: "Running GATK Best practices on {input.bam}"
@@ -334,8 +343,9 @@ rule Bam2MPG:
 	module load bam2mpg/{version}
 	for CHR in `seq 1 22` X Y;
 	do
-	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam}
+	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam} &
 	done
+	wait
 
 	for CHR in `seq 1 22` X Y
 	do
