@@ -136,25 +136,27 @@ elsif($CALLER eq "MuTect"){
 			print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
 			next;
         	}
-		print "$chr\t$start\t$end\t$ref\t$alt\t$quality_score\t$filter\t$info\t$sname\t";
-		my $Normal;
-		my $Tumor;
-		if ($idx_normal eq '0'){
-			$Normal = $sample[0];
-			$Tumor = $sample[1];
-		}
-		elsif($idx_normal eq '1'){
-			$Normal = $sample[1];
-			$Tumor = $sample[0];
-		}
-		my @normal = split(":", $Normal);
-		my @tumor = split(":", $Tumor);
+		if ($filter =~ /PASS/){
+			print "$chr\t$start\t$end\t$ref\t$alt\t$quality_score\t$filter\t$info\t$sname\t";
+			my $Normal;
+			my $Tumor;
+			if ($idx_normal eq '0'){
+				$Normal = $sample[0];
+				$Tumor = $sample[1];
+			}
+			elsif($idx_normal eq '1'){
+				$Normal = $sample[1];
+				$Tumor = $sample[0];
+			}
+			my @normal = split(":", $Normal);
+			my @tumor = split(":", $Tumor);
 
-		my ($idx_GT, $idx_AD, $idx_DP, $idx_FA) = formatMuTect($format);
-		$normal[$idx_AD] =~ s/,/\t/g;
-		$tumor[$idx_AD] =~ s/,/\t/g;
-		print "$normal[$idx_GT]\t$normal[$idx_DP]\t$normal[$idx_AD]\t$normal[$idx_FA]\t";
-		print "$tumor[$idx_GT]\t$tumor[$idx_DP]\t$tumor[$idx_AD]\t$tumor[$idx_FA]\n";
+			my ($idx_GT, $idx_AD, $idx_DP, $idx_FA) = formatMuTect($format);
+			$normal[$idx_AD] =~ s/,/\t/g;
+			$tumor[$idx_AD] =~ s/,/\t/g;
+			print "$normal[$idx_GT]\t$normal[$idx_DP]\t$normal[$idx_AD]\t$normal[$idx_FA]\t";
+			print "$tumor[$idx_GT]\t$tumor[$idx_DP]\t$tumor[$idx_AD]\t$tumor[$idx_FA]\n";
+		}
 	}
 	close(FH);
 }

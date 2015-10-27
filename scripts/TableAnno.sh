@@ -130,6 +130,16 @@ $CUSTOM $DATADIR/${BUILD}_MCG.06.24.15.txt $file >$OUT.mcg
 ################################
 $CUSTOM $DATADIR/${BUILD}_DoCM.txt $file >$OUT.docm
 ################################
+################################
+# Add CanDL
+#
+################################
+$CUSTOM $DATADIR/${BUILD}_candl_10262015.txt $file >$OUT.candl
+################################
+# Add Targeted Cancer Care
+#
+################################
+$CUSTOM $DATADIR/${BUILD}_targated_cancer_care_10262015.txt $file >$OUT.tcc
 rm -rf $file.invalid_input
 rm -rf $file.refGene.invalid_input
 rm -rf $file.log

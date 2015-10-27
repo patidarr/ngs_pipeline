@@ -98,8 +98,8 @@ rule fastqc:
 		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
 		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz"
 	output: 
-		"{sample}/qc/fastqc/{sample}_R1_fastqc.zip", 
-		"{sample}/qc/fastqc/{sample}_R2_fastqc.zip", 
+#		"{sample}/qc/fastqc/{sample}_R1_fastqc.zip", 
+#		"{sample}/qc/fastqc/{sample}_R2_fastqc.zip", 
 		"{sample}/qc/fastqc/{sample}_R1_fastqc.html", 
 		"{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
@@ -111,8 +111,8 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc -t 6 -o {wildcards.sample}/qc/fastqc/ -d /scratch {input[R1]} 2>> {log}
-	fastqc -t 6 -o {wildcards.sample}/qc/fastqc/ -d /scratch {input[R2]} 2>> {log}
+	fastqc --extract -t 6 -o {wildcards.sample}/qc/fastqc/ -d /scratch {input[R1]} 2>> {log}
+	fastqc --extract -t 6 -o {wildcards.sample}/qc/fastqc/ -d /scratch {input[R2]} 2>> {log}
 	#######################
 	"""
 ############
@@ -643,7 +643,8 @@ rule PPH2:
 	#######################
 	module load polyphen2/{version}
 	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
+	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate >{input.pph}.pph2.intermediate.txt
+#	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
 	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
 	mv pph_* log/ 
@@ -680,7 +681,10 @@ annotation/AnnotationInput.anno.clinvar
 annotation/AnnotationInput.hgmd
 annotation/AnnotationInput.match
 annotation/AnnotationInput.docm
+annotation/AnnotationInput.candl
+annotation/AnnotationInput.tcc
 annotation/AnnotationInput.mcg
+annotation/AnnotationInput.civic
 annotation/AnnotationInput.anno.pcg" >annotation/list
 	perl {input.convertor} annotation/list >{output}.tmp
 	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp |perl {input.filter} - 0.1 >{output}
