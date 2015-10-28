@@ -13,7 +13,7 @@ shell.prefix("set -eo pipefail; ")
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_cluster.json"
 
-localrules: Khanlab_Pipeline
+localrules: Khanlab_Pipeline, QC_Sum
 ####
 #### Targets
 ####
@@ -85,8 +85,7 @@ if len(config['sample_RNASeq']) > 0:
 ###########################################################################
 rule Khanlab_Pipeline:
 	input: 
-		ALL_QC,
-		ALL_FASTQC,
+		"QC_AllSamples.txt",
 		expand("{subject}/{subject}.hapcaller.snvs.vcf", subject= SUBS),
 		ALL_ANNOTATED,
 		ALL_EXPRESSED,
@@ -224,6 +223,25 @@ rule BamQC:
 	#######################
 	"""
 ############
+#       QC_Sum
+############
+rule QC_Sum:
+	input:
+		ALL_QC,
+		convertor = NGS_PIPELINE + "/scripts/" + config["makeQC"]
+	output:
+		"QC_AllSamples.txt"
+	log: "log/qc_sum"
+	version: "v1.1"
+	message: "Collecting QC on all samples"
+	params:
+		rulename = "qc_sum",
+	shell: """
+	#######################
+	perl {input.convertor} `pwd` >{output} 2>{log}
+	#######################
+	"""
+############
 #       Samtools flagstat
 ############
 rule flagstat:
@@ -327,6 +345,7 @@ rule Bam2MPG:
 		bam="{sample}/{sample}.novo.dd.bam",
 		bai="{sample}/{sample}.novo.dd.bam.bai",
 		ref=config["reference"],
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
 	output:
 		snps="{sample}/calls/{sample}.bam2mpg.snps.vcf",
 		indel="{sample}/calls/{sample}.bam2mpg.indels.vcf"
@@ -355,8 +374,14 @@ rule Bam2MPG:
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
 	done
 	module load vcftools/{params.vcftools}
-	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.snps.vcf.gz >{output.snps}
-	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.indel.vcf.gz >{output.indel}
+	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.snps.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf.gz
+	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.indel.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.indel.vcf.gz
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf.gz --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
+        mv {output.snps}.recode.vcf {output.snps}	
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.indel.vcf.gz --bed {input.interval} --out {output.indel} --recode --keep-INFO-all
+        mv {output.indel}.recode.vcf {output.indel}
+
+	
 	#######################
 	"""
 ############
@@ -460,7 +485,8 @@ rule HapCall_Subject:
 	input:
 		bams=lambda wildcards: ALL_SUBJECT_BAMS[wildcards.subject],
 		ref=config["reference"],
-		dbsnp=config["dbsnp"]
+		dbsnp=config["dbsnp"],
+		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
 	output:
 		vcf="{subject}/{subject}.hapcaller.snvs.vcf"
 	log: "log/{subject}.hapcaller"
@@ -474,7 +500,8 @@ rule HapCall_Subject:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} {bamFiles} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} {bamFiles} -L /lscratch/${{SLURM_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30 -log {log}
 	#######################
 	""")
 ############

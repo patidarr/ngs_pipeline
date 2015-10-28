@@ -14,7 +14,7 @@ chomp(my @files = <LIST>);
 close LIST;
 my %ALL_SITES;
 unless (open(FH, "$files[0]")){
-	print STDOUT "$files[0]";
+	print STDERR "$files[0]";
 	die;
 }
 while(<FH>){
@@ -31,7 +31,7 @@ foreach my $file (@files){
 	my %TMP_HASH;
 	unless (open (TMP, $file)){
 		print STDERR "Can not open file $file\n";
-		exit;
+		die;
 	}
 	while(<TMP>){ # Read Files 
 		chomp $_;

@@ -140,6 +140,15 @@ $CUSTOM $DATADIR/${BUILD}_candl_10262015.txt $file >$OUT.candl
 #
 ################################
 $CUSTOM $DATADIR/${BUILD}_targated_cancer_care_10262015.txt $file >$OUT.tcc
+################################
+# CiViC
+#
+################################
+$CUSTOM $DATADIR/${BUILD}_civic_10262015.txt $file >$OUT.civic
+################################
+#
+#
+################################
 rm -rf $file.invalid_input
 rm -rf $file.refGene.invalid_input
 rm -rf $file.log

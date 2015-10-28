@@ -25,5 +25,7 @@ while (<ORI>){
 	my $end = @temp - 1 ;
 	$val = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
 	$vcf = join "\t", @temp[5..$end];
-	print "$val\t$ANNOVAR{$val}\t$vcf\n";
+	if (exists $ANNOVAR{$val}){
+		print "$val\t$ANNOVAR{$val}\t$vcf\n";
+	}
 }

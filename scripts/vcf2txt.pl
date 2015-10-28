@@ -353,19 +353,26 @@ elsif($CALLER eq 'freeBayes'){
 }
 elsif($CALLER eq 'bam2mpg'){
 	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
-	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\t$sname.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
+	foreach(@NSAMPLES){
+                print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
+        }
+	print "\n";
 	open(FH, "/scratch/$sname.mpg");
 	while(<FH>){
 		chomp;
-		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, $samples) = split("\t", $_);
-		if($qual >=10){
+		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, @samples) = split("\t", $_);
+		if($qual =~ /\d+/ and $qual >=10){
 			print "$chr\t$start\t$end\t$ref\t$alt\t$qual\t$filter\t$info\t$sname";
-			my @out = BAM2MPG($format, $samples);
-			print "\t`$out[0]\t$out[1]\t$out[2]\t$out[3]\t$out[4]\n";
+			foreach (@samples){
+				my @out = BAM2MPG($format, $_);
+				print "\t`$out[0]\t$out[1]\t$out[2]\t$out[3]\t$out[4]";
+			}
+			print "\n"
 		}
 	}
 	close FH;
-	`rm -rf /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
+#	`rm -rf /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
 }
 else{
 	print STDERR "This vcf file is not supproted.\n";
