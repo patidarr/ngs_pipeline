@@ -26,25 +26,33 @@ ALL_FASTQC  = expand("{sample}/qc/fastqc/{sample}_R2_fastqc.html", sample = ALL_
 ALL_QC   = expand("{sample}/qc/{sample}.flagstat.txt", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.hotspot.depth", sample = ALL_SAMPLES) + expand("{sample}/qc/{sample}.gt", sample = ALL_SAMPLES) + expand("{sample}/qc/BamQC/qualimapReport.html", sample = ALL_SAMPLES)
 
 
-ALL_GERMLINE =  expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) 
-ALL_GERMLINE += expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) 
-ALL_GERMLINE += expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES) 
-ALL_GERMLINE += expand("{sample}/annotation/{sample}.bam2mpg.snps", sample = ALL_SAMPLES)
-ALL_GERMLINE += expand("{sample}/annotation/{sample}.bam2mpg.indels", sample = ALL_SAMPLES)	
+#ALL_GERMLINE =  expand("{sample}/annotation/{sample}.hapcaller", sample = ALL_SAMPLES) 
+#ALL_GERMLINE =  expand("{sample}/annotation/{sample}.platypus", sample = ALL_SAMPLES) 
+#ALL_GERMLINE += expand("{sample}/annotation/{sample}.freebayes", sample = ALL_SAMPLES) 
+#ALL_GERMLINE += expand("{sample}/annotation/{sample}.bam2mpg.snps", sample = ALL_SAMPLES)
+#ALL_GERMLINE += expand("{sample}/annotation/{sample}.bam2mpg.indels", sample = ALL_SAMPLES)	
+ALL_GERMLINE  = expand("{subject}/annotation/{subject}.platypus", subject = SUBS)
+ALL_GERMLINE += expand("{subject}/annotation/{subject}.hapcaller", subject= SUBS)
+ALL_GERMLINE += expand("{subject}/annotation/{subject}.bam2mpg", subject= SUBS)
 
-ALL_ANNOTATED  = expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) 
-ALL_ANNOTATED += expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) 
-ALL_ANNOTATED += expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
-ALL_ANNOTATED += expand("{sample}/annotation/{sample}.bam2mpg.snps.annotated.txt", sample = ALL_SAMPLES)
-ALL_ANNOTATED += expand("{sample}/annotation/{sample}.bam2mpg.indels.annotated.txt", sample = ALL_SAMPLES)
-
+#ALL_ANNOTATED  = expand("{sample}/annotation/{sample}.hapcaller.annotated.txt", sample = ALL_SAMPLES) 
+#ALL_ANNOTATED  = expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = ALL_SAMPLES) 
+#ALL_ANNOTATED += expand("{sample}/annotation/{sample}.freebayes.annotated.txt", sample = ALL_SAMPLES)
+#ALL_ANNOTATED += expand("{sample}/annotation/{sample}.bam2mpg.snps.annotated.txt", sample = ALL_SAMPLES)
+#ALL_ANNOTATED += expand("{sample}/annotation/{sample}.bam2mpg.indels.annotated.txt", sample = ALL_SAMPLES)
+ALL_ANNOTATED  = expand("{sample}/annotation/{sample}.platypus.annotated.txt", sample = SUBS)
+ALL_ANNOTATED += expand("{subject}/annotation/{subject}.hapcaller.annotated.txt", subject= SUBS)
+ALL_ANNOTATED += expand("{subject}/annotation/{subject}.bam2mpg.annotated.txt", subject= SUBS)
 ###########################################################################
 ###########################################################################
 ALL_SUBJECT_BAMS = {} 
 for Subject  in config['subject']:
 	ALL_SUBJECT_BAMS[Subject] = expand("{sample}/{sample}.bwa.final.bam", sample = config['subject'][Subject])
-#print(ALL_SUBJECT_BAMS)
+
 ###########################################################################
+ALL_SUBJECT_MPG = {}
+for Subject  in config['subject']:
+	ALL_SUBJECT_MPG[Subject] = expand("{sample}/calls/{sample}.bam2mpg.vcf.gz", sample = config['subject'][Subject])
 ###########################################################################
 ALL_SOMATIC = []
 somaticPairs = {}
@@ -71,9 +79,7 @@ expressedPairs = {}
 if len(config['sample_RNASeq']) > 0:
 	for Tumor in config['sample_RNASeq']:
 		for RNASample in config['sample_RNASeq'][Tumor]:
-		#	MutationFile = "{sample}/annotation/{sample}.MuTect.annotated.txt".format(sample=Tumor)
 			RNASeqBam    = "/data/khanlab/projects/working_DATA/" + RNASample + "/" + RNASample + ".Processed/" + RNASample + ".bam" 
-		#	expressedPairs[Tumor] = [MutationFile, RNASeqBam]
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
@@ -86,7 +92,10 @@ if len(config['sample_RNASeq']) > 0:
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
-		expand("{subject}/{subject}.hapcaller.snvs.vcf", subject= SUBS),
+#		expand("{subject}/calls/{subject}.hapcaller.vcf", subject= SUBS),
+#		expand("{subject}/calls/{subject}.platypus.vcf", subject= SUBS),
+#		expand("{sample}/calls/{sample}.bam2mpg.vcf.gz", sample = ALL_SAMPLES),
+#		ALL_GERMLINE
 		ALL_ANNOTATED,
 		ALL_EXPRESSED,
 ############
@@ -97,8 +106,6 @@ rule fastqc:
 		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
 		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz"
 	output: 
-#		"{sample}/qc/fastqc/{sample}_R1_fastqc.zip", 
-#		"{sample}/qc/fastqc/{sample}_R2_fastqc.zip", 
 		"{sample}/qc/fastqc/{sample}_R1_fastqc.html", 
 		"{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
@@ -228,6 +235,7 @@ rule BamQC:
 rule QC_Sum:
 	input:
 		ALL_QC,
+		ALL_FASTQC,
 		convertor = NGS_PIPELINE + "/scripts/" + config["makeQC"]
 	output:
 		"QC_AllSamples.txt"
@@ -347,8 +355,7 @@ rule Bam2MPG:
 		ref=config["reference"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
 	output:
-		snps="{sample}/calls/{sample}.bam2mpg.snps.vcf",
-		indel="{sample}/calls/{sample}.bam2mpg.indels.vcf"
+		snps="{sample}/calls/{sample}.bam2mpg.vcf.gz",
 	log: "{sample}/pbs_log/bam2mpg"
 	version: config["bam2mpg"]
 	message: "Running Bam2MPG on {input.bam}"
@@ -374,14 +381,37 @@ rule Bam2MPG:
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
 	done
 	module load vcftools/{params.vcftools}
-	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.snps.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf.gz
-	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.indel.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.indel.vcf.gz
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf.gz --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
-        mv {output.snps}.recode.vcf {output.snps}	
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.indel.vcf.gz --bed {input.interval} --out {output.indel} --recode --keep-INFO-all
-        mv {output.indel}.recode.vcf {output.indel}
+	echo "Combine chr level vcf files"
+	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.*.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf
+	echo "Restrict to Bed file"
 
+	vcftools --vcf /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out {wildcards.sample} --recode --keep-INFO-all
+
+	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf |vcf-sort >{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
+
+	bgzip {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
+	tabix -p vcf {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
+	rm -rf {wildcards.sample}.recode.vcf
 	
+	#######################
+	"""
+############
+# Subject Hapcaller
+############
+rule MergeVCF:
+	input:
+		vcf=lambda wildcards: ALL_SUBJECT_MPG[wildcards.subject],
+	output:
+		vcf="{subject}/calls/{subject}.bam2mpg.vcf"
+	log: "log/{subject}.mergevcf"
+	version: config["vcftools"]
+	params:
+		rulename = "mergevcf",
+		batch    = config["job_default"]
+	shell: """
+	#######################
+	module load vcftools/{version}
+	vcf-merge {input.vcf} >{output.vcf}
 	#######################
 	"""
 ############
@@ -488,7 +518,7 @@ rule HapCall_Subject:
 		dbsnp=config["dbsnp"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
 	output:
-		vcf="{subject}/{subject}.hapcaller.snvs.vcf"
+		vcf="{subject}/calls/{subject}.hapcaller.vcf"
 	log: "log/{subject}.hapcaller"
 	version: config["GATK"]
 	params:
@@ -524,6 +554,29 @@ rule  Platypus:
 	#######################
 	module load platypus/{version}
 	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions={input.interval} --output={output.vcf} --refFile={input.ref} --logFileName={log} 
+	#######################
+	"""
+############
+# Subject Platypus
+############
+rule Platypus_Subject:
+	input:
+		bams=lambda wildcards: ALL_SUBJECT_BAMS[wildcards.subject],
+		ref=config["reference"],
+		dbsnp=config["dbsnp"],
+		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
+	output:
+		vcf="{subject}/calls/{subject}.platypus.vcf"
+	log: "log/{subject}.platypus"
+	version: config["platypus"]
+	params:
+		rulename = "PLAT",
+		batch    = config["job_platypus"]
+	shell: """
+	#######################
+	module load platypus/{version}
+	LIST=`echo {input.bams}|sed -e 's/ /,/g'`
+	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref} --logFileName={log}
 	#######################
 	"""
 ############
@@ -597,12 +650,14 @@ rule FormatInput:
 	shell: """
 	#######################
 	module load annovar/{version}
-	rm -rf annotation
-	echo {input.germline}
-	echo {input.somatic}
-	LIST=`echo {input.germline} {input.somatic}|sed -e 's/,/ /g'`
-	cut -f 1-5 ${{LIST}}|sort |uniq >"annotation/AnnotationInput"
-	perl {input.convertor} "annotation/AnnotationInput" 2>{log}
+#	rm -rf annotation
+#	mkdir annotation
+#	echo {input.germline}
+#	echo {input.somatic}
+#	LIST=`echo {input.germline} {input.somatic}|sed -e 's/,/ /g'`
+#	cut -f 1-5 ${{LIST}}|sort |uniq >"annotation/AnnotationInput"
+	cut -f 1-5 {input.germline} {input.somatic} |sort |uniq > annotation/AnnotationInput
+	perl {input.convertor} annotation/AnnotationInput 2>{log}
 	#######################
 	"""
 ############
@@ -659,7 +714,8 @@ rule SIFT:
 rule PPH2:
 	input:
 		pph="annotation/AnnotationInput.pph",
-		convertor  = NGS_PIPELINE + "/scripts/" + config["PPH2Parse"]
+		convertor  = NGS_PIPELINE + "/scripts/" + config["PPH2Parse"],
+		block      = NGS_PIPELINE + "/scripts/" + config["block"]
 	output: "annotation/AnnotationInput.pph2.out"
 	log: "log/PPH2"
 	version: config["polyphen2"]
@@ -669,12 +725,42 @@ rule PPH2:
 	shell: """
 	#######################
 	module load polyphen2/{version}
-	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate >{input.pph}.pph2.intermediate.txt
+	#######################
+	# There are 3 implimentations here. All 3 generates the same result.
+	#######################
+
+
+	## Implimented after pph_swarm started failing
+	rm -rf annotation/pph
+	mkdir annotation/pph
+	cd annotation/pph
+	split -l 100 -a 5  ../AnnotationInput.pph pph2
+	for tmp in *
+	do
+	echo "mapsnps.pl -c -g hg19 -U -y ${{tmp}}.intermediate ${{tmp}}; pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} ${{tmp}}.intermediate >${{tmp}}.pph2 ; rm -rf ${{tmp}}.intermediate ${{tmp}} " 
+	done >cmdFile
+
+	ID=`/usr/local/bin/swarm --partition ${{SLURM_JOB_PARTITION}} -m polyphen2/{version} --logdir log/ -f cmdFile`
+
+	echo "#!/bin/sh" >cmdFile.round
+	echo "cd `pwd`" >>cmdFile.round	
+	echo "cat *.pph2 >../AnnotationInput.pph2.intermediate.txt" >>cmdFile.round
+
+	ID2=`sbatch --partition=${{SLURM_JOB_PARTITION}} --time=1:00:00 --dependency=afterany:${{ID}} cmdFile.round`
+	perl {input.block}  ${{ID2}}
+
+	## This is the native code	
+#	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
+#	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate >{input.pph}.pph2.intermediate.txt
+
+	## This is pph_swarm implimentation 
 #	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
+
+	cd ../	
+	## This is common to all 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
-	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
-	mv pph_* log/ 
+#	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
+	
 	#######################
 	"""
 ############
