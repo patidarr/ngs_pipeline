@@ -83,10 +83,10 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.hapcaller.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.platypus.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.bam2mpg.snps.annotated.expressed.txt".format(sample=Tumor)]
+#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.hapcaller.annotated.expressed.txt".format(sample=Tumor)]
+#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.platypus.annotated.expressed.txt".format(sample=Tumor)]
+#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
+#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.bam2mpg.annotated.expressed.txt".format(sample=Tumor)]
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
@@ -748,7 +748,7 @@ rule PPH2:
 
 	ID2=`sbatch --partition=${{SLURM_JOB_PARTITION}} --time=1:00:00 --dependency=afterany:${{ID}} cmdFile.round`
 	perl {input.block}  ${{ID2}}
-
+	cd ../../
 	## This is the native code	
 #	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
 #	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate >{input.pph}.pph2.intermediate.txt
@@ -756,7 +756,6 @@ rule PPH2:
 	## This is pph_swarm implimentation 
 #	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
 
-	cd ../	
 	## This is common to all 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
 #	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
@@ -833,14 +832,15 @@ rule Expressed:
 		Mutation="{sample}/annotation/{sample}.{base}.annotated.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config["mpileup"]
 	output: "{sample}/annotation/{sample}.{base}.annotated.expressed.txt"
-	log: "{sample}/pbs_log/expressed"
-	version: 1.0
+	log: "{sample}/pbs_log/expressed.{base}"
+	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
 		batch     = config["job_expressed"],
 		convertor = config["mpileup"]
 	shell: """
 	#######################
+	module load samtools/{version}
 	perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
 	#######################
 	"""
