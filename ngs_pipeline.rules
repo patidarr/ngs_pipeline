@@ -63,7 +63,7 @@ if len(config['sample_references']) > 0:
 			TumorBam = "{sample}/{sample}.bwa.final".format(sample=Tumor)
 			NormalBam = "{sample}/{sample}.bwa.final".format(sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
-			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
+			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 			ALL_ANNOTATED += ["{sample}/annotation/{sample}.MuTect.annotated.txt".format(sample=Tumor)]
 			ALL_ANNOTATED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.txt".format(sample=Tumor)]
 			ALL_ANNOTATED += ["{sample}/annotation/{sample}.strelka.indels.annotated.txt".format(sample=Tumor)]
@@ -211,7 +211,7 @@ rule Genotyping:
 rule BamQC:
 	input:
 		bam="{sample}/{sample}.bwa.final.bam",
-		bai="{sample}/{sample}.bwa.final.bai",
+		bai="{sample}/{sample}.bwa.final.bam.bai",
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample].replace('.bed', '.gff')
 	output:
 		"{sample}/qc/BamQC/qualimapReport.html"
@@ -328,7 +328,7 @@ rule GATK:
 		mills=config["Mills_and_1000G"]
 	output:
 		bam="{sample}/{sample}.bwa.final.bam",
-		index="{sample}/{sample}.bwa.final.bai",
+		index="{sample}/{sample}.bwa.final.bam.bai",
 	log:    "{sample}/pbs_log/gatk"
 	version: config["GATK"]
 	message: "Running GATK Best practices on {input.bam}"
@@ -343,6 +343,7 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
+	mv {wildcards.sample}/{wildcards.sample}.bwa.final.bam.bai {output.index}
 	######################
 	"""
 ############
@@ -488,7 +489,7 @@ rule Strelka:
 rule Haplotype_Caller :
 	input:
 		bam="{sample}/{sample}.bwa.final.bam",
-		bai="{sample}/{sample}.bwa.final.bai",
+		bai="{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
                 dbsnp=config["dbsnp"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
@@ -540,7 +541,7 @@ rule HapCall_Subject:
 rule  Platypus:
 	input:
 		bam="{sample}/{sample}.bwa.final.bam",
-		bai="{sample}/{sample}.bwa.final.bai",
+		bai="{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
@@ -585,7 +586,7 @@ rule Platypus_Subject:
 rule  FreeBayes:
 	input:
 		bam="{sample}/{sample}.bwa.final.bam",
-		bai="{sample}/{sample}.bwa.final.bai",
+		bai="{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
