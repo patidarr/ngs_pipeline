@@ -1,4 +1,11 @@
-files <- list.files(pattern="coverage.txt$")
+library(stringr)
+args<-commandArgs()
+print(args[6])
+print(args[7])
+DIR = str_trim(args[6])
+FILE=str_trim(args[7])
+
+files <- list.files(path = DIR, pattern="coverage.txt$")
 
 cov <- list()
 cov_cumul <- list()
@@ -12,7 +19,7 @@ library(RColorBrewer)
 cols <- brewer.pal(length(cov)+1, "Dark2")
 
 # Save the graph to a file
-png("exome-coverage-plots.png", h=1000, w=1000, pointsize=20)
+png(FILE, h=1000, w=1000, pointsize=20)
 
 # Create plot area, but do not plot anything. Add gridlines and axis labels.
 par(las=2)

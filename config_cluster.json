@@ -8,6 +8,7 @@
 	"job_expressed"  : "--partition=ccr  --time=1-05:00:00 --mem=2G  --cpus-per-task=1 ",
 	"job_hotspot"    : "--partition=ccr  --time=01:00:00   --mem=2G  --cpus-per-task=2 ",
 	"job_markdup"    : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=15 --gres=lscratch:40",
+	"job_bedtools"   : "--partition=ccr  --time=04:00:00   --mem=10G --cpus-per-task=05",
 	"job_covplot"    : "--partition=ccr  --time=01:00:00   --mem=01G --cpus-per-task=1 --gres=lscratch:01",
 	"job_qualimap"   : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=32 --gres=lscratch:40",
 	"job_gatk"	 : "--partition=ccr  --time=2-24:00:00 --mem=40G --cpus-per-task=32 --gres=lscratch:100",

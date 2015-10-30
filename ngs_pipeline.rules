@@ -9,6 +9,12 @@ except KeyError:
     NGS_PIPELINE="/data/khanlab/projects/patidar/Serpentine"
     pass
 
+try:
+    WORK_DIR=os.environ['WORK_DIR']
+except KeyError:
+	print("I can not locate your work directory")
+
+
 shell.prefix("set -eo pipefail; ")
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_cluster.json"
@@ -308,7 +314,7 @@ rule Coverage:
 	message: "Running Coverage on {input.bam}"
 	params:
 		rulename = "coverage",
-		batch    = config["job_default"]
+		batch    = config["job_bedtools"]
 	shell: """
 	#######################
 	bedtools coverage -abam {input.bam} -b {input.interval} -hist |grep "^all" > {output}
@@ -332,10 +338,8 @@ rule CoveragePlot:
 	#######################
 	module load R/{version}
 	LIST=`echo {input.covFiles}|sed -e 's/,/ /g'`
-	cd /lscratch/${{SLURM_JOBID}}/
-	for i in ${{LIST}}; do cp ${{i}} .; done 
-	R --slave <{input.coverage}
-	cp exome-coverage-plots.png {output}
+	for i in ${{LIST}}; do cp ${{i}} /lscratch/${{SLURM_JOBID}}/; done 
+	R --vanilla --slave --silent --args /lscratch/${{SLURM_JOBID}}/ {output} <{input.coverage}
 	#######################
 	"""
 ############
