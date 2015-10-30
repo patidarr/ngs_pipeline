@@ -44,6 +44,9 @@ ALL_ANNOTATED  = expand("{sample}/annotation/{sample}.platypus.annotated.txt", s
 ALL_ANNOTATED += expand("{subject}/annotation/{subject}.hapcaller.annotated.txt", subject= SUBS)
 ALL_ANNOTATED += expand("{subject}/annotation/{subject}.bam2mpg.annotated.txt", subject= SUBS)
 ###########################################################################
+SUBJECT_TO_SAMPLE  = {}
+for subject in config['subject']:
+        SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['subject'][subject])
 ###########################################################################
 ALL_SUBJECT_BAMS = {} 
 for Subject  in config['subject']:
@@ -92,6 +95,7 @@ if len(config['sample_RNASeq']) > 0:
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
+		expand("{subject}/{subject}.coveragePlot.png", subject= SUBS),
 #		expand("{subject}/calls/{subject}.hapcaller.vcf", subject= SUBS),
 #		expand("{subject}/calls/{subject}.platypus.vcf", subject= SUBS),
 #		expand("{sample}/calls/{sample}.bam2mpg.vcf.gz", sample = ALL_SAMPLES),
@@ -277,7 +281,7 @@ rule HotSpotCoverage:
 	output: "{sample}/qc/{sample}.hotspot.depth"
 	log: "{sample}/pbs_log/hotspotCoverage"
 	version: config["bedtools"]
-	message: "Running Hotspot Coverage flagstat on {input[0]}"
+	message: "Running Hotspot Coverage on {input[0]}"
 	params:
 		rulename  = "HotSpotCov",
 		batch     = config["job_hotspot"],
@@ -287,6 +291,51 @@ rule HotSpotCoverage:
 	module load samtools/{params.samtools} 
 	module load bedtools/{version}
 	samtools view -hF 0x400 -q 30 {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
+	#######################
+	"""
+############
+# Coverage 
+############
+rule Coverage:
+	input:
+		bam="{sample}/{sample}.bwa.final.bam",
+		bai="{sample}/{sample}.bwa.final.bam.bai",
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
+	output:
+		"{sample}/qc/{sample}.coverage.txt"
+	log: "{sample}/pbs_log/coverage"
+	version: config["bedtools"]
+	message: "Running Coverage on {input.bam}"
+	params:
+		rulename = "coverage",
+		batch    = config["job_default"]
+	shell: """
+	#######################
+	bedtools coverage -abam {input.bam} -b {input.interval} -hist |grep "^all" > {output}
+	#######################
+	"""
+############
+# CoveragePlot
+############
+rule CoveragePlot:
+	input: 
+		covFiles=expand("{sample}/qc/{sample}.coverage.txt", sample = SUBJECT_TO_SAMPLE[subject]),
+		coverage =NGS_PIPELINE + "/scripts/" + config["coverage"]
+	output: "{subject}/{subject}.coveragePlot.png",
+	log: "log/{subject}.coverage"
+	version: config["R"]
+	message: "Generating Coverage Plot on {subject}"
+	params:
+		rulename = "covplot",
+		batch    = config["job_covplot"]
+	shell: """
+	#######################
+	module load R/{version}
+	LIST=`echo {input.covFiles}|sed -e 's/,/ /g'`
+	cd /lscratch/${{SLURM_JOBID}}/
+	for i in ${{LIST}}; do cp ${{i}} .; done 
+	R --slave <{input.coverage}
+	cp exome-coverage-plots.png {output}
 	#######################
 	"""
 ############
