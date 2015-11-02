@@ -13,7 +13,7 @@ try:
     WORK_DIR=os.environ['WORK_DIR']
 except KeyError:
 	print("I can not locate your work directory")
-
+	quit()
 
 shell.prefix("set -eo pipefail; ")
 configfile: "/data/khanlab/projects/patidar/Snakemake/config_common.json"
@@ -101,7 +101,7 @@ if len(config['sample_RNASeq']) > 0:
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
-		expand("{subject}/{subject}.coveragePlot.png", subject= SUBS),
+		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
 #		expand("{subject}/calls/{subject}.hapcaller.vcf", subject= SUBS),
 #		expand("{subject}/calls/{subject}.platypus.vcf", subject= SUBS),
 #		expand("{sample}/calls/{sample}.bam2mpg.vcf.gz", sample = ALL_SAMPLES),
@@ -120,7 +120,7 @@ rule fastqc:
 		"{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
 	version: config["fastqc"]
-	message: "Running Fastqc on {input[0]}"
+	message: "Running Fastqc on {sample}"
 	params:
 		rulename  = "fastqc",
 		batch     = config["job_fastqc"]
@@ -144,7 +144,7 @@ rule BWA:
 		temp("{sample}/{sample}.bwa.bam.bai")
 	log: "{sample}/pbs_log/bwa"
 	version: config["bwa"]
-	message: "Running bwa on {input[0]}"
+	message: "Running bwa on {sample}"
 	params:
 		rulename  = "bwa",
 		platform  = config["platform"],
@@ -317,6 +317,7 @@ rule Coverage:
 		batch    = config["job_bedtools"]
 	shell: """
 	#######################
+	module load bedtools/{version}
 	bedtools coverage -abam {input.bam} -b {input.interval} -hist |grep "^all" > {output}
 	#######################
 	"""
@@ -325,21 +326,22 @@ rule Coverage:
 ############
 rule CoveragePlot:
 	input: 
-		covFiles=expand("{sample}/qc/{sample}.coverage.txt", sample = SUBJECT_TO_SAMPLE[subject]),
+		covFiles=lambda wildcards: expand("{sample}/qc/{sample}.coverage.txt", sample = SUBJECT_TO_SAMPLE[wildcards.subject]),
 		coverage =NGS_PIPELINE + "/scripts/" + config["coverage"]
-	output: "{subject}/{subject}.coveragePlot.png",
+	output: "{subject}/qc/{subject}.coveragePlot.png",
 	log: "log/{subject}.coverage"
 	version: config["R"]
-	message: "Generating Coverage Plot on {subject}"
+	message: "Generating Coverage Plot on {wildcards.subject}"
 	params:
 		rulename = "covplot",
 		batch    = config["job_covplot"]
 	shell: """
 	#######################
+		
+	cp -f {input.covFiles} {wildcards.subject}/qc/; done 
+		
 	module load R/{version}
-	LIST=`echo {input.covFiles}|sed -e 's/,/ /g'`
-	for i in ${{LIST}}; do cp ${{i}} /lscratch/${{SLURM_JOBID}}/; done 
-	R --vanilla --slave --silent --args /lscratch/${{SLURM_JOBID}}/ {output} <{input.coverage}
+	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
 	#######################
 	"""
 ############
@@ -396,7 +398,7 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
-	mv {wildcards.sample}/{wildcards.sample}.bwa.final.bam.bai {output.index}
+	mv {wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
 	######################
 	"""
 ############
@@ -421,6 +423,7 @@ rule Bam2MPG:
 	shell: """
 	#######################
 	module load bam2mpg/{version}
+	module load vcftools/{params.vcftools}	
 	for CHR in `seq 1 22` X Y;
 	do
 	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam} &
@@ -429,12 +432,15 @@ rule Bam2MPG:
 
 	for CHR in `seq 1 22` X Y
 	do
+		cat /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >/lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
+		mv /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
 		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		cat /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort >/lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
+		mv /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
 		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
 	done
-	module load vcftools/{params.vcftools}
 	echo "Combine chr level vcf files"
 	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.*.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf
 	echo "Restrict to Bed file"
@@ -670,7 +676,7 @@ rule snpEff:
 		vcf2txt=NGS_PIPELINE + "/scripts/" + config["vcf2txt"]
 	output:
 		eff="{sample}/calls/{sample}.{base}.snpEff.vcf",
-		txt=temp("{sample}/annotation/{sample}.{base}")
+		txt="{sample}/annotation/{sample}.{base}"
 	log: "{sample}/pbs_log/{base}.snpEff"
 	version: config["snpEff"]
 	params:
