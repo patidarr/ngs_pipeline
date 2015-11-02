@@ -338,7 +338,7 @@ rule CoveragePlot:
 	shell: """
 	#######################
 		
-	cp -f {input.covFiles} {wildcards.subject}/qc/; done 
+	cp -f {input.covFiles} {wildcards.subject}/qc/ 
 		
 	module load R/{version}
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
