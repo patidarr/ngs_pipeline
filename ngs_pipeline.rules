@@ -120,7 +120,7 @@ rule fastqc:
 		"{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	log: "{sample}/pbs_log/fastqc"
 	version: config["fastqc"]
-	message: "Running Fastqc on {sample}"
+	message: "Running Fastqc on {wildcards.sample}"
 	params:
 		rulename  = "fastqc",
 		batch     = config["job_fastqc"]
@@ -144,7 +144,7 @@ rule BWA:
 		temp("{sample}/{sample}.bwa.bam.bai")
 	log: "{sample}/pbs_log/bwa"
 	version: config["bwa"]
-	message: "Running bwa on {sample}"
+	message: "Running bwa on {wildcards.sample}"
 	params:
 		rulename  = "bwa",
 		platform  = config["platform"],
@@ -227,7 +227,7 @@ rule BamQC:
 		"{sample}/qc/BamQC/qualimapReport.html"
 	log: "{sample}/pbs_log/{sample}.bamqc.log"
 	version: config["qualimap"]
-	message: "Running BamQC on {input[0]}"
+	message: "Running BamQC on {wildcards.sample}"
 	params: 
 		rulename = "bamqc",
 		batch	 = config["job_qualimap"],
@@ -267,7 +267,7 @@ rule flagstat:
 	output: "{sample}/qc/{sample}.flagstat.txt"
 	log:    "{sample}/pbs_log/flagstat"
 	version: config["samtools"]
-	message: "Running samtools flagstat on {input[0]}"
+	message: "Running samtools flagstat on {wildcards.sample}"
 	params:
 		rulename  = "flagstat",
 		batch     = config["job_flagstat"]
@@ -287,7 +287,7 @@ rule HotSpotCoverage:
 	output: "{sample}/qc/{sample}.hotspot.depth"
 	log: "{sample}/pbs_log/hotspotCoverage"
 	version: config["bedtools"]
-	message: "Running Hotspot Coverage on {input[0]}"
+	message: "Running Hotspot Coverage on {wildcards.sample}"
 	params:
 		rulename  = "HotSpotCov",
 		batch     = config["job_hotspot"],
@@ -358,7 +358,7 @@ rule Picard_MarkDup:
 		metrics="{sample}/qc/{base}.markdup.txt"
 	log:    "{sample}/pbs_log/{base}.markdup"
 	version: config["picard"]
-	message: "Running picard mark duplicates on {input[0]}"
+	message: "Running picard mark duplicates on {wildcards.sample}"
 	params:
 		rulename  = "mark_dup",
 		batch     = config["job_markdup"],
