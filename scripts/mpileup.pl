@@ -12,7 +12,7 @@ while(<FH>){
 	my $line = $_;
         my @d = split("\t", $_);
 	if($_ =~ /^Chr/ or $_ =~ /^#/){
-		print "$line\tTotCov\tRefCov\tVarCov\tVAF\n";
+		print "$line\tRNASeq.TotCov\tRNASeq.RefCov\tRNASeq.VarCov\tRNASeq.VAF\n";
 	}
 	else{
 		my $rnaseq;		

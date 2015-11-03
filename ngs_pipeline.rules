@@ -894,14 +894,20 @@ rule Expressed:
 	output: "{sample}/annotation/{sample}.{base}.annotated.expressed.txt"
 	log: "{sample}/pbs_log/expressed.{base}"
 	version: config["samtools"]
+	message: "Running Expressed mpileup on {wildcards.sample}"
 	params:
 		rulename  = "Expressed",
 		batch     = config["job_expressed"],
 		convertor = config["mpileup"]
 	shell: """
 	#######################
-	module load samtools/{version}
-	perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
+	if [ -f {output} ]
+	then
+		touch {output}
+	else
+		module load samtools/{version}
+		perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
+	fi
 	#######################
 	"""
 ############
