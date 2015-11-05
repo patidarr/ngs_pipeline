@@ -422,6 +422,11 @@ rule Bam2MPG:
 		vcftools  = config["vcftools"]
 	shell: """
 	#######################
+	if [ -f {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz ]; then
+        	rm -rf {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.*
+		
+	fi
+
 	module load bam2mpg/{version}
 	module load vcftools/{params.vcftools}	
 	for CHR in `seq 1 22` X Y;
@@ -785,36 +790,8 @@ rule PPH2:
 	shell: """
 	#######################
 	module load polyphen2/{version}
-	#######################
-	# There are 3 implimentations here. All 3 generates the same result.
-	#######################
-
-
-	## Implimented after pph_swarm started failing
-	rm -rf annotation/pph
-	mkdir annotation/pph
-	cd annotation/pph
-	split -l 100 -a 5  ../AnnotationInput.pph pph2
-	for tmp in *
-	do
-	echo "mapsnps.pl -c -g hg19 -U -y ${{tmp}}.intermediate ${{tmp}}; pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} ${{tmp}}.intermediate >${{tmp}}.pph2 ; rm -rf ${{tmp}}.intermediate ${{tmp}} " 
-	done >cmdFile
-
-	ID=`/usr/local/bin/swarm --partition ${{SLURM_JOB_PARTITION}} -m polyphen2/{version} --logdir log/ -f cmdFile`
-
-	echo "#!/bin/sh" >cmdFile.round
-	echo "cd `pwd`" >>cmdFile.round	
-	echo "cat *.pph2 >../AnnotationInput.pph2.intermediate.txt" >>cmdFile.round
-
-	ID2=`sbatch --partition=${{SLURM_JOB_PARTITION}} --time=1:00:00 --dependency=afterany:${{ID}} cmdFile.round`
-	perl {input.block}  ${{ID2}}
-	cd ../../
-	## This is the native code	
-#	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-#	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate >{input.pph}.pph2.intermediate.txt
-
-	## This is pph_swarm implimentation 
-#	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
+	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
+	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
 
 	## This is common to all 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
