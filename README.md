@@ -26,4 +26,4 @@ Rulegraph
 
 
 DAG for example Sample
-![alt tag](DAG.png)
+![alt tag](dag.png)
