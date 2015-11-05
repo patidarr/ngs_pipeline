@@ -455,7 +455,7 @@ rule Bam2MPG:
 	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf |vcf-sort >{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
 
 	bgzip {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
-	tabix -p vcf {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
+	tabix -f -p vcf {wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
 	rm -rf {wildcards.sample}.recode.vcf
 	
 	#######################
