@@ -102,6 +102,7 @@ rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
+		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
 #		expand("{subject}/calls/{subject}.hapcaller.vcf", subject= SUBS),
 #		expand("{subject}/calls/{subject}.platypus.vcf", subject= SUBS),
 #		expand("{sample}/calls/{sample}.bam2mpg.vcf.gz", sample = ALL_SAMPLES),
@@ -342,6 +343,28 @@ rule CoveragePlot:
 		
 	module load R/{version}
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
+	#######################
+	"""
+############
+# Circos Plot
+############
+rule Circos:
+	input:
+		lohFiles=lambda wildcards: expand("{sample}/qc/{sample}.loh", sample = SUBJECT_TO_SAMPLE[wildcards.subject]),
+		circos =NGS_PIPELINE + "/scripts/" + config["circos"]
+	output:
+		"{subject}/qc/{subject}.circos.png",
+	log: "log/{subject}.circos"
+	version: config["R"]
+	message: "Generating CIRCOS Plot on {wildcards.subject}"
+	params:
+		rulename = "Circos",
+		batch    = config["job_covplot"]
+	shell: """
+	#######################
+	cp -f {input.lohFiles} {wildcards.subject}/qc/
+	module load R/{version}
+	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.circos}
 	#######################
 	"""
 ############
