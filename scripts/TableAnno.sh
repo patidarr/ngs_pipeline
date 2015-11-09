@@ -117,7 +117,7 @@ $CUSTOM $DATADIR/${BUILD}_hgmd.2015.3.txt $file >$OUT.hgmd
 # Add MATCH Trial
 #
 ################################
-$CUSTOM $DATADIR/${BUILD}_MATCHTrial_v3_02_2015.txt $file >$OUT.match
+$CUSTOM $DATADIR/${BUILD}_MATCHTrial_2015_11.txt $file >$OUT.match
 ################################
 # Add MyCG
 #${BUILD}_MCG.02.27.15.txt

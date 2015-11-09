@@ -12,7 +12,7 @@
 	"job_covplot"    : "--partition=ccr  --time=01:00:00   --mem=01G --cpus-per-task=1 --gres=lscratch:01",
 	"job_qualimap"   : "--partition=ccr  --time=04:00:00   --mem=30G --cpus-per-task=32 --gres=lscratch:40",
 	"job_gatk"	 : "--partition=ccr  --time=2-24:00:00 --mem=40G --cpus-per-task=32 --gres=lscratch:100",
-	"job_bam2mpg"    : "--partition=ccr  --time=2-24:00:00 --mem=50G --cpus-per-task=32 --gres=lscratch:20",
+	"job_bam2mpg"    : "--partition=ccr  --time=2-24:00:00 --mem=120G --cpus-per-task=32 --gres=lscratch:100",
 	"job_mutect"     : "--partition=ccr  --time=3-24:00:00 --mem=20G --cpus-per-task=32 --gres=lscratch:10",
 	"job_strelka"	 : "--partition=ccr  --time=10:00:00   --mem=50G --cpus-per-task=32 --gres=lscratch:100",
 	"job_platypus"	 : "--partition=ccr  --time=10:00:00   --mem=50G --cpus-per-task=32 --gres=lscratch:100",
