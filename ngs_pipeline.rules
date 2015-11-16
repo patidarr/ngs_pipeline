@@ -711,12 +711,15 @@ rule snpEff:
 		rulename      ="snpEff",
 		batch	      =config["job_snpeff"],
 		snpEff_genome =config["snpEff_genome"],
+		annovar       =config["annovar"]
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load snpEff/{version}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff} 2> {log}
-	perl {input.vcf2txt} {output.eff} >{output.txt}
+
+	module load annovar/{params.annovar}
+	perl {input.vcf2txt} {output.eff} /lscratch/${{SLURM_JOBID}} >{output.txt}
 	#######################
 	"""
 ############
@@ -901,13 +904,13 @@ rule Expressed:
 		convertor = config["mpileup"]
 	shell: """
 	#######################
-	if [ -f {output} ]
-	then
-		touch {output}
-	else
+#	if [ -f {output} ]
+#	then
+#		touch {output}
+#	else
 		module load samtools/{version}
 		perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
-	fi
+#	fi
 	#######################
 	"""
 ############

@@ -12,7 +12,10 @@ use List::Util qw(first);
 # 		$0 <vcf FILE Name> >File.txt
 #
 #####################################################
-#my $convert2annovar="/usr/local/apps/ANNOVAR/2015-03-22/convert2annovar.pl";
+# Take Temporary location from command line
+my $TEMP = $ARGV[1];
+#my $TEMP = "/scratch/";
+#my $TEMP = "/projects/scratch/";
 my $CALLER = "caller";
 my $input = "$ARGV[0]";
 my $idx_normal="0";
@@ -33,17 +36,13 @@ if($sname =~ /(.*)_vs_(.*)/){
 # 
 #
 ############################
-#`/usr/local/lmod/lmod/lmod/libexec/lmod perl "annovar/2015-03-22"`;
-sub module {
-	eval `/usr/local/lmod/lmod/lmod/libexec/lmod perl @_`;
-	if($@) {
-		use Carp;
-		confess "module-error: $@\n";
-	}
-	return 1;
+my $convert2annovar=`which convert2annovar.pl`;
+chomp $convert2annovar;
+if ($convert2annovar !~ /convert2annovar/){
+	print STDERR "please run module load annovar\n";
+	die;
 }
-module("load annovar/2015-03-22");
-my $convert2annovar="`echo \$ANNOVAR_HOME`/convert2annovar.pl";
+
 ###########################
 #
 # Get the caller name from the VCF header
@@ -106,9 +105,9 @@ close VAR;
 print STDERR " It looks like a $CALLER vcf file\n";
 if($CALLER eq "varscan"){
 	#GT:GQ:DP:RD:AD:FREQ:DP4 0/1:.:30:14:16:53.33%:3,11,0,16
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null | cut -f 1-5,11-10000 > /scratch/$sname.vs 2>/scratch/.err_$sname.vs`;
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null | cut -f 1-5,11-10000 > $TEMP/$sname.vs 2>$TEMP/.err_$sname.vs`;
 	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
-	open(FH, "/scratch/$sname.vs");
+	open(FH, "$TEMP/$sname.vs");
 	while (<FH>){
 		chomp;
 		my @field=split(/\t/,$_);
@@ -121,7 +120,7 @@ if($CALLER eq "varscan"){
                 print "\n";
 	}
 	close FH;
-	`rm -rf /scratch/$sname.vs /scratch/.err_$sname.vs`;
+	`rm -rf $TEMP/$sname.vs $TEMP/.err_$sname.vs`;
 
 }
 elsif($CALLER eq "MuTect"){
@@ -161,9 +160,9 @@ elsif($CALLER eq "MuTect"){
 	close(FH);
 }
 elsif($CALLER eq "STRELKA_S"){
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null | cut -f 1-5,11-10000 > /scratch/$sname.s 2>/scratch/.err_$sname.s`;
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null | cut -f 1-5,11-10000 > $TEMP/$sname.s 2>$TEMP/.err_$sname.s`;
 	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
-	open(FH, "/scratch/$sname.s");
+	open(FH, "$TEMP/$sname.s");
 	while (<FH>){
 		chomp;
 		my @field=split(/\t/,$_);
@@ -240,12 +239,12 @@ elsif($CALLER eq "STRELKA_S"){
 		print "NA\t$totalN\t$refN[0]\t$altN[0]\t$vafN\tNA\t$totalT\t$refT[0]\t$altT[0]\t$vafT\n";
 	}
 	close FH;
-	`rm -rf /scratch/$sname.s /scratch/.err_$sname.s`;
+	`rm -rf $TEMP/$sname.s $TEMP/.err_$sname.s`;
 }
 elsif($CALLER eq 'STRELKA_I'){
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-1000 > /scratch/$sname.i 2>/scratch/.err_$sname.i`;
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-1000 > $TEMP/$sname.i 2>$TEMP/.err_$sname.i`;
 	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
-	open(FH, "/scratch/$sname.i");
+	open(FH, "$TEMP/$sname.i");
 	while (<FH>){
 		chomp;
 		my @field=split(/\t/,$_);
@@ -281,16 +280,16 @@ elsif($CALLER eq 'STRELKA_I'){
 		print "NA\t$totalN\t$refN\t$altN[0]\t$vafN\tNA\t$totalT\t$refT\t$altT[0]\t$vafT\n";
 	}
 	close FH;
-	`rm -rf /scratch/$sname.i /scratch/.err_$sname.i`;
+	`rm -rf $TEMP/$sname.i $TEMP/.err_$sname.i`;
 }
 elsif($CALLER eq 'Platypus'){
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.p 2>/scratch/.err_$sname.p`;
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.p 2>$TEMP/.err_$sname.p`;
         print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
         foreach(@NSAMPLES){
                 print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
         }
         print "\n";
-	open (FH, "/scratch/$sname.p");
+	open (FH, "$TEMP/$sname.p");
 	while(<FH>){
 		chomp;
 		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, @samples) = split("\t", $_);
@@ -303,19 +302,19 @@ elsif($CALLER eq 'Platypus'){
 		
 	}	
 	close FH;
-	`rm -rf /scratch/$sname.p /scratch/.err_$sname.p`;
+	`rm -rf $TEMP/$sname.p $TEMP/.err_$sname.p`;
 }
 elsif($CALLER eq 'GATK'){
-#	print "perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.g 2>/scratch/.err_$sname.g\n\n";
-#	system("perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.g 2>/scratch/.err_$sname.g") == 0 
-#		or die "system perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.g 2>/scratch/.err_$sname.g failed: $?";
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.g 2>/scratch/.err_$sname.g`;
+#	print "perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.g 2>$TEMP/.err_$sname.g\n\n";
+#	system("perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.g 2>$TEMP/.err_$sname.g") == 0 
+#		or die "system perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.g 2>$TEMP/.err_$sname.g failed: $?";
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.g 2>$TEMP/.err_$sname.g`;
 	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
 	foreach(@NSAMPLES){
 		print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
 	}
 	print "\n";
-	open(FH, "/scratch/$sname.g");
+	open(FH, "$TEMP/$sname.g");
 	while(<FH>){
 		chomp;
 		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, @samples) = split("\t", $_);
@@ -327,16 +326,16 @@ elsif($CALLER eq 'GATK'){
 		print "\n";
 	}
 	close FH;
-	`rm -rf /scratch/$sname.g /scratch/.err_$sname.g`;
+	`rm -rf $TEMP/$sname.g $TEMP/.err_$sname.g`;
 }
 elsif($CALLER eq 'freeBayes'){
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.fb 2>/scratch/.err_$sname.fb`;
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.fb 2>$TEMP/.err_$sname.fb`;
 	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
 	foreach(@NSAMPLES){
 		print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
 	}
 	print "\n";
-	open(FH, "/scratch/$sname.fb");
+	open(FH, "$TEMP/$sname.fb");
 	while(<FH>){
 		chomp;
 		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, @samples) = split("\t", $_);
@@ -348,17 +347,20 @@ elsif($CALLER eq 'freeBayes'){
 		print "\n";
 	}
 	close FH;
-	`rm -rf /scratch/$sname.fb /scratch/.err_$sname.fb`;	
+	`rm -rf $TEMP/$sname.fb $TEMP/.err_$sname.fb`;	
 
 }
 elsif($CALLER eq 'bam2mpg'){
-	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
+	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-10000 > $TEMP/$sname.mpg 2>$TEMP/.err_$sname.mpg`;
 	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
 	foreach(@NSAMPLES){
                 print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
         }
 	print "\n";
-	open(FH, "/scratch/$sname.mpg");
+	unless (open(FH, "$TEMP/$sname.mpg")){
+		print STDERR "can not open file $TEMP/$sname.mpg\n";
+		die;
+	}
 	while(<FH>){
 		chomp;
 		my ($chr, $start, $end, $ref, $alt, $qual, $filter, $info, $format, @samples) = split("\t", $_);
@@ -372,7 +374,7 @@ elsif($CALLER eq 'bam2mpg'){
 		}
 	}
 	close FH;
-#	`rm -rf /scratch/$sname.mpg 2>/scratch/.err_$sname.mpg`;
+#	`rm -rf $TEMP/$sname.mpg 2>$TEMP/.err_$sname.mpg`;
 }
 else{
 	print STDERR "This vcf file is not supproted.\n";

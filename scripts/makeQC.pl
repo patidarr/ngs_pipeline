@@ -12,9 +12,9 @@ print "Sample\tTotal Reads\tRead Length\t%GC\tUNPAIRED_READS_EXAMINED\tREAD_PAIR
 for my $Sample( <$dir/*>){
 	if (-e "$Sample/qc"){
 		my ($name,$path) = fileparse($Sample);
-		print "$name\t";
 		my $fastqc = "$path/$name/qc/fastqc/$name"."_R1_fastqc/fastqc_data.txt";	
 		if (open (FH , $fastqc)){
+			print "$name\t";
 			while(<FH>){
 				chomp;
 				if($_ =~ /^Total Sequences\s+(\d+)/){
