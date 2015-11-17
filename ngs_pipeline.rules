@@ -87,7 +87,6 @@ for sample in config['sample_references'].keys():
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
         if subject in SUBJECT_VCFS:
                  SUBJECT_VCFS[subject].extend(ALL_snpEff_vcf2)
-print(SUBJECT_VCFS)
 ###########################################################################
 ###########################################################################
 ALL_EXPRESSED =[]
@@ -497,6 +496,7 @@ rule Bam2MPG:
 rule Sub_BamMPG:
 	input:
 		vcf=lambda wildcards: ALL_SUBJECT_MPG[wildcards.subject],
+		convertor= NGS_PIPELINE + "/scripts/" + config["vcffilter"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
 	log: "log/{subject}.mergevcf"
@@ -508,7 +508,7 @@ rule Sub_BamMPG:
 	shell: """
 	#######################
 	module load vcftools/{version}
-	vcf-merge {input.vcf} >{output.vcf}
+	vcf-merge {input.vcf} |perl {input.convertor} - >{output.vcf}
 	#######################
 	"""
 ############

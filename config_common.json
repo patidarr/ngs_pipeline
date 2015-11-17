@@ -29,6 +29,7 @@
 	"vcf2genotype"		: "vcf2genotype.pl",
 	"vcf2loh"		: "vcf2loh.pl",
 	"vcf2txt"		: "vcf2txt.pl",
+	"vcffilter"		: "vcf-filter.pl",
 	"Annovar"		: "TableAnno.sh",
 	"SiftParse"		: "ParseSIFT.pl",
 	"PPH2Parse"		: "ParsePPH2.pl",
