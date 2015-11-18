@@ -93,8 +93,12 @@ if len(config['sample_RNASeq']) > 0:
 		for RNASample in config['sample_RNASeq'][Tumor]:
 			RNASeqBam    = "/data/khanlab/projects/working_DATA/" + RNASample + "/" + RNASample + ".Processed/" + RNASample + ".bam" 
 			expressedPairs[Tumor] = RNASeqBam
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
-			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
+			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
+			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+print(expressedPairs)
+print(SOMATIC)
+print("\n")
+print(ALL_EXPRESSED)
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
@@ -105,7 +109,8 @@ rule Khanlab_Pipeline:
 #		expand("{subject}/annotation/AnnotationInput.anno", subject = SUBS),
 #		expand("{subject}/annotation/AnnotationInput.annotations.final.txt", subject = SUBS),
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
-		SOMATIC
+		SOMATIC,
+		ALL_EXPRESSED
 ############
 #	FASTQC
 ############
@@ -850,12 +855,12 @@ rule AttachAnnotation:
 rule Expressed:
 	input: 
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
-		Mutation="{sample}/{base1}/calls/{sample}.{base}.annotated.txt",
+		Mutation="{subject}/{sample}/calls/{base}.annotated.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config["mpileup"]
-	output: "{sample}/{base1}/calls/{sample}.{base}.annotated.expressed.txt"
+	output: "{subject}/{sample}/calls/{base}.annotated.expressed.txt"
 	log: "log/expressed.{base}"
 	version: config["samtools"]
-	message: "Running Expressed mpileup on {wildcards.sample}"
+	message: "Running Expressed mpileup on {wildcards.sample} {wildcards.base}"
 	params:
 		rulename  = "Expressed",
 		batch     = config["job_expressed"],
