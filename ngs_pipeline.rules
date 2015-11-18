@@ -47,9 +47,11 @@ SUB_BAMS= {}
 SUB_COV = {}
 SUB_LOH = {}
 SUB_MPG = {}
+SUB_HOT = {}
 for Subject  in config['subject']:
 	SUB_BAMS[Subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 	SUB_COV[Subject] = ["{subject}/{sample}/qc/{sample}.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_HOT[Subject] = ["{subject}/{sample}/qc/{sample}.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 	SUB_LOH[Subject] = ["{subject}/{sample}/qc/{sample}.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 	SUB_MPG[Subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 ###########################################################################
@@ -95,10 +97,6 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
-print(expressedPairs)
-print(SOMATIC)
-print("\n")
-print(ALL_EXPRESSED)
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
@@ -106,6 +104,7 @@ rule Khanlab_Pipeline:
 		"QC_AllSamples.txt",
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
+		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject= SUBS),
 #		expand("{subject}/annotation/AnnotationInput.anno", subject = SUBS),
 #		expand("{subject}/annotation/AnnotationInput.annotations.final.txt", subject = SUBS),
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
@@ -258,6 +257,7 @@ rule QC_Sum:
 	message: "Collecting QC on all samples"
 	params:
 		rulename = "qc_sum",
+		batch    = config['job_default']
 	shell: """
 	#######################
 	perl {input.convertor} `pwd` >{output} 2>{log}
@@ -368,6 +368,28 @@ rule Circos:
 	cp -f {input.lohFiles} {wildcards.subject}/qc/
 	module load R/{version}
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.circos}
+	#######################
+	"""
+############
+# Box Plot Hotspot
+############
+rule BoxPlot_Hotspot:
+	input:
+		covFiles=lambda wildcards: SUB_HOT[wildcards.subject],
+		boxplot =NGS_PIPELINE + "/scripts/" + config["boxplot"]
+	output:
+		"{subject}/qc/{subject}.hotspot_coverage.png",
+	log: "log/boxplot.{subject}"
+	version: config["R"]
+	message: "Generating BoxPlot Plot on {wildcards.subject}"
+	params:
+		rulename = "Boxplot",
+		batch    = config["job_covplot"]
+	shell: """
+	#######################
+	cp -f {input.covFiles} {wildcards.subject}/qc/
+	module load R/{version}
+	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.boxplot}
 	#######################
 	"""
 ############

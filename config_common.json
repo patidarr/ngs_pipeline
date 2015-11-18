@@ -26,6 +26,7 @@
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
 	"coverage"		: "coverage.R",
 	"circos"		: "circos.R",
+	"boxplot"		: "boxplot.R",
 	"vcf2genotype"		: "vcf2genotype.pl",
 	"vcf2loh"		: "vcf2loh.pl",
 	"vcf2txt"		: "vcf2txt.pl",
