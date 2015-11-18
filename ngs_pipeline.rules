@@ -19,6 +19,9 @@ shell.prefix("set -eo pipefail; ")
 configfile: NGS_PIPELINE +"/config_common.json"
 configfile: NGS_PIPELINE +"/config_cluster.json"
 ###########################################################################
+config['germlineCallers'] = [ "hapcaller", "bam2mpg", "platypus"]
+config['somaticCallers'] = ["MuTect", "strelka"]
+###########################################################################
 SUBJECT_TO_SAMPLE  = {}
 for subject in config['subject']:
         SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['subject'][subject])
@@ -59,27 +62,28 @@ if len(config['sample_references']) > 0:
 			NormalBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
-ALL_snpEff_vcf1  = [] 
-ALL_snpEff_vcf2  = []
+###########################################################################
 SUBJECT_VCFS = {}
 SOMATIC =[]
 for sample in config['samples']:
+	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
-	ALL_snpEff_vcf1.extend([(subject+"/"+subject+"/calls/"+subject+".platypus.snpEff.txt"),
+	local.extend([(subject+"/"+subject+"/calls/"+subject+".platypus.snpEff.txt"),
 			        (subject+"/"+subject+"/calls/"+subject+".hapcaller.snpEff.txt"),
 			        (subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
-		SUBJECT_VCFS[subject] = ALL_snpEff_vcf1
+		SUBJECT_VCFS[subject] = local
 for sample in config['sample_references'].keys():
+	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
-	ALL_snpEff_vcf2.extend([ (subject+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
+	local.extend([ (subject+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
 				 (subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
 				 (subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")])
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
         if subject in SUBJECT_VCFS:
-                 SUBJECT_VCFS[subject].extend(ALL_snpEff_vcf2)
+                 SUBJECT_VCFS[subject].extend(local)
 ###########################################################################
 ###########################################################################
 ALL_EXPRESSED =[]
@@ -98,11 +102,9 @@ rule Khanlab_Pipeline:
 		"QC_AllSamples.txt",
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
-		expand("{subject}/annotation/AnnotationInput.anno", subject = SUBS),
-		expand("{subject}/annotation/AnnotationInput.annotations.final.txt", subject = SUBS),
-		expand("{subject}/{subject}/calls/{subject}.hapcaller.annotated.txt", subject= SUBS),
-		expand("{subject}/{subject}/calls/{subject}.platypus.annotated.txt", subject= SUBS),
-		expand("{subject}/{subject}/calls/{subject}.bam2mpg.annotated.txt", subject= SUBS),
+#		expand("{subject}/annotation/AnnotationInput.anno", subject = SUBS),
+#		expand("{subject}/annotation/AnnotationInput.annotations.final.txt", subject = SUBS),
+		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
 		SOMATIC
 ############
 #	FASTQC
@@ -222,7 +224,7 @@ rule BamQC:
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample].replace('.bed', '.gff')
 	output:
 		"{base}/{sample}/qc/BamQC/qualimapReport.html"
-	log: "log/{sample}.bamqc.log"
+	log: "log/bamqc.{sample}"
 	version: config["qualimap"]
 	message: "Running BamQC on {wildcards.sample}"
 	params: 
@@ -326,7 +328,7 @@ rule CoveragePlot:
 		covFiles=lambda wildcards: SUB_COV[wildcards.subject],
 		coverage =NGS_PIPELINE + "/scripts/" + config["coverage"]
 	output: "{subject}/qc/{subject}.coveragePlot.png",
-	log: "log/{subject}.coverage"
+	log: "log/coverage.{subject}"
 	version: config["R"]
 	message: "Generating Coverage Plot on {wildcards.subject}"
 	params:
@@ -350,7 +352,7 @@ rule Circos:
 		circos =NGS_PIPELINE + "/scripts/" + config["circos"]
 	output:
 		"{subject}/qc/{subject}.circos.png",
-	log: "log/{subject}.circos"
+	log: "log/circos.{subject}"
 	version: config["R"]
 	message: "Generating CIRCOS Plot on {wildcards.subject}"
 	params:
@@ -375,7 +377,7 @@ rule Picard_MarkDup:
 		bam=temp("{subject}/{sample}/{sample}.{base}.dd.bam"),
 		index=temp("{subject}/{sample}/{sample}.{base}.dd.bam.bai"),
 		metrics="{subject}/{sample}/qc/{base}.markdup.txt"
-	log:    "log/{base}.markdup"
+	log:    "log/markdup.{sample}.{base}"
 	version: config["picard"]
 	message: "Running picard mark duplicates on {wildcards.sample}"
 	params:
@@ -488,7 +490,7 @@ rule Sub_MPG:
 		convertor= NGS_PIPELINE + "/scripts/" + config["vcffilter"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
-	log: "log/{subject}.mergevcf"
+	log: "log/mpg.{subject}"
 	version: config["vcftools"]
 	message: "Merge sample level mpg files to subject level {subject}"
 	params:
@@ -581,7 +583,7 @@ rule Sub_HapCall:
 		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.hapcaller.raw.vcf"
-	log: "log/{subject}.hapcaller"
+	log: "log/hapcaller.{subject}"
 	version: config["GATK"]
 	message: "Haplotype Caller on {wildcards.subject}"
 	params:
@@ -608,7 +610,7 @@ rule Sub_Platypus:
 		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.platypus.raw.vcf"
-	log: "log/{subject}.platypus"
+	log: "log/platypus.{subject}"
 	version: config["platypus"]
 	message: "Platypus on {wildcards.subject}"
 	params:
@@ -660,7 +662,7 @@ rule snpEff:
 	output:
 		eff="{subject}/calls/{base}.raw.snpEff.vcf",
 		txt="{subject}/calls/{base}.snpEff.txt"
-	log: "log/{base}.snpEff.log"
+	log: "log/snpEff.{base}"
 	version: config["snpEff"]
 	message: "snpEff on {input.vcf}"
 	params:
@@ -712,7 +714,7 @@ rule Annotation:
 		custom     =NGS_PIPELINE + "/scripts/" + config["customAnno"]
 	output:
 		"{subject}/annotation/AnnotationInput.docm"
-	log: "log/Annovar"
+	log: "log/Annovar.{subject}"
 	version: config["annovar"]
 	message: "Custom annotation on {wildcards.subject}"
 	params:
@@ -831,7 +833,7 @@ rule AttachAnnotation:
 		convertor  = NGS_PIPELINE + "/scripts/" + config["addBack"]
 	output:
 		txt="{subject}/{base1}/calls/{base}.annotated.txt"
-	log: "log/attach_annotation"
+	log: "log/attach_annotation.{subject}.{base}"
 	version: "1.0"
 	message: "Annotate {input.txt}"
 	params:
@@ -848,9 +850,9 @@ rule AttachAnnotation:
 rule Expressed:
 	input: 
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
-		Mutation="{sample}/annotation/{sample}.{base}.annotated.txt",
+		Mutation="{sample}/{base1}/calls/{sample}.{base}.annotated.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config["mpileup"]
-	output: "{sample}/annotation/{sample}.{base}.annotated.expressed.txt"
+	output: "{sample}/{base1}/calls/{sample}.{base}.annotated.expressed.txt"
 	log: "log/expressed.{base}"
 	version: config["samtools"]
 	message: "Running Expressed mpileup on {wildcards.sample}"
@@ -860,15 +862,10 @@ rule Expressed:
 		convertor = config["mpileup"]
 	shell: """
 	#######################
-#	if [ -f {output} ]
-#	then
-#		touch {output}
-#	else
-		module load samtools/{version}
-		perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
-#	fi
+	module load samtools/{version}
+	perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
 	#######################
 	"""
 ############
-#
+#	**END**
 ############
