@@ -9,7 +9,7 @@ my $dir="$ARGV[0]";
 print "Sample\tTotal Reads\tRead Length\t%GC\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE\tInsert Size (Median)\tMapping Quality (Mean)\tCoverage (Mean)\n";
 #print "Sample\tTotal Reads\tRead Length\t%GC\tMapped Reads\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE\n";
 
-for my $Sample( <$dir/*>){
+for my $Sample( <$dir/*\/*>){
 	if (-e "$Sample/qc"){
 		my ($name,$path) = fileparse($Sample);
 		my $fastqc = "$path/$name/qc/fastqc/$name"."_R1_fastqc/fastqc_data.txt";	
@@ -52,9 +52,10 @@ for my $Sample( <$dir/*>){
 					print "$1\t";
 				}
 				if($_ =~ /mean coverageData = (.*)X/){
-					print "$1\n"
+					print "$1"
 				}
 			}
 		}
+		print "\n";
 	}
 }	

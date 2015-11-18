@@ -37,25 +37,18 @@ for subject,samples in config['subject'].items():
 
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
+ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] + ["{subject}/{sample}/qc/{sample}.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] + ["{subject}/{sample}/qc/{sample}.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] + ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
-SUB_LOH = {}
-for Subject  in config['subject']:
-        SUB_LOH[Subject] = ["{subject}/{sample}/qc/{sample}.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
+###########################################################################
+SUB_BAMS= {} 
 SUB_COV = {}
-
-for key in SUB_LOH:
-	key_list = SUB_LOH[key]
-	SUB_COV[key] = [w.replace(".loh",".coverage.txt") for w in key_list]
-		
-###########################################################################
-ALL_SUBJECT_BAMS = {} 
+SUB_LOH = {}
+SUB_MPG = {}
 for Subject  in config['subject']:
-	ALL_SUBJECT_BAMS[Subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
-
-###########################################################################
-ALL_SUBJECT_MPG = {}
-for Subject  in config['subject']:
-	ALL_SUBJECT_MPG[Subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
+	SUB_BAMS[Subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_COV[Subject] = ["{subject}/{sample}/qc/{sample}.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_LOH[Subject] = ["{subject}/{sample}/qc/{sample}.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_MPG[Subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 ###########################################################################
 somaticPairs = {}
 pairedCapture = {}
@@ -98,10 +91,6 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.MuTect.annotated.expressed.txt".format(sample=Tumor)]
 			ALL_EXPRESSED += ["{sample}/annotation/{sample}.strelka.snvs.annotated.expressed.txt".format(sample=Tumor)]
-#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.hapcaller.annotated.expressed.txt".format(sample=Tumor)]
-#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.platypus.annotated.expressed.txt".format(sample=Tumor)]
-#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.freebayes.annotated.expressed.txt".format(sample=Tumor)]
-#			ALL_EXPRESSED += ["{sample}/annotation/{sample}.bam2mpg.annotated.expressed.txt".format(sample=Tumor)]
 ###########################################################################
 ###########################################################################
 rule Khanlab_Pipeline:
@@ -428,7 +417,7 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
-	mv {wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
+	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
 	######################
 	"""
 ############
@@ -493,9 +482,9 @@ rule Bam2MPG:
 ############
 # Subject Bam2MPG
 ############
-rule Sub_BamMPG:
+rule Sub_MPG:
 	input:
-		vcf=lambda wildcards: ALL_SUBJECT_MPG[wildcards.subject],
+		vcf=lambda wildcards: SUB_MPG[wildcards.subject],
 		convertor= NGS_PIPELINE + "/scripts/" + config["vcffilter"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
@@ -586,7 +575,7 @@ rule Strelka:
 ############
 rule Sub_HapCall:
 	input:
-		bams=lambda wildcards: ALL_SUBJECT_BAMS[wildcards.subject],
+		bams=lambda wildcards: SUB_BAMS[wildcards.subject],
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
@@ -613,7 +602,7 @@ rule Sub_HapCall:
 ############
 rule Sub_Platypus:
 	input:
-		bams=lambda wildcards: ALL_SUBJECT_BAMS[wildcards.subject],
+		bams=lambda wildcards: SUB_BAMS[wildcards.subject],
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
