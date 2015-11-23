@@ -3,8 +3,8 @@
 ############
 rule tophat:
 	input:
-		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
-		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 	output: 
 		"{base}/{sample}/tophat/accepted_hits.bam", 
 		"{base}/{sample}/tophat/accepted_hits.bam.bai"
@@ -22,5 +22,24 @@ rule tophat:
 	mv -f /lscratch/${{SLURM_JOBID}} {wildcards.base}/{wildcards.sample}/tophat
 	samtools index {wildcards.base}/{wildcards.sample}/tophat/accepted_hits.bam
 
+	#######################
+	"""
+rule fusioncatcher:
+	input:
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+	output: 
+		"{base}/{sample}/fusion/fusion-catcher.txt"
+	log: "log/fc.{sample}"
+	version: config['fusioncatcher']
+	message: "Running FusionCatcher on {wildcards.sample}"
+	params:
+		rulename = "fc",
+		batch    = config['job_fusioncatch']
+	shell: """
+	#######################
+	module load fusioncatcher/{version}
+	fusioncatcher -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ --skip-filter-mt -s '2,2,2,2,2' -a '10,10,10,10,10'
+	cp /lscratch/${{SLURM_JOBID}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""

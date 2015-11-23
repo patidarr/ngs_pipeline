@@ -16,6 +16,12 @@ except KeyError:
 	print("I can not locate your work directory")
 	quit()
 
+try:
+    DATA_DIR=os.environ['DATA_DIR']
+except KeyError:
+        print("I can not locate your DATA directory")
+        quit()
+
 shell.prefix("set -eo pipefail; ")
 configfile: NGS_PIPELINE +"/config_common.json"
 configfile: NGS_PIPELINE +"/config_cluster.json"
@@ -94,7 +100,8 @@ expressedPairs = {}
 if len(config['sample_RNASeq']) > 0:
 	for Tumor in config['sample_RNASeq']:
 		for RNASample in config['sample_RNASeq'][Tumor]:
-			RNASeqBam    = "/data/khanlab/projects/working_DATA/" + RNASample + "/" + RNASample + ".Processed/" + RNASample + ".bam" 
+			subject=SAMPLE_TO_SUBJECT[Tumor]
+			RNASeqBam    = subject + "/" + RNASample + "/tophat/accepted_hits.bam" 
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
@@ -109,6 +116,7 @@ for subject  in config['RNASeq'].keys():
         for sample in config['RNASeq'][subject]:
                 RNASEQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ += [subject+"/"+sample+"/tophat/accepted_hits.bam"]
+		RNASEQ += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 ###########################################################################
 localrules: final, Khanlab_Pipeline
 rule final:
@@ -143,8 +151,8 @@ rule Khanlab_Pipeline:
 ############
 rule fastqc:
 	input:
-		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
-		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz"
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz"
 	output: 
 		"{base}/{sample}/qc/fastqc/{sample}_R1_fastqc.html", 
 		"{base}/{sample}/qc/fastqc/{sample}_R2_fastqc.html"
@@ -166,8 +174,8 @@ rule fastqc:
 ############
 rule BWA:
 	input: 
-		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz", 
-		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz", 
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 		ref=config["bwaIndex"]
 	output: 
 		temp("{base}/{sample}/{sample}.bwa.bam"),
@@ -193,8 +201,8 @@ rule BWA:
 ############
 rule Novoalign:
 	input:
-		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
-		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz",
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 		index="/fdb/novoalign/chr_all_hg19.nbx"
 	output:
 		temp("{subject}/{sample}/{sample}.novo.bam"),
@@ -211,7 +219,7 @@ rule Novoalign:
 	#######################
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
-	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
+	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} 2>{log}| samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
 	samtools index {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
 	"""
@@ -542,7 +550,7 @@ rule Bam2MPG:
 rule Sub_MPG:
 	input:
 		vcf=lambda wildcards: SUB_MPG[wildcards.subject],
-		convertor= NGS_PIPELINE + "/scripts/" + config["vcffilter"]
+#		convertor= NGS_PIPELINE + "/scripts/" + config["vcffilter"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
 	log: "log/mpg.{subject}"
@@ -554,7 +562,7 @@ rule Sub_MPG:
 	shell: """
 	#######################
 	module load vcftools/{version}
-	vcf-merge {input.vcf} |perl {input.convertor} - >{output.vcf}
+	vcf-merge {input.vcf} > {output.vcf}
 	#######################
 	"""
 ############

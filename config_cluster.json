@@ -25,5 +25,6 @@
 	"job_Combine"    : "--partition=ccr  --time=05:00:00   --mem=20G --cpus-per-task=10 ",
 	"job_addbackann" : "--partition=ccr  --time=00:20:00   --mem=2G --cpus-per-task=1 ",
 
+	"job_fusioncatch": "--partition=ccr  --time=05:00:00   --mem=120g --cpus-per-task=32 --exclusive --gres=lscratch:400",
 	"job_tophat"	 : "--partition=ccr  --time=2-24:00:00 --mem=120G --cpus-per-task=32 --exclusive --gres=lscratch:400"
 }
