@@ -56,5 +56,7 @@
 	"strelka_config"	: "/data/khanlab/ref/GATK/hg19/Strelka.config.ini",
 	"snpEff_config"		: "/data/khanlab/ref/GATK/hg19/snpEff.config",
 	"genotypeBed"		: "/data/Clinomics/Ref/annovar/1000gSites4genotyping.bed",
-	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed"
+	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed",
+	
+	"Bowtie2Index"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome"
 }

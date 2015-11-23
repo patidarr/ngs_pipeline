@@ -102,12 +102,13 @@ if len(config['sample_RNASeq']) > 0:
 ###########################################################################
 #				RNASeq Targets				  # 
 ###########################################################################
-#include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 ###########################################################################
-RNASEQ_FQ =[]
+RNASEQ =[]
 for subject  in config['RNASeq'].keys():
         for sample in config['RNASeq'][subject]:
-                RNASEQ_FQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+                RNASEQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+		RNASEQ += [subject+"/"+sample+"/tophat/accepted_hits.bam"]
 ###########################################################################
 localrules: final, Khanlab_Pipeline
 rule final:
@@ -122,7 +123,7 @@ rule Khanlab_Pipeline:
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
 		SOMATIC,
 		ALL_EXPRESSED,
-		RNASEQ_FQ,
+		RNASEQ,
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
 	output:
 		"Status"
