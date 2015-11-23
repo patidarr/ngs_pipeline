@@ -3,12 +3,13 @@ import os
 import collections
 from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
+# Snakemake Base location
 try:
     NGS_PIPELINE=os.environ['NGS_PIPELINE']
 except KeyError:
     NGS_PIPELINE="/data/khanlab/projects/patidar/Serpentine"
     pass
-
+#Basic utility functions
 try:
     WORK_DIR=os.environ['WORK_DIR']
 except KeyError:
@@ -97,19 +98,45 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+
 ###########################################################################
+#				RNASeq Targets				  # 
 ###########################################################################
+#include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+###########################################################################
+RNASEQ_FQ =[]
+for subject  in config['RNASeq'].keys():
+        for sample in config['RNASeq'][subject]:
+                RNASEQ_FQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+###########################################################################
+localrules: final, Khanlab_Pipeline
+rule final:
+	input:
+		"Status"
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject= SUBS),
-#		expand("{subject}/annotation/AnnotationInput.anno", subject = SUBS),
-#		expand("{subject}/annotation/AnnotationInput.annotations.final.txt", subject = SUBS),
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
 		SOMATIC,
-		ALL_EXPRESSED
+		ALL_EXPRESSED,
+		RNASEQ_FQ,
+		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
+	output:
+		"Status"
+	log: "log/FINAL"
+	version: "1.0"
+	message: "Final Rule, Genotyping"
+	shell: """
+	#######################
+	echo "Pipeline Finished Successfully!!"	 >{output}
+	cd /data/khanlab/projects/Genotyping/
+	Final=`sh genotype.sh`
+	perl {input.wait4job} ${{Final}}
+	#######################
+	"""
 ############
 #	FASTQC
 ############

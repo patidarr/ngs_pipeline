@@ -1,0 +1,23 @@
+############
+#	FASTQC
+############
+rule tophat:
+	input:
+		R1="/data/khanlab/projects/DATA/{sample}/{sample}_R1.fastq.gz",
+		R2="/data/khanlab/projects/DATA/{sample}/{sample}_R2.fastq.gz"
+	output: 
+		"{base}/{sample}/{sample}.tophat.bam", 
+		"{base}/{sample}/{sample}.tophat.bam.bai"
+	log: "log/tophat.{sample}"
+	version: config["tophat"]
+	message: "Running tophat on {wildcards.sample}"
+	params:
+		rulename  = "tophat",
+		batch     = config["job_tophat"]
+	shell: """
+	#######################
+	module load tophat/{version}
+	tophat -p 20 -o /lscratch/$SLURM_JOBID/$tophat_dir_ext --keep-fasta-order --rg-id $id --no-coverage-search --rg-sample $sample_name --rg-library $library_name --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 $Reference_genome_2_ensembl $main_dir/$sample_name/$Read_1_ext $main_dir/$sample_name/$Read_2_ext
+	
+	#######################
+	"""
