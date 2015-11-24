@@ -6,8 +6,8 @@ rule tophat:
 		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
 		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 	output: 
-		"{base}/{sample}/tophat/accepted_hits.bam", 
-		"{base}/{sample}/tophat/accepted_hits.bam.bai"
+		"{base}/{sample}/tophat_{sample}/accepted_hits.bam", 
+		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
 	log: "log/tophat.{sample}"
 	version: config["tophat"]
 #	message: "Running tophat on {wildcards.sample}"
@@ -18,12 +18,60 @@ rule tophat:
 	shell: """
 	#######################
 	module load tophat/{version}
-	tophat -p 30 -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
-	mv -f /lscratch/${{SLURM_JOBID}} {wildcards.base}/{wildcards.sample}/tophat
-	samtools index {wildcards.base}/{wildcards.sample}/tophat/accepted_hits.bam
+	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
+	mv -f /lscratch/${{SLURM_JOBID}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
+	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 
 	#######################
 	"""
+rule tophat_fusion:
+	input: 
+		"{base}/{sample}/tophat_{sample}/accepted_hits.bam",
+		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"	
+	output: 
+		"{base}/{sample}/tophatfusion_out/result.txt"
+	log: "log/tophatPost.{sample}"
+	version: config["tophat"]
+	params:
+		rulename = "tp",
+		batch    =config['job_tophatPost'],
+		ref      =config['BowtieIndex'],
+		bowtie   =config['bowtie'],
+		tp_ref   =config['tophat_post_ref']
+	shell: """
+	#######################
+	module load tophat/{version}
+	module load bowtie/{params.bowtie}
+	module load blast
+	cd {wildcards.base}/{wildcards.sample}/
+	ln -s {params.tp_ref}/* .
+	tophat-fusion-post -p ${{SLURM_CPUS_ON_NODE}} --num-fusion-pairs 1 {params.ref}
+	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
+	#######################
+	"""
+rule cufflinks:
+	input:
+		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
+		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
+		convertor =NGS_PIPELINE + "/scripts/" +config['transformlog2_FPKM'],
+		ref=lambda wildcards: config['GTF'][wildcards.gtf]
+	output:
+		"{base}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking_log2",
+		"{base}/{sample}/cufflinks_{gtf}/isoforms.fpkm_tracking_log2"
+	log: "log/cufflinks.{sample}"
+	version: config['cufflinks']
+	params:
+		rulename   = "cuff",
+		batch      =config['job_cufflinks']
+	shell: """
+	#######################
+	module load cufflinks/{version}
+	cufflinks -p ${{SLURM_CPUS_ON_NODE}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
+	python {input.convertor} {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes genes.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking_log2
+	python {input.convertor} {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2 
+	#######################
+	"""	
+	
 rule fusioncatcher:
 	input:
 		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",

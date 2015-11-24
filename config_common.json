@@ -24,6 +24,8 @@
 	"polyphen2"		: "2.2.2r405b",
 	"novocraft"		: "3.02.10mpich2",
 	"tophat"		: "2.0.13",
+	"bowtie" 		: "1.1.1",
+	"cufflinks"		: "2.2.1",
 	"fusioncatcher"		: "v0.99.4c",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
 	"coverage"		: "coverage.R",
@@ -59,5 +61,12 @@
 	"genotypeBed"		: "/data/Clinomics/Ref/annovar/1000gSites4genotyping.bed",
 	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed",
 	
-	"Bowtie2Index"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome"
+	"Bowtie2Index"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome",
+	"BowtieIndex"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genome",
+	"tophat_post_ref"	: "/data/khanlab/ref/Tophat_post",
+	"GTF"			: {
+				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",
+				"UCSC": "/data/khanlab/ref/GATK/hg19/Homo_sapiens.hg19.032013.gtf"
+	},
+	"transformlog2_FPKM"    : "transformlog2_FPKM.py"
 }

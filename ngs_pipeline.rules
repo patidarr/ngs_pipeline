@@ -112,16 +112,17 @@ if len(config['sample_RNASeq']) > 0:
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 ###########################################################################
 RNASEQ =[]
+CUFF =[]
 for subject  in config['RNASeq'].keys():
-        for sample in config['RNASeq'][subject]:
-                RNASEQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
-		RNASEQ += [subject+"/"+sample+"/tophat/accepted_hits.bam"]
-		RNASEQ += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+	for sample in config['RNASeq'][subject]:
+		RNASEQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+		RNASEQ += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
+		RNASEQ += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+		RNASEQ += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]	
+		for gtf in config['GTF']:
+			CUFF += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 ###########################################################################
-localrules: final, Khanlab_Pipeline
-rule final:
-	input:
-		"Status"
+localrules: Khanlab_Pipeline
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
@@ -132,6 +133,7 @@ rule Khanlab_Pipeline:
 		SOMATIC,
 		ALL_EXPRESSED,
 		RNASEQ,
+		CUFF,
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
 	output:
 		"Status"
