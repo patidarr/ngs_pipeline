@@ -101,7 +101,7 @@ if len(config['sample_RNASeq']) > 0:
 	for Tumor in config['sample_RNASeq']:
 		for RNASample in config['sample_RNASeq'][Tumor]:
 			subject=SAMPLE_TO_SUBJECT[Tumor]
-			RNASeqBam    = subject + "/" + RNASample + "/tophat/accepted_hits.bam" 
+			RNASeqBam    = subject + "/" + RNASample + "/tophat_"+RNASample+"/accepted_hits.bam" 
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
@@ -112,15 +112,14 @@ if len(config['sample_RNASeq']) > 0:
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 ###########################################################################
 RNASEQ =[]
-CUFF =[]
 for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
-		RNASEQ += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
 		RNASEQ += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
 		RNASEQ += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]	
 		for gtf in config['GTF']:
-			CUFF += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
+			RNASEQ += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 ###########################################################################
 localrules: Khanlab_Pipeline
 rule Khanlab_Pipeline:
@@ -133,7 +132,6 @@ rule Khanlab_Pipeline:
 		SOMATIC,
 		ALL_EXPRESSED,
 		RNASEQ,
-		CUFF,
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
 	output:
 		"Status"
