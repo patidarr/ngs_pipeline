@@ -759,7 +759,7 @@ rule FormatInput:
 	message: "Making Annotation input {wildcards.subject}"
 	params:
 		rulename   = "FormatInput",
-		batch      = config["job_annovar"],
+		batch      = config["job_default"],
 	shell: """
 	#######################
 	module load annovar/{version}
@@ -836,7 +836,7 @@ rule PPH2:
 	#######################
 	module load polyphen2/{version}
 	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block 
+	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block --bundle 100 
 
 	## This is common to all 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}

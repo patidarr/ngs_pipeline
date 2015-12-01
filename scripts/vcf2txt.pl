@@ -486,7 +486,7 @@ sub Platypus{
 	my $vaf = 0;
 	my $total =0;
 	if($arr[$idx_NR] !~ /,/ and $arr[$idx_NV] !~ /,/){
-		$total = $arr[$idx_NR] + $arr[$idx_NV];
+		$total = $arr[$idx_NR];
 		if($arr[$idx_NV] >0){
 			$vaf =sprintf ("%.2f", ($arr[$idx_NV]/$total));
 		}

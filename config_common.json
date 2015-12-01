@@ -26,7 +26,7 @@
 	"tophat"		: "2.0.13",
 	"bowtie" 		: "1.1.1",
 	"cufflinks"		: "2.2.1",
-	"fusioncatcher"		: "v0.99.4c",
+	"fusioncatcher"		: "0.99.4d",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
 	"coverage"		: "coverage.R",
 	"circos"		: "circos.R",
