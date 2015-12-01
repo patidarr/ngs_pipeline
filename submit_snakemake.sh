@@ -8,12 +8,15 @@
 
 #NOW=$(date +"%H%M%S_%m%d%Y")
 NOW=$(date +"%Y%m%d_%H")
-
+module use /data/khanlab/apps/Modules
 module load python/3.4.3
 export NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
-export WORK_DIR="/data/khanlab/projects/patidar/Snakemake"
+export WORK_DIR="/data/khanlab/projects/DNASeq"
+export DATA_DIR="/data/khanlab/projects/DATA"
+#export DATA_DIR="/data/Clinomics/DATA"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
 SAM_CONFIG=$WORK_DIR/samplesheet.json
+
 
 if [ `cat $SAM_CONFIG |/usr/bin/json_verify -c` -ne "JSON is valid" ]; then
 	echo "$SAM_CONFIG is not a valid json file"
