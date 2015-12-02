@@ -1,22 +1,24 @@
 #!/bin/sh
-#SBATCH --job-name="Exome-Pipeline"
+#SBATCH --job-name="KhanLab"
 #SBATCH --mail-type=FAIL
-#SBATCH --time="10-00:00:00"
 #SBATCH --output=log/snakemake.%j.o
-#SBATCH --partition="ccr"
+#SBATCH --partition="unlimited"
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1g
 
-
+#
+# Make sure log directory exists or change the output file location on line 4.
+#
+#
 #NOW=$(date +"%H%M%S_%m%d%Y")
 NOW=$(date +"%Y%m%d_%H")
 module use /data/khanlab/apps/Modules
 module load python/3.4.3
 export NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
-export WORK_DIR="/data/khanlab/projects/DNASeq"
+export WORK_DIR="/data/khanlab/projects/patidar/Snakemake"
 export DATA_DIR="/data/khanlab/projects/DATA"
-#export DATA_DIR="/data/Clinomics/DATA"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
 SAM_CONFIG=$WORK_DIR/samplesheet.json
-
 
 if [ `cat $SAM_CONFIG |/usr/bin/json_verify -c` -ne "JSON is valid" ]; then
 	echo "$SAM_CONFIG is not a valid json file"
@@ -24,9 +26,6 @@ if [ `cat $SAM_CONFIG |/usr/bin/json_verify -c` -ne "JSON is valid" ]; then
 fi
 
 cd $WORK_DIR
-if [ ! -d log ]; then
-	mkdir log
-fi
 
 snakemake\
 	--directory $WORK_DIR \

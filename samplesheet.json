@@ -1,27 +1,37 @@
 {
-	"subject": {
-		"NCI0231": [
-			"Sample_NCI0231blood_E_C628WANXX",
-			"Sample_NCI0231tumor_E_C6FECANXX"
-		]
-	},
-	"samples": [
-		"Sample_NCI0231blood_E_C628WANXX",
-		"Sample_NCI0231tumor_E_C6FECANXX"
-	],
-	"sample_references": {
-		"Sample_NCI0231tumor_E_C6FECANXX": [
-			"Sample_NCI0231blood_E_C628WANXX"
-		]
-	},
-	"sample_captures":{
-		"NCI0231":                         "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed",
-		"Sample_NCI0231blood_E_C628WANXX": "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed",
-		"Sample_NCI0231tumor_E_C6FECANXX": "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed"
-	},
-	"sample_RNASeq":{
-		"Sample_NCI0231tumor_E_C6FECANXX": [
-			"Sample_NCI0231tumor_T_HHC7WBGXX"
-		]
-	}
+  "subject": {
+    "NCI0047": [
+      "Sample_NCI0047blood_E_C4PJ0ANXX",
+      "Sample_NCI0047tumor_E_C4PJ0ANXX"
+    ]
+  },
+  "samples": [
+    "Sample_NCI0047blood_E_C4PJ0ANXX",
+    "Sample_NCI0047tumor_E_C4PJ0ANXX"
+  ],
+  "sample_references": {
+    "Sample_NCI0047tumor_E_C4PJ0ANXX": [
+      "Sample_NCI0047blood_E_C4PJ0ANXX"
+    ]
+  },
+  "sample_captures": {
+    "NCI0047": "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed",
+    "Sample_NCI0047blood_E_C4PJ0ANXX": "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed",
+    "Sample_NCI0047tumor_E_C4PJ0ANXX": "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed"
+  },
+  "sample_RNASeq": {
+    "Sample_NCI0047tumor_E_C4PJ0ANXX": [
+      "Sample_NCI0047tumor_T_C1N2HACXX"
+    ]
+  },
+  "RNASeq": {
+    "NCI0047": [
+      "Sample_NCI0047tumor_T_C1N2HACXX"
+    ]
+  },
+  "Diagnosis": {
+    "Sample_NCI0047tumor_T_C1N2HACXX": "Ewings sarcoma",
+    "Sample_NCI0047blood_E_C4PJ0ANXX": "Ewings sarcoma",
+    "Sample_NCI0047tumor_E_C4PJ0ANXX": "Ewings sarcoma"
+  }
 }
