@@ -111,7 +111,7 @@ if len(config['sample_RNASeq']) > 0:
 ###########################################################################
 #				RNASeq Targets				  # 
 ###########################################################################
-include: NGS_PIPELINE +"/rnaseq_pipeline.1.rules"
+include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 ###########################################################################
 #RNASEQ =[]
 #RNASEQ_FUSION =[]

@@ -1,5 +1,31 @@
+RNASEQ_BAM =[]
+RNASEQ_FUSION =[]
+CUFFLINKS=[]
+for subject  in config['RNASeq'].keys():
+	for sample in config['RNASeq'][subject]:
+		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+		RNASEQ_BAM += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
+		for gtf in config['GTF']:
+			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 ############
-#	FASTQC
+#       RNASeq All
+############
+rule RNASeq:
+	input:
+		RNASEQ_BAM,
+		RNASEQ_FUSION,
+		CUFFLINKS,
+	output:
+		touch("RNASeq.done")
+	shell: """
+	echo "Everything is done on RNASeq"
+	"""
+############
+#	Tophat
 ############
 rule tophat:
 	input:
@@ -14,23 +40,25 @@ rule tophat:
 	params:
 		rulename  = "tophat",
 		batch     = config["job_tophat"],
-		ref=config['Bowtie2Index']	
+		ref=config['Bowtie2Index']
 	shell: """
 	#######################
 	module load tophat/{version}
-	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
+	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2} 2>{log}
 	mv -f /lscratch/${{SLURM_JOBID}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 
 	#######################
 	"""
+############
+#       Tophat-fusion
+############
 rule tophat_fusion:
 	input: 
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"	
 	output: 
 		"{base}/{sample}/tophatfusion_out/result.txt"
-	log: "log/tophatPost.{sample}"
 	version: config["tophat"]
 	params:
 		rulename = "tp",
@@ -49,6 +77,9 @@ rule tophat_fusion:
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
 	#######################
 	"""
+############
+#       Cufflinks
+############
 rule cufflinks:
 	input:
 		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
@@ -66,12 +97,14 @@ rule cufflinks:
 	shell: """
 	#######################
 	module load cufflinks/{version}
-	cufflinks -p ${{SLURM_CPUS_ON_NODE}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
+	cufflinks -p ${{SLURM_CPUS_ON_NODE}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam} 2>{log}
 	/usr/bin/python {input.convertor} genes {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking_log2
 	/usr/bin/python {input.convertor} isoforms {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2 
 	#######################
-	"""	
-	
+	"""
+############
+#       Fusioncatcher
+############
 rule fusioncatcher:
 	input:
 		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
@@ -87,7 +120,98 @@ rule fusioncatcher:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ --skip-filter-mt -s '2,2,2,2,2' -a '10,10,10,10,10'
+	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ --skip-filter-mt -s '2,2,2,2,2' -a '10,10,10,10,10' 2>{log}
 	cp /lscratch/${{SLURM_JOBID}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
+	#######################
+	"""
+############
+#       deFuse
+############
+rule deFuse:
+	input:
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+		config=config["defuse_config"],
+	output:
+		"{base}/{sample}/fusion/defuse.raw.txt",
+		"{base}/{sample}/fusion/defuse.filtered.txt"
+	log: "log/deFuse.{sample}"
+	version: config["defuse"]
+	message: "Running deFuse on {wildcards.sample}"
+	params:
+		rulename = "deFuse",
+		batch    = config['job_deFuse']
+	shell: """
+	#######################
+	module load defuse/{version}
+	gunzip -c {input.R1} >/lscratch/${{SLURM_JOBID}}/${sample}_R1.fastq &
+	gunzip -c {input.R2} >/lscratch/${{SLURM_JOBID}}/${sample}_R2.fastq &
+	wait
+	defuse.pl -c {input.config} \
+		-1 /lscratch/${{SLURM_JOBID}}/${sample}_R1.fastq\
+		-2 /lscratch/${{SLURM_JOBID}}/${sample}_R2.fastq\
+		-p {{SLURM_CPUS_ON_NODE}} \
+		-o /lscratch/${{SLURM_JOBID}}/\
+		-s direct 2>{log} 
+	cp /lscratch/${{SLURM_JOBID}}/results.filtered.tsv  {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt
+	cp /lscratch/${{SLURM_JOBID}}/results.tsv           {wildcards.base}/{wildcards.sample}/fusion/defuse.raw.txt
+	#######################
+	"""
+############
+#       example
+############
+rule STAR:
+	input:
+		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+		ref=config["reference"],
+		phase1=config["1000G_phase1"],
+		mills=config["Mills_and_1000G"]
+	output:
+	log:"log/RNA_VariantCalling.{sample}"
+	version: config["STAR"]
+#	message: "Running STAR on {wildcards.sample}"
+	params:
+		rulename  = "VC",
+		batch     = config['job_STAR'],
+		star_ref  = config['STAR_ref']
+	shell: """
+	#######################
+	module load STAR/{version}
+
+	# run 1st pass
+	STAR --outTmpDir /lscratch/${{SLURM_JOBID}}/STEP1 --genomeDir {params.star_ref} \
+		--readFilesIn {input.R1} {input.R2} \
+		--readFilesCommand zcat\
+		--outFileNamePrefix {wildcards.sample} \
+		--runThreadN ${{SLURM_CPUS_ON_NODE}} \
+		--outFilterMismatchNmax 2 \
+		--alignMatesGapMax \
+		--alignIntronMax
+	
+	# make splice junctions database file out of SJ.out.tab, filter out non-canonical junctions
+	mkdir /lscratch/${{SLURM_JOBID}}/GenomeForPass2
+	awk 'BEGIN {OFS="\\t"; strChar[0]="."; strChar[1]="+"; strChar[2]="-";} {if($5>0){print $1,$2,$3,strChar[$4]}}' /lscratch/${{SLURM_JOBID}}/STEP1/{wildcards.sample}SJ.out.tab > /lscratch/${{SLURM_JOBID}}/GenomeForPass2/{wildcards.sample}.out.tab.Pass1.sjdb
+	
+	# generate genome with junctions from the 1st pass
+	STAR --outTmpDir /lscratch/${{SLURM_JOBID}}/STEP1\
+		--genomeDir /lscratch/${{SLURM_JOBID}}/GenomeForPass2\
+		--runMode genomeGenerate\
+		--genomeSAindexNbases 8\
+		--genomeFastaFiles {input.ref}\
+		--sjdbFileChrStartEnd ${wildcards.sample}.out.tab.Pass1.sjdb\
+		--sjdbOverhang 100\
+		--runThreadN ${{SLURM_CPUS_ON_NODE}}
+
+	# run 2nd pass with the new genome
+	STAR --outTmpDir /lscratch/${{SLURM_JOBID}}/STEP1 
+		--genomeDir /lscratch/${{SLURM_JOBID}}/GenomeForPass2\	
+		--runThreadN ${{SLURM_CPUS_ON_NODE}}\
+		--outSAMattributes All\
+		--genomeLoad LoadAndKeep\
+		--genomeDir /scratch/$SLURM_JOBID/$sample_name/GenomeForPass2\
+		--readFilesIn $main_dir/$sample_name/${R1_fastq} $main_dir/$sample_name/${R2_fastq}\
+		--readFilesCommand zcat\
+		--outFileNamePrefix ${sample_name}_pass2
 	#######################
 	"""
