@@ -22,7 +22,7 @@ library(RColorBrewer)
 cols <- brewer.pal(length(cov)+1, "Dark2")
 
 # Save the graph to a file
-png(FILE, h=1000, w=1000, pointsize=20)
+png(FILE, h=1000, w=1000, pointsize=10)
 
 # Create plot area, but do not plot anything. Add gridlines and axis labels.
 par(las=2)

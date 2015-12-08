@@ -72,6 +72,8 @@ if len(config['sample_references']) > 0:
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 ###########################################################################
+
+#		        (subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
 SUBJECT_VCFS = {}
 SOMATIC =[]
 for sample in config['samples']:
@@ -79,7 +81,7 @@ for sample in config['samples']:
 	subject=SAMPLE_TO_SUBJECT[sample]
 	local.extend([(subject+"/"+subject+"/calls/"+subject+".platypus.snpEff.txt"),
 			        (subject+"/"+subject+"/calls/"+subject+".hapcaller.snpEff.txt"),
-			        (subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
+				(subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
 for sample in config['sample_references'].keys():
@@ -109,17 +111,18 @@ if len(config['sample_RNASeq']) > 0:
 ###########################################################################
 #				RNASeq Targets				  # 
 ###########################################################################
-include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+include: NGS_PIPELINE +"/rnaseq_pipeline.1.rules"
 ###########################################################################
-RNASEQ =[]
-for subject  in config['RNASeq'].keys():
-	for sample in config['RNASeq'][subject]:
-		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
-		RNASEQ += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
-		RNASEQ += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]	
-		for gtf in config['GTF']:
-			RNASEQ += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
+#RNASEQ =[]
+#RNASEQ_FUSION =[]
+#for subject  in config['RNASeq'].keys():
+#	for sample in config['RNASeq'][subject]:
+#		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+#		RNASEQ += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
+#		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+#		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]	
+#		for gtf in config['GTF']:
+#			RNASEQ += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 ###########################################################################
 localrules: Khanlab_Pipeline
 rule Khanlab_Pipeline:
@@ -131,7 +134,7 @@ rule Khanlab_Pipeline:
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
 		SOMATIC,
 		ALL_EXPRESSED,
-		RNASEQ,
+		"RNASeq.done",
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
 	output:
 		"Status"

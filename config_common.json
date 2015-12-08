@@ -5,6 +5,7 @@
 	"fastqc"		: "0.11.2",
 	"bedtools"		: "2.22.0",
 	"bwa"			: "0.7.10",
+	"STAR" 			: "2.4.0d",
 	"picard"		: "1.119",
 	"GATK"			: "3.3-0",
 	"bam2mpg"		: "1.0.1",
@@ -27,6 +28,7 @@
 	"bowtie" 		: "1.1.1",
 	"cufflinks"		: "2.2.1",
 	"fusioncatcher"		: "0.99.4d",
+	"defuse"		: "0.6.2",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
 	"coverage"		: "coverage.R",
 	"circos"		: "circos.R",
@@ -60,10 +62,11 @@
 	"snpEff_config"		: "/data/khanlab/ref/GATK/hg19/snpEff.config",
 	"genotypeBed"		: "/data/Clinomics/Ref/annovar/1000gSites4genotyping.bed",
 	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed",
-	
+	"defuse_config"		: "/data/khanlab/ref/GATK/hg19/defuse.config_hg19_ens69.txt",	
 	"Bowtie2Index"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome",
 	"BowtieIndex"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genome",
 	"tophat_post_ref"	: "/data/khanlab/ref/Tophat_post",
+	"STAR_ref"		: "/fdb/STAR/iGenomes/Homo_sapiens/UCSC/hg19/ref/",
 	"GTF"			: {
 				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",
 				"UCSC": "/data/khanlab/ref/GATK/hg19/Homo_sapiens.hg19.032013.gtf"
