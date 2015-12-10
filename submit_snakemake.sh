@@ -36,7 +36,7 @@ snakemake\
 	-k -p -T \
 	-j 3000 \
 	--stats ngs_pipeline_${NOW}.stats \
-	--cluster "sbatch -o log/{params.rulename}.%j.o {params.batch}"\
+	--cluster "sbatch --mail-type=FAIL -o log/{params.rulename}.%j.o {params.batch}"\
 	>& ngs_pipeline_${NOW}.log
 
 # Summary 

@@ -12,15 +12,17 @@
 	"job_qualimap"   : "--partition=b1  --time=04:00:00   --mem=19G  --cpus-per-task=16 --gres=lscratch:40",
         "job_Combine"    : "--partition=b1  --time=05:00:00   --mem=10G  --cpus-per-task=10 ",
 	"job_fusioncatch": "--partition=b1  --time=9-24:00:00 --mem=240g --cpus-per-task=32 --exclusive --gres=lscratch:400",
-	"job_deFuse"     : "--partition=b1  --time=9-24:00:00 --mem=240g --cpus-per-task=32 --exclusive --gres=lscratch:400",
         "job_tophatPost" : "--partition=b1  --time=1-10:00:00 --mem=225g --cpus-per-task=32",
 	
+	"job_deFuse"     : "--partition=largemem --time=10:00:00   --mem=300g --cpus-per-task=32",
+
+	"job_novoalign"  : "--partition=ibfdr --time=20:00:00   --mem=58G --nodes=3 --ntasks=4 --exclusive",
+
 	"job_STAR"	 : "--partition=ccr --time=9-24:00:00 --mem=120g --cpus-per-task=32 --gres=lscratch:600",
 	"job_PPH2"       : "--partition=ccr --time=2-24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:20",
 	"job_SIFT"       : "--partition=ccr --time=2-24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:20",
         "job_tophat"     : "--partition=ccr --time=2-24:00:00 --mem=65G  --cpus-per-task=32 --exclusive --gres=lscratch:400",
 	"job_cufflinks"  : "--partition=ccr --time=3-24:00:00 --mem=15g  --cpus-per-task=15",	
-	"job_novoalign"  : "--partition=ccr --time=20:00:00   --mem=120G --nodes=3 --ntasks=4 --exclusive",
 	"job_hotspot"    : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=20 ",
 	"job_markdup"    : "--partition=ccr --time=05:00:00   --mem=19G  --cpus-per-task=15 --gres=lscratch:40",
 	"job_bedtools"   : "--partition=ccr --time=10:00:00   --mem=30G  --cpus-per-task=10",

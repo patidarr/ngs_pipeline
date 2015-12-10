@@ -113,18 +113,7 @@ if len(config['sample_RNASeq']) > 0:
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 ###########################################################################
-#RNASEQ =[]
-#RNASEQ_FUSION =[]
-#for subject  in config['RNASeq'].keys():
-#	for sample in config['RNASeq'][subject]:
-#		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
-#		RNASEQ += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
-#		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-#		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]	
-#		for gtf in config['GTF']:
-#			RNASEQ += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-###########################################################################
-localrules: Khanlab_Pipeline
+localrules: Khanlab_Pipeline, RNASeq
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",

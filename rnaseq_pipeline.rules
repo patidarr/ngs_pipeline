@@ -1,4 +1,5 @@
 RNASEQ_BAM =[]
+RNASEQ_FUSION1=[]
 RNASEQ_FUSION =[]
 CUFFLINKS=[]
 for subject  in config['RNASeq'].keys():
@@ -6,7 +7,7 @@ for subject  in config['RNASeq'].keys():
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_BAM += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		for gtf in config['GTF']:
@@ -21,8 +22,11 @@ rule RNASeq:
 		CUFFLINKS,
 	output:
 		touch("RNASeq.done")
+	message: "End of RNASeq"
 	shell: """
-	echo "Everything is done on RNASeq"
+	#######################
+	echo "Everything is done on RNASeq samples" >{output}
+	#######################
 	"""
 ############
 #	Tophat
@@ -75,6 +79,8 @@ rule tophat_fusion:
 	ln -s {params.tp_ref}/* .
 	tophat-fusion-post -p ${{SLURM_CPUS_ON_NODE}} --num-fusion-pairs 1 {params.ref}
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
+	ln -s ../tophatfusion_out/result.html fusion/tophat-fusion.html
+	ln -s ../tophatfusion_out/result.txt  fusion/tophat-fusion.txt
 	#######################
 	"""
 ############
@@ -144,17 +150,24 @@ rule deFuse:
 	shell: """
 	#######################
 	module load defuse/{version}
-	gunzip -c {input.R1} >/lscratch/${{SLURM_JOBID}}/${sample}_R1.fastq &
-	gunzip -c {input.R2} >/lscratch/${{SLURM_JOBID}}/${sample}_R2.fastq &
+	gunzip -c {input.R1} >{wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq &
+	gunzip -c {input.R2} >{wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq &
 	wait
 	defuse.pl -c {input.config} \
-		-1 /lscratch/${{SLURM_JOBID}}/${sample}_R1.fastq\
-		-2 /lscratch/${{SLURM_JOBID}}/${sample}_R2.fastq\
-		-p {{SLURM_CPUS_ON_NODE}} \
-		-o /lscratch/${{SLURM_JOBID}}/\
+		-1 {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq\
+		-2 {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq\
+		-p ${{SLURM_CPUS_ON_NODE}} \
+		-o {wildcards.base}/{wildcards.sample}/fusion/temp\
 		-s direct 2>{log} 
-	cp /lscratch/${{SLURM_JOBID}}/results.filtered.tsv  {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt
-	cp /lscratch/${{SLURM_JOBID}}/results.tsv           {wildcards.base}/{wildcards.sample}/fusion/defuse.raw.txt
+	cp {wildcards.base}/{wildcards.sample}/fusion/temp/results.filtered.tsv  {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt
+	cp {wildcards.base}/{wildcards.sample}/fusion/temp/results.tsv           {wildcards.base}/{wildcards.sample}/fusion/defuse.raw.txt
+	mkdir {wildcards.base}/{wildcards.sample}/fusion/defuse.Reads
+
+	for ID in `cut -f1 {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt|grep -v cluster_id`;
+	do
+		get_reads.pl -c {input.config} -o {wildcards.base}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt
+	done
+	rm -rf {wildcards.base}/{wildcards.sample}/fusion/temp {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq 
 	#######################
 	"""
 ############
