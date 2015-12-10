@@ -49,6 +49,7 @@
 	"annoInput"		: "MakeAnnotationInputs.pl",
 	"filterVars"		: "filterVariants.pl",
 	"makeQC"		: "makeQC.pl",
+	"extractReadsdeFuse"	: "extractReadsdeFuse.sh",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
 	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",
