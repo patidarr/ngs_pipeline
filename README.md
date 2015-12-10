@@ -10,10 +10,23 @@ git clone https://github.com/patidarr/ngs_pipeline.git
 ## Conventions
 
 - Sample names cannot have "/" or "." in them
-- fastq files end in ".fastq.gz"
-- fastq files are stored on biowulf @ /data/khanlab/projects/DATA/
-- Corresponding RNASeq file is stored @ /data/khanlab/projects/working_DATA/{SAMPLE}/{SAMPLE}.Processed/{SAMPLE}.bam
+- Fastq files end in ".fastq.gz"
+- Fastq files are stored in DATA_DIR (Set as Environment Variable) 
 
+### DNASeq:
+- QC
+- BWA, Novoalign
+- Haplotype Caller, Platupys, Bam2MPG, MuTect, Strelka
+- snpEff, Annover, SIFT, pph2, Custom Annotation
+- Coverage Plot, Circos Plot, Hotspot Coverage Box Plot
+
+### RNASeq:
+- QC
+- Tophat, STAR
+- fusion-catcher, tophat-fusion, deFuse
+- Cufflinks (ENS and UCSC)
+- Haplotype Caller
+- snpEff, Annover, SIFT, pph2, Custom Annotation
 
 
 Rulegraph
