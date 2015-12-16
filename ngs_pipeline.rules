@@ -550,11 +550,15 @@ rule Sub_MPG:
 	message: "Merge sample level mpg files to subject level {subject}"
 	params:
 		rulename = "mergevcf",
-		batch    = config["job_default"]
+		batch    = config["job_default"],
+		vcforder = NGS_PIPELINE + "/scripts/" +config["vcfOrderCol"]
 	shell: """
 	#######################
 	module load vcftools/{version}
-	vcf-merge {input.vcf} > {output.vcf}
+	module load R
+	vcf-merge {input.vcf} > {output.vcf}.tmp
+	{params.vcforder} -i {output.vcf}.tmp -o {output.vcf}
+	rm -rf {output.vcf}.tmp
 	#######################
 	"""
 ############
@@ -575,13 +579,15 @@ rule MuTect:
 	version: config["MuTect"]
 	message: "MuTect on {wildcards.Tumor}"
 	params:
-		rulename  = "MuTect",
-		batch     = config["job_mutect"],
+		rulename = "MuTect",
+		batch    = config["job_mutect"],
+		vcforder = NGS_PIPELINE + "/scripts/" +config["vcfOrderCol"]
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
 	module load muTect/{version}
+	module load R
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $MUTECTJARPATH -T MuTect \
 		--reference_sequence {input.ref} \
 		--cosmic {input.cosmic} \
@@ -591,8 +597,11 @@ rule MuTect:
 		--intervals  /lscratch/${{SLURM_JOBID}}/target_intervals.bed \
 		--coverage_file {output.coverage} \
 		--out {output.call_stats} \
-		--vcf {output.vcf} \
+		--vcf {output.vcf}.vcf \
 		> {log} 2>&1
+	
+	{params.vcforder} -i {output.vcf}.vcf -o {output.vcf}
+	rm -rf {output.vcf}.vcf
 	#######################
 	"""
 ############

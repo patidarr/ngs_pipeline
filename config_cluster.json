@@ -18,7 +18,7 @@
 
 	"job_novoalign"  : "--partition=ibfdr --time=20:00:00   --mem=58G --nodes=3 --ntasks=4 --exclusive",
 
-	"job_STAR"	 : "--partition=ccr --time=9-24:00:00 --mem=120g --cpus-per-task=32 --gres=lscratch:600",
+	"job_STAR"	 : "--partition=ccr --time=05:00:00   --mem=50g  --cpus-per-task=32 --gres=lscratch:600",
 	"job_PPH2"       : "--partition=ccr --time=2-24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:20",
 	"job_SIFT"       : "--partition=ccr --time=2-24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:20",
         "job_tophat"     : "--partition=ccr --time=2-24:00:00 --mem=65G  --cpus-per-task=32 --exclusive --gres=lscratch:400",
