@@ -109,7 +109,7 @@ if len(config['sample_RNASeq']) > 0:
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
 
 ###########################################################################
-#				RNASeq Targets				  # 
+#				RNASeq Rules				  # 
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 ###########################################################################
@@ -195,7 +195,7 @@ rule Novoalign:
 	input:
 		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
 		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
-		index="/fdb/novoalign/chr_all_hg19.nbx"
+		index=config["Novo_index"]
 	output:
 		temp("{subject}/{sample}/{sample}.novo.bam"),
 		temp("{subject}/{sample}/{sample}.novo.bam.bai")

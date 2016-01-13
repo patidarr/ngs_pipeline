@@ -14,7 +14,7 @@
 	"job_fusioncatch": "--partition=b1  --time=9-24:00:00 --mem=240g --cpus-per-task=32 --exclusive --gres=lscratch:400",
         "job_tophatPost" : "--partition=b1  --time=1-10:00:00 --mem=225g --cpus-per-task=32",
 	
-	"job_deFuse"     : "--partition=largemem --time=10:00:00   --mem=300g --cpus-per-task=32",
+	"job_deFuse"     : "--partition=largemem --time=24:00:00   --mem=300g --cpus-per-task=32",
 
 	"job_novoalign"  : "--partition=ibfdr --time=20:00:00   --mem=58G --nodes=3 --ntasks=4 --exclusive",
 

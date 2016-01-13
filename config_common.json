@@ -68,7 +68,8 @@
 	"Bowtie2Index"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome",
 	"BowtieIndex"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genome",
 	"tophat_post_ref"	: "/data/khanlab/ref/Tophat_post",
-	"STAR_ref"		: "/fdb/STAR/iGenomes/Homo_sapiens/UCSC/hg19/ref/",
+	"Novo_index"		: "/fdb/novoalign/chr_all_hg19.nbx",
+	"STAR_ref"		: "/data/khanlab/ref/GATK/hg19/STAR_hg19_index",
 	"GTF"			: {
 				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",
 				"UCSC": "/data/khanlab/ref/GATK/hg19/Homo_sapiens.hg19.032013.gtf"

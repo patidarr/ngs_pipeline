@@ -7,7 +7,6 @@ CUSTOM=$3    ###
 BUILD=hg19
 ###############################
 # Add gene, cytoband,dbsnp, 1000g, ESP, CG69, NCI60 annotations
-#
 ###############################
 #       --dot2underline\
 table_annovar.pl\
@@ -16,8 +15,8 @@ table_annovar.pl\
 	-buildver ${BUILD}\
 	-out $file\
 	-remove\
-	-protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,cg69,nci60\
-	-operation g,r,f,f,f,f,f,f,f,f,f,f,f,f\
+	-protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,cg69,nci60\
+	-operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f\
 	-nastring "-1"
 mv $file.hg19_multianno.txt $file.gene
 rm -rf $file.refGene.invalid_input

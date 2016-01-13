@@ -12,7 +12,7 @@ for subject  in config['RNASeq'].keys():
 		RNASEQ_BAM  += [subject+"/"+sample+"/calls/"+sample+".hapcaller.raw.vcf"]
 		RNASEQ_BAM  += [subject+"/"+sample+"/calls/"+sample+".hapcaller.snpEff.txt"]	
 		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		for gtf in config['GTF']:
@@ -81,6 +81,7 @@ rule tophat_fusion:
 	module load bowtie/{params.bowtie}
 	module load blast
 	cd {wildcards.base}/{wildcards.sample}/
+	rm -f blast ensGene.txt ensGtp.txt mcl refGene.txt
 	ln -s {params.tp_ref}/* .
 	tophat-fusion-post -p ${{SLURM_CPUS_ON_NODE}} --num-fusion-pairs 1 {params.ref}
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
@@ -193,15 +194,15 @@ rule STAR:
 		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 		ref=config["reference"],
 	output:
-		"{base}/{sample}/{sample}.star.bam",
-		"{base}/{sample}/{sample}.star.bam.bai"
+		temp("{base}/{sample}/{sample}.star.bam"),
+		temp("{base}/{sample}/{sample}.star.bam.bai")
 	version: config["STAR"]
 	message: "Running STAR on {wildcards.sample}"
 	params:
 		rulename  = "STAR",
 		batch     = config['job_STAR'],
-		star_ref  = "/data/khanlab/apps/RNASeq_pipeline/Annotation/hg19_Broad_resource_bundle/STAR_hg19_index",
-#		star_ref  = config['STAR_ref'],
+#		star_ref  = "/data/khanlab/apps/RNASeq_pipeline/Annotation/hg19_Broad_resource_bundle/STAR_hg19_index",
+		star_ref  = config['STAR_ref'],
 		awk       = NGS_PIPELINE + "/scripts/SJDB.awk",
 		home      = WORK_DIR,
 		picard    = config['picard']
@@ -285,9 +286,10 @@ rule GATK_RNASeq:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -U ALLOW_N_CIGAR_READS > {log} 2>&1
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS > {log} 2>&1
+	
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals >> {log} 2>&1
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
