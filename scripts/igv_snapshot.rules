@@ -1,0 +1,36 @@
+IGV_DNA = {}
+for subject,samples in config['subject'].items():
+	for sample in samples:
+		IGV_DNA[sample]=subject
+
+IGV_RNA = {}
+for subject,samples in config['RNASeq'].items():
+	for sample in samples:
+		IGV_RNA[sample]=subject
+
+SUB_IGV ={}
+for Subject in config['subject']:
+	SUB_IGV[Subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=IGV_DNA[s], sample=s) for s in config['subject'][Subject]]
+	SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+	SUB_IGV[Subject] += ["{subject}/{sample}/tophat_{sample}/accepted_hits.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+
+
+rule IGV_Session:
+	input: bams=lambda wildcards: SUB_IGV[wildcards.subject]
+	output: "{subject}/igv/session_{subject}.xml"
+	params:
+		rulename = "igv_session",
+		work_dir =  WORK_DIR
+	shell: """
+	#######################
+	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >{output}
+	echo "<Global genome=\"hg19\" locus=\"\" version=\"3\">" >>{output}
+	echo "\t<Resources>" >>{output}
+	for BAM in {input.bams}
+	do	
+		echo "\t<Resource path=\"{params.work_dir}/${{BAM}}\"/>" >>{output}
+	done 
+	echo "\t</Resources>" >>{output}
+	echo "</Global>" >>{output}
+	#######################
+	"""
