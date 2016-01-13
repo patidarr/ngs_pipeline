@@ -112,6 +112,7 @@ if len(config['sample_RNASeq']) > 0:
 #				RNASeq Rules				  # 
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 ###########################################################################
 localrules: Khanlab_Pipeline, RNASeq
 rule Khanlab_Pipeline:
@@ -124,6 +125,7 @@ rule Khanlab_Pipeline:
 		SOMATIC,
 		ALL_EXPRESSED,
 		"RNASeq.done",
+		expand("{subject}/igv/session_{subject}.xml",subject= SUBS),
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
 	output:
 		"Status"
