@@ -12,7 +12,7 @@ while(<FH>){
 	my $line = $_;
         my @d = split("\t", $_);
 	if($_ =~ /^Chr/ or $_ =~ /^#/){
-		print "$line\tRNASeq.TotCov\tRNASeq.RefCov\tRNASeq.VarCov\tRNASeq.VAF\n";
+		print "$line\tRNASeq.GT\tRNASeq.TotCov\tRNASeq.RefCov\tRNASeq.VarCov\tRNASeq.VAF\n";
 	}
 	else{
 		my $rnaseq;		
@@ -29,18 +29,18 @@ while(<FH>){
 			if($totalRef >=1){ 
 				if($Alt >=1){
 					my $vaf = ($Alt/$totalRef);
-					print "$line\t$totalRef\t$Ref\t$Alt\t$vaf\n";
+					print "$line\tNA\t$totalRef\t$Ref\t$Alt\t$vaf\n";
 				}
 				else{
-					print "$line\t$totalRef\t$Ref\t$Alt\t0\n";
+					print "$line\tNA\t$totalRef\t$Ref\t$Alt\t0\n";
 				}
 			}
 			else{
-				print "$line\t0\t0\t0\t0\n";
+				print "$line\tNA\t0\t0\t0\t0\n";
 			}
 		}
 		else{ # no output from mpileup no COVERAGE
-			print "$line\t0\t0\t0\t0\n";
+			print "$line\tNA\t0\t0\t0\t0\n";
 		}
 	}
 }	

@@ -11,24 +11,28 @@ for subject,samples in config['RNASeq'].items():
 SUB_IGV ={}
 for Subject in config['subject']:
 	SUB_IGV[Subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=IGV_DNA[s], sample=s) for s in config['subject'][Subject]]
-	SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-	SUB_IGV[Subject] += ["{subject}/{sample}/tophat_{sample}/accepted_hits.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+	if Subject in config['RNASeq']:
+		SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+		SUB_IGV[Subject] += ["{subject}/{sample}/tophat_{sample}/accepted_hits.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 
 
 rule IGV_Session:
 	input: bams=lambda wildcards: SUB_IGV[wildcards.subject]
 	output: "{subject}/igv/session_{subject}.xml"
+	message: "Making IGV session xml file for {wildcards.subject}"
 	params:
 		rulename = "igv_session",
 		work_dir =  WORK_DIR
 	shell: """
 	#######################
-	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >{output}
-	echo "<Global genome=\"hg19\" locus=\"\" version=\"3\">" >>{output}
+	dir=`echo {params.work_dir} | sed -e 's/\/data\/khanlab/K:/g'`
+	echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" >{output}
+	echo "<Global genome=\\"hg19\\" locus=\\"\\" version=\\"3\\">" >>{output}
 	echo "\t<Resources>" >>{output}
 	for BAM in {input.bams}
 	do	
-		echo "\t<Resource path=\"{params.work_dir}/${{BAM}}\"/>" >>{output}
+		bam=`echo "${{dir}}/${{BAM}}" |sed -e 's/\//\\\\\\/g'`
+		echo "\t\t<Resource path=\\"${{bam}}\\"/>" >>{output}
 	done 
 	echo "\t</Resources>" >>{output}
 	echo "</Global>" >>{output}

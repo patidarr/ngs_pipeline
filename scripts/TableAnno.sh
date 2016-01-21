@@ -36,7 +36,7 @@ annotate_variation.pl\
 awk '{OFS="\t"};{print $3,$4,$5,$6,$7,$2}' $file.${BUILD}_exac03_dropped |sed -e 's/,/\t/g' >$file.exac.3
 head -1 $DATADIR/${BUILD}_exac03.txt >>$file.exac.3
 rm -rf $file.${BUILD}_exac03_dropped $file.${BUILD}_exac03_filtered
-################################
+################################nno.sh
 # Add clinseq annotation
 #
 ################################

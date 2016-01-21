@@ -44,6 +44,17 @@ for my $Sample( <$dir/*\/*>){
 			}
 			close FH;
 		}
+		elsif(open(FH, "$path/$name/qc/star.markdup.txt")){
+			while(<FH>){
+                                chomp;
+                                if ($_ =~ /^$name/){
+                                        my @line  = split("\t", $_);
+                                        shift(@line);
+                                        print join("\t", @line)."\t";
+                                }
+                        }
+                        close FH;
+		}
 		my $bamqc = "$path/$name/qc/BamQC/genome_results.txt";
 		if(open(FH, $bamqc)){
 			while(<FH>){

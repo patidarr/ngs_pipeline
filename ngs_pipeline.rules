@@ -114,7 +114,7 @@ if len(config['sample_RNASeq']) > 0:
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 ###########################################################################
-localrules: Khanlab_Pipeline, RNASeq
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session 
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
@@ -135,9 +135,9 @@ rule Khanlab_Pipeline:
 	shell: """
 	#######################
 	echo "Pipeline Finished Successfully!!"	 >{output}
-	cd /data/khanlab/projects/Genotyping/
-	Final=`sh genotype.sh`
-	perl {input.wait4job} ${{Final}}
+#	cd /data/khanlab/projects/Genotyping/
+#	Final=`sh genotype.sh`
+#	perl {input.wait4job} ${{Final}}
 	#######################
 	"""
 ############
@@ -186,7 +186,11 @@ rule BWA:
 	#######################
 	module load bwa/{version}
 	module load samtools/{params.samtools}
-	bwa mem -M  -t ${{SLURM_CPUS_ON_NODE}} -R \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" {input[ref]} {input.R1} {input.R2} 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa
+	bwa mem -M \
+	-t ${{SLURM_CPUS_ON_NODE}}\
+	-R '@RG\tID:{wildcards.sample}\tSM:{wildcards.sample}\tLB:{wildcards.sample}\tPL:{params.platform}' \
+	{input.ref} {input.R1} {input.R2} 2> {log} | samtools view -Sbh - \
+	| samtools sort -m 30000000000 - {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa
 	samtools index {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.bam
 	#######################
 	"""
@@ -839,7 +843,9 @@ rule PPH2:
 	#######################
 	module load polyphen2/{version}
 	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block --bundle 100 
+	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate > annotation/AnnotationInput.pph2.intermediate.txt
+	rm -rf /scratch/`whoami`/${{RANDOM}}${{RANDOM}}
+#	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
 
 	## This is common to all 
 	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}

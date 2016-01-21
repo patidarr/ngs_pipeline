@@ -11,8 +11,8 @@ for subject  in config['RNASeq'].keys():
 		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam.bai"]
 		RNASEQ_BAM  += [subject+"/"+sample+"/calls/"+sample+".hapcaller.raw.vcf"]
 		RNASEQ_BAM  += [subject+"/"+sample+"/calls/"+sample+".hapcaller.snpEff.txt"]	
-		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		for gtf in config['GTF']:
