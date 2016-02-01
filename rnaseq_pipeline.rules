@@ -3,20 +3,47 @@ RNASEQ_BAM1 =[]
 RNASEQ_FUSION1=[]
 RNASEQ_FUSION =[]
 CUFFLINKS=[]
+
+SUB2RNA = {}
+for subject,samples in config['RNASeq'].items():
+	for sample in samples:
+		SUB2RNA[sample]=subject
+
 for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_BAM += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
 		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam"]	
 		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam.bai"]
-		RNASEQ_BAM  += [subject+"/"+sample+"/calls/"+sample+".hapcaller.raw.vcf"]
-		RNASEQ_BAM  += [subject+"/"+sample+"/calls/"+sample+".hapcaller.snpEff.txt"]	
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
+		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
+		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
+		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
 		for gtf in config['GTF']:
 			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
+ANNO_FILE =[]
+for Subject in config['RNASeq']:
+	if Subject in config['RNASeq']:
+		if Subject in SUBJECT_VCFS:
+			SUBJECT_VCFS[Subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+		else:
+			SUBJECT_VCFS[Subject] = []
+			SUBJECT_VCFS[Subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+		SOMATIC += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]	
+		if Subject in SUB_HOT:
+			SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+			SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+			SUB_COV[Subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+		else:
+			SUB_HOT[Subject] = []
+			SUB_LOH[Subject] = []
+			SUB_COV[Subject] = []
+			SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+			SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+			SUB_COV[Subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 ############
 #       RNASeq All
 ############
@@ -25,6 +52,11 @@ rule RNASeq:
 		RNASEQ_BAM,
 		RNASEQ_FUSION,
 		CUFFLINKS,
+		ANNO_FILE,
+		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
+		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
+		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
+
 	output:
 		touch("RNASeq.done")
 	message: "End of RNASeq"
@@ -319,4 +351,26 @@ rule HapCall_RNASeq:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf --dbsnp {input.dbsnp} -dontUseSoftClippedBases -stand_call_conf 30 -stand_emit_conf 30 -log {log}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T VariantFiltration -R {input.ref} -V /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf -window 35 -cluster 3 --filterExpression "FS > 30.0 || QD < 2" -filterName "RNASeqFilters_FS_QD" -o {output.vcf}
         #######################
+	"""
+############
+# Coverage
+############
+rule coverage:
+	input:
+		bam="{subject}/{sample}/{sample}.star.final.bam",
+		bai="{subject}/{sample}/{sample}.star.final.bam.bai",
+		interval=config["refSeq_bed"]
+	output:
+		"{subject}/{sample}/qc/{sample}.star.coverage.txt"
+	log: "log/coverage.{sample}"
+	version: config["bedtools"]
+	message: "Running Coverage on {input.bam}"
+	params:
+		rulename = "coverage",
+		batch    = config["job_bedtools"]
+	shell: """
+	#######################
+	module load bedtools/{version}
+	bedtools coverage -abam {input.bam} -b {input.interval} -hist |grep "^all" > {output}
+	#######################
 	"""

@@ -48,7 +48,10 @@ for subject,samples in config['subject'].items():
 ALL_SAMPLES = config["samples"]
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
 ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
-ALL_QC      = ["{subject}/{sample}/qc/{sample}.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] + ["{subject}/{sample}/qc/{sample}.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] + ["{subject}/{sample}/qc/{sample}.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] + ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
+ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] 
+ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] 
+ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] 
+ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
 ###########################################################################
 SUB_BAMS= {} 
 SUB_COV = {}
@@ -57,9 +60,9 @@ SUB_MPG = {}
 SUB_HOT = {}
 for Subject  in config['subject']:
 	SUB_BAMS[Subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_COV[Subject] = ["{subject}/{sample}/qc/{sample}.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_HOT[Subject] = ["{subject}/{sample}/qc/{sample}.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_LOH[Subject] = ["{subject}/{sample}/qc/{sample}.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_COV[Subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_HOT[Subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
+	SUB_LOH[Subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 	SUB_MPG[Subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
 ###########################################################################
 somaticPairs = {}
@@ -227,15 +230,15 @@ rule Novoalign:
 # Using Older version of samtools for this purpose
 rule Genotyping:
 	input:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
+		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
 		vcf2genotype=NGS_PIPELINE + "/scripts/" + config["vcf2genotype"],
 		vcf2loh=NGS_PIPELINE + "/scripts/" + config["vcf2loh"],
 	output:
-		vcf="{base}/{sample}/calls/{sample}.samtools.vcf",
-		gt="{base}/{sample}/qc/{sample}.gt",
-		loh="{base}/{sample}/qc/{sample}.loh"
+		vcf="{base}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
+		gt="{base}/{sample}/qc/{sample}.{aligner}.gt",
+		loh="{base}/{sample}/qc/{sample}.{aligner}.loh"
 	log: "log/genotyping.{sample}"
 	version: config["samtools_old"]
 	message: "Making Genotyping Input file on {input.bam}"
@@ -301,8 +304,8 @@ rule QC_Sum:
 #       Samtools flagstat
 ############
 rule flagstat:
-	input:	"{base}/{sample}/{sample}.bwa.bam"
-	output: "{base}/{sample}/qc/{sample}.flagstat.txt"
+	input:	"{base}/{sample}/{sample}.{aligner}.final.bam"
+	output: "{base}/{sample}/qc/{sample}.{aligner}.flagstat.txt"
 	log:    "log/flagstat.{sample}"
 	version: config["samtools"]
 	message: "Running samtools flagstat on {wildcards.sample}"
@@ -320,9 +323,9 @@ rule flagstat:
 ############
 rule HotSpotCoverage:
 	input:	
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
+		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
 		interval=config["hotspot_intervals"]
-	output: "{base}/{sample}/qc/{sample}.hotspot.depth"
+	output: "{base}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
 	log: "log/hotspotCoverage.{sample}"
 	version: config["bedtools"]
 	message: "Running Hotspot Coverage on {wildcards.sample}"
@@ -346,7 +349,7 @@ rule Coverage:
 		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
 	output:
-		"{subject}/{sample}/qc/{sample}.coverage.txt"
+		"{subject}/{sample}/qc/{sample}.bwa.coverage.txt"
 	log: "log/coverage.{sample}"
 	version: config["bedtools"]
 	message: "Running Coverage on {input.bam}"
@@ -728,10 +731,8 @@ rule snpEff:
 		vcf="{subject}/calls/{base}.raw.vcf",
 		ref=config["reference"],
 		snpEff_config=config["snpEff_config"],
-		vcf2txt=NGS_PIPELINE + "/scripts/" + config["vcf2txt"]
 	output:
-		eff="{subject}/calls/{base}.raw.snpEff.vcf",
-		txt="{subject}/calls/{base}.snpEff.txt"
+		eff="{subject}/calls/{base}.raw.snpEff.vcf"
 	log: "log/snpEff.{base}"
 	version: config["snpEff"]
 	message: "snpEff on {input.vcf}"
@@ -745,11 +746,28 @@ rule snpEff:
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load snpEff/{version}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff} 2> {log}
-
-	module load annovar/{params.annovar}
-	perl {input.vcf2txt} {output.eff} /lscratch/${{SLURM_JOBID}} >{output.txt}
 	#######################
 	"""
+############
+#       vcf2txt
+############
+rule vcf2txt:
+	input:
+		eff="{subject}/calls/{base}.raw.snpEff.vcf",
+		vcf2txt=NGS_PIPELINE + "/scripts/" + config["vcf2txt"]
+	output:
+		txt="{subject}/calls/{base}.snpEff.txt"
+	params:
+		rulename      ="snpEff",
+		batch         =config["job_default"],
+		annovar       =config["annovar"]
+	shell: """
+	#######################
+	module load annovar/{params.annovar}
+	perl {input.vcf2txt} {input.eff} /spin1/scratch/ >{output.txt}
+	#######################
+	"""
+
 ############
 #	MakeList
 ############
@@ -767,10 +785,12 @@ rule FormatInput:
 	params:
 		rulename   = "FormatInput",
 		batch      = config["job_default"],
+		fAEV       = NGS_PIPELINE + "/scripts/" + config["fAEV"]
 	shell: """
 	#######################
 	module load annovar/{version}
-	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/AnnotationInput
+	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/allSites
+	perl {params.fAEV} {wildcards.subject}/annotation/allSites annovar/AnnotationInput.final.txt {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt {wildcards.subject}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/annotation/AnnotationInput 2>{log}
 	#######################
 	"""
@@ -843,12 +863,12 @@ rule PPH2:
 	#######################
 	module load polyphen2/{version}
 	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate > annotation/AnnotationInput.pph2.intermediate.txt
-	rm -rf /scratch/`whoami`/${{RANDOM}}${{RANDOM}}
-#	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
+#	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate > {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt
+#	rm -rf /scratch/`whoami`/${{RANDOM}}${{RANDOM}}
+	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
 
 	## This is common to all 
-	perl {input.convertor}  annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
+	perl {input.convertor}  {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
 #	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
 	
 	#######################
@@ -864,7 +884,7 @@ rule CombineAnnotation:
 		convertor  = NGS_PIPELINE + "/scripts/" + config["CombineAnno"],
 		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"],
 		filter     = NGS_PIPELINE + "/scripts/" + config["filterVars"]
-	output: "{subject}/annotation/AnnotationInput.annotations.final.txt"
+	output: "{subject}/annotation/AnnotationInput.annotations.final.txt.tmp"
 	log: "log/CombineAnnotation.{subject}"
 	version: "1.0"
 	message: "Merge Annotation {wildcards.subject}"
@@ -890,9 +910,8 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.mcg
 {wildcards.subject}/annotation/AnnotationInput.civic
 {wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
-	perl {input.convertor} {wildcards.subject}/annotation/list >{output}.tmp
-	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp |perl {input.filter} - 0.1 >{output}
-	rm -rf {output}.tmp
+	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
+	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} |perl {input.filter} - 0.1 >>{subject}/annotation/AnnotationInput.annotations.final.txt
 	#######################
 	"""
 ############
@@ -901,7 +920,7 @@ rule CombineAnnotation:
 rule AttachAnnotation:
 	input:
 		txt="{subject}/{base1}/calls/{base}.snpEff.txt",
-		ref="{subject}/annotation/AnnotationInput.annotations.final.txt",
+		ref="{subject}/annotation/AnnotationInput.annotations.final.txt.tmp",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["addBack"]
 	output:
 		txt="{subject}/{base1}/calls/{base}.annotated.txt"
@@ -913,7 +932,7 @@ rule AttachAnnotation:
 		batch      = config["job_addbackann"],
 	shell: """
 	#######################
-	perl {input.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
+	perl {input.convertor} {subject}/annotation/AnnotationInput.annotations.final.txt  {input.txt} >{output.txt} 2>{log}
 	#######################
 	"""
 ############

@@ -419,7 +419,7 @@ sub GATK{
 	my $idx_DP = first { $format[$_] eq 'DP' } 0..$#format;
 	if(defined $idx_GT and defined $idx_AD and defined $idx_DP){
 		my @AD = split(",", $arr[$idx_AD]);
-		if($#AD eq '1' and $arr[$idx_DP] >=1){
+		if($#AD eq '1' and $AD[1] <1 and $arr[$idx_DP] >=1){
 			return($arr[$idx_GT], $arr[$idx_DP], $AD[0], $AD[1], $vaf);
 		}
 		elsif($#AD eq '1' and $AD[1] >=1 and $arr[$idx_DP] >=1){

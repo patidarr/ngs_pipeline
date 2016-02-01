@@ -3,7 +3,7 @@
 	"job_snpeff"     : "--partition=quick --time=01:00:00 --mem=10G  --cpus-per-task=32 --gres=lscratch:05",
 	"job_addbackann" : "--partition=quick --time=00:20:00 --mem=2G   --cpus-per-task=1 ",
 	
-	"job_flagstat"   : "--partition=norm --time=02:00:00  --mem=2G   --cpus-per-task=2 ",
+	"job_flagstat"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2 ",
         "job_genotype"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2 ",
 	
 	"job_fastqc"     : "--partition=b1  --time=01:00:00   --mem=19G  --cpus-per-task=10 ",

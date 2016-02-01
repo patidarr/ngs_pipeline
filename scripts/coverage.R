@@ -16,7 +16,7 @@ for (i in 1:length(files)) {
     cov[[i]] <- read.table(paste(DIR,"/",files[i], sep=""))
     cov_cumul[[i]] <- 1-cumsum(cov[[i]][,5])
 }
-labs <- paste("", gsub("Sample_|\\.coverage\\.txt", "", files, perl=TRUE), sep="")
+labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.coverage\\.txt", "", files, perl=TRUE), sep="")
 
 library(RColorBrewer)
 cols <- brewer.pal(length(cov)+1, "Dark2")

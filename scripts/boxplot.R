@@ -8,7 +8,7 @@ SAM=str_trim(args[8])
 
 files <- list.files(path = DIR, pattern=".hotspot.depth$")
 
-labs <- paste("", gsub("Sample_|\\.hotspot.depth", "", files, perl=TRUE), sep="")
+labs <- paste("", gsub("Sample_|\\.star|\\.bwa|\\.hotspot.depth", "", files, perl=TRUE), sep="")
 
 cols <- brewer.pal(length(files)+1, "Dark2")
 

@@ -9,7 +9,7 @@ SAM=str_trim(args[8])
 
 files <- list.files(path = DIR, pattern=".loh$")
 
-labs <- paste("", gsub("Sample_|\\.loh", "", files, perl=TRUE), sep="")
+labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.loh", "", files, perl=TRUE), sep="")
 
 cols <- brewer.pal(length(files)+1, "Dark2")
 
