@@ -132,7 +132,12 @@ elsif($CALLER eq "MuTect"){
 		my ($chr, $start, $ID, $ref, $alt, $quality_score, $filter, $info, $format, @sample) = @field;
 		my ($end) = ($start);
 		if ($chr =~ /^#CHR/i) {         #format specification line
-			print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+			if ($idx_normal eq '0'){
+				print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\t$sample[0].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\t$sample[1].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+			}
+			else{
+				print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\t$sample[1].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\t$sample[0].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+			}
 			next;
         	}
 		if ($filter =~ /PASS/){
@@ -161,7 +166,11 @@ elsif($CALLER eq "MuTect"){
 }
 elsif($CALLER eq "STRELKA_S"){
 	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null | cut -f 1-5,11-10000 > $TEMP/$sname.s 2>$TEMP/.err_$sname.s`;
-	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+#	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
+	foreach(@NSAMPLES){
+		print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
+	}
 	open(FH, "$TEMP/$sname.s");
 	while (<FH>){
 		chomp;
@@ -243,7 +252,11 @@ elsif($CALLER eq "STRELKA_S"){
 }
 elsif($CALLER eq 'STRELKA_I'){
 	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-1000 > $TEMP/$sname.i 2>$TEMP/.err_$sname.i`;
-	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+#	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
+        foreach(@NSAMPLES){
+                print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
+        }
 	open(FH, "$TEMP/$sname.i");
 	while (<FH>){
 		chomp;

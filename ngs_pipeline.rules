@@ -483,7 +483,7 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
-	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
+	mv -f {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
 	######################
 	"""
 ############
@@ -523,10 +523,10 @@ rule Bam2MPG:
 	for CHR in `seq 1 22` X Y
 	do
 		cat /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >/lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
-		mv /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		mv -f /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
 		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
 		cat /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort >/lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
-		mv /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
+		mv -f /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
 		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
 		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
@@ -640,9 +640,13 @@ rule Strelka:
 	make -j ${{SLURM_CPUS_PER_TASK}} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 2>> {log}
 	module load vcftools/{params.vcftools}
 	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/passed.somatic.snvs.vcf --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
-	mv {output.snps}.recode.vcf {output.snps}
+	mv -f {output.snps}.recode.vcf {output.snps}
 	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/passed.somatic.indels.vcf --bed {input.interval} --out {output.indels} --recode --keep-INFO-all
-	mv {output.indels}.recode.vcf {output.indels}
+	mv -f {output.indels}.recode.vcf {output.indels}
+	NORMAL=`basename {input[2]} .bwa.final.bam`
+	sed -i "s/FORMAT\\tNORMAL\\tTUMOR/FORMAT\\t${{NORMAL}}\\t{wildcards.Tumor}/g" {output.snps}
+	sed -i "s/FORMAT\\tNORMAL\\tTUMOR/FORMAT\\t${{NORMAL}}\\t{wildcards.Tumor}/g" {output.indels}
+	
 	#######################
 	"""
 ############
@@ -720,7 +724,7 @@ rule  FreeBayes:
 	freebayes -f {input.ref} --haplotype-length 50 -b {input.bam} -v {output.vcf} > {log} 2>&1
 	module load vcftools/{params.vcftools}
 	vcftools --vcf {output} --bed {input.interval} --out {output.vcf} --recode --keep-INFO-all
-	mv {output.vcf}.recode.vcf {output.vcf}
+	mv -f {output.vcf}.recode.vcf {output.vcf}
 	#######################
 	"""
 ############
@@ -815,7 +819,7 @@ rule Annotation:
 	shell: """
 	#######################
 	module load annovar/{version}
-	perl {input.TableAnnovar} {wildcards.subject}/annotation AnnotationInput {input.custom} 2>>{log}
+	sh {input.TableAnnovar} {wildcards.subject}/annotation AnnotationInput {input.custom} 2>>{log}
 	#######################
 	"""
 ############
