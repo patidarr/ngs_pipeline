@@ -840,7 +840,7 @@ rule SIFT:
 	DIR=`pwd`
 	cd ${{DIR}}/`dirname {input.sift}`
 	FILE=`basename {input.sift}`
-	SIFT_exome_nssnvs.pl -i ${{FILE}} -d /fdb/sift/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+	SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
 	perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
 	#######################
 	"""
@@ -862,14 +862,13 @@ rule PPH2:
 	shell: """
 	#######################
 	module load polyphen2/{version}
-	mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-#	pph -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} {input.pph}.intermediate > {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt
-#	rm -rf /scratch/`whoami`/${{RANDOM}}${{RANDOM}}
-	pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
-
-	## This is common to all 
-	perl {input.convertor}  {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
-#	rm -rf {input.pph}intermediate annotation/AnnotationInput.pph2.intermediate.txt
+	if [ -s {input.pph} ]; then
+		mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
+		pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
+		perl {input.convertor}  {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
+	else 
+		touch {output}
+	fi
 	
 	#######################
 	"""
