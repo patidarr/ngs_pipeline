@@ -1,18 +1,19 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-
+use File::Basename;
 my $FILE = $ARGV[0]; # Vcf like file Name
 my $BAM = $ARGV[1];
 unless (open(FH, "$FILE")){
 	print STDERR "Can not find the file $FILE\n";
 }
+my @a = split(/[.]/, basename($BAM));
 while(<FH>){
         chomp;
 	my $line = $_;
         my @d = split("\t", $_);
 	if($_ =~ /^Chr/ or $_ =~ /^#/){
-		print "$line\tRNASeq.GT\tRNASeq.TotCov\tRNASeq.RefCov\tRNASeq.VarCov\tRNASeq.VAF\n";
+		print "$line\t$a[0].GT\tRNASeq.TotCov\tRNASeq.RefCov\tRNASeq.VarCov\tRNASeq.VAF\n";
 	}
 	else{
 		my $rnaseq;		

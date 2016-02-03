@@ -914,7 +914,9 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.civic
 {wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
 	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
-	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} |perl {input.filter} - 0.1 >>{subject}/annotation/AnnotationInput.annotations.final.txt
+	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} >>{subject}/annotation/AnnotationInput.annotations.final.txt
+	perl {input.filter} {subject}/annotation/AnnotationInput.annotations.final.txt 0.1 >{subject}/annotation/AnnotationInput.annotations.final.txt.hold
+	mv {subject}/annotation/AnnotationInput.annotations.final.txt.hold {subject}/annotation/AnnotationInput.annotations.final.txt
 	#######################
 	"""
 ############
