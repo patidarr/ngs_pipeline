@@ -171,6 +171,7 @@ elsif($CALLER eq "STRELKA_S"){
 	foreach(@NSAMPLES){
 		print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
 	}
+	print "\n";
 	open(FH, "$TEMP/$sname.s");
 	while (<FH>){
 		chomp;
@@ -257,6 +258,7 @@ elsif($CALLER eq 'STRELKA_I'){
         foreach(@NSAMPLES){
                 print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
         }
+	print "\n";
 	open(FH, "$TEMP/$sname.i");
 	while (<FH>){
 		chomp;
