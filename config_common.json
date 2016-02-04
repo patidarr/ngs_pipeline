@@ -50,6 +50,7 @@
 	"annoInput"		: "MakeAnnotationInputs.pl",
 	"filterVars"		: "filterVariants.pl",
 	"makeQC"		: "makeQC.pl",
+	"proteincoding"		: "ProteinCoding.pl",
 	"DBinput"		: "makeDBVariantFile.pl",
 	"extractReadsdeFuse"	: "extractReadsdeFuse.sh",
 	"fAEV"			: "findAlreadyExistingVariants.pl",

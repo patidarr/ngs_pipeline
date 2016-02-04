@@ -46,6 +46,9 @@ foreach my $file(@ARGV){
 			}
 			next;
 		}
+		if($line[0] =~ /_/){
+			next;
+		}
 		my $key  = "$line[0]\t$line[1]\t$line[2]\t$line[3]\t$line[4]";
 		foreach (keys %samples){
 			if ( not exists $READS{"$key\t$samples{$_}"}){

@@ -22,9 +22,12 @@ for subject  in config['RNASeq'].keys():
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
+		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
 		for gtf in config['GTF']:
 			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 RNA_CALLS =[]
+
+#add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
 for Subject in config['RNASeq']:
 	if Subject in config['RNASeq']:
 		if Subject in SUBJECT_VCFS:
@@ -33,7 +36,6 @@ for Subject in config['RNASeq']:
 			SUBJECT_VCFS[Subject] = []
 			SUBJECT_VCFS[Subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 		RNA_CALLS += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]	
-		add_to_SUBJECT_ANNO("rnaseq", RNA_CALLS)
 		if Subject in SUB_HOT:
 			SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 			SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
