@@ -15,8 +15,8 @@ for subject  in config['RNASeq'].keys():
 		RNASEQ_BAM += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
 		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam"]	
 		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam.bai"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
@@ -24,7 +24,7 @@ for subject  in config['RNASeq'].keys():
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
 		for gtf in config['GTF']:
 			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-ANNO_FILE =[]
+RNA_CALLS =[]
 for Subject in config['RNASeq']:
 	if Subject in config['RNASeq']:
 		if Subject in SUBJECT_VCFS:
@@ -32,7 +32,8 @@ for Subject in config['RNASeq']:
 		else:
 			SUBJECT_VCFS[Subject] = []
 			SUBJECT_VCFS[Subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-		SOMATIC += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]	
+		RNA_CALLS += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]	
+		add_to_SUBJECT_ANNO("rnaseq", RNA_CALLS)
 		if Subject in SUB_HOT:
 			SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 			SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
@@ -52,7 +53,7 @@ rule RNASeq:
 		RNASEQ_BAM,
 		RNASEQ_FUSION,
 		CUFFLINKS,
-		ANNO_FILE,
+		RNA_CALLS,
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),

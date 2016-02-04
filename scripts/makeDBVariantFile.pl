@@ -20,13 +20,11 @@ use File::Basename;
 # If a variant is found in first 3 files it should be rejected from next 3 files. (Somatic)
 # ./makeDBVariantFile.pl NCI0002/Sample_NCI0002tumor_E_C4PJ0ANXX/calls/Sample_NCI0002tumor_E_C4PJ0ANXX.MuTect.annotated.expressed.txt NCI0002/Sample_NCI0002tumor_E_C4PJ0ANXX/calls/Sample_NCI0002tumor_E_C4PJ0ANXX.strelka.snvs.annotated.expressed.txt NCI0002/Sample_NCI0002tumor_E_C4PJ0ANXX/calls/Sample_NCI0002tumor_E_C4PJ0ANXX.strelka.indels.annotated.txt NCI0002/NCI0002/calls/NCI0002.hapcaller.annotated.txt NCI0002/NCI0002/calls/NCI0002.platypus.annotated.txt NCI0002/NCI0002/calls/NCI0002.bam2mpg.annotated.txt NCI0002/Sample_NCI0002tumor_T_D1UTYACXX/calls/Sample_NCI0002tumor_T_D1UTYACXX.hapcaller.snpEff.txt
 #
-my $last_index_of_annotation = 4;
-#my $last_index_of_annotation = 154;
-my $index_qual = 5;
-my $index_fs   = 5;
+#my $last_index_of_annotation = 4;
+my $last_index_of_annotation = 157;
+my $index_qual = 158;
+my $index_fs   = 158;
 my (%CALLER, %QUAL, %FS, %READS);
-
-print "\n\n";
 
 foreach my $file(@ARGV){
 	unless (open(FH, $file)){

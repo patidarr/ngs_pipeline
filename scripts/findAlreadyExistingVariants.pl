@@ -28,6 +28,7 @@ while(<BIG>){
 close BIG;
 close OUT1;
 open(OUT2, ">$ARGV[3]");
+print OUT2 "Chr\tStart\tEnd\tRef\tAlt\n";
 foreach my $outter (keys %HASH) {
 	foreach my $inner (keys %{$HASH{$outter}}) {
 		print OUT2 "$inner\n";

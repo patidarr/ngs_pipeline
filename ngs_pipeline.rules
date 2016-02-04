@@ -76,7 +76,15 @@ if len(config['sample_references']) > 0:
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 ###########################################################################
 
-#		        (subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
+def add_to_SUBJECT_ANNO(category,file_list):
+	for subject in SUBJECT_ANNO:
+		if category not in SUBJECT_ANNO[subject]:
+			SUBJECT_ANNO[subject][category] = file_list
+		else:
+			SUBJECT_ANNO[subject][category].extend(file_list)
+SUBJECT_ANNO = dict([(key, {}) for key in SUBS])
+
+###########################################################################
 SUBJECT_VCFS = {}
 SOMATIC =[]
 for sample in config['samples']:
@@ -87,6 +95,9 @@ for sample in config['samples']:
 				(subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
+	germline = [w.replace('snpEff','annotated') for w in local]
+	add_to_SUBJECT_ANNO("germline",germline)	
+
 for sample in config['sample_references'].keys():
 	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
@@ -98,6 +109,8 @@ for sample in config['sample_references'].keys():
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
         if subject in SUBJECT_VCFS:
                  SUBJECT_VCFS[subject].extend(local)
+	somatic = [w.replace('snpEff','annotated') for w in local]
+	add_to_SUBJECT_ANNO("somatic",somatic)
 ###########################################################################
 ###########################################################################
 ALL_EXPRESSED =[]
@@ -106,7 +119,7 @@ if len(config['sample_RNASeq']) > 0:
 	for Tumor in config['sample_RNASeq']:
 		for RNASample in config['sample_RNASeq'][Tumor]:
 			subject=SAMPLE_TO_SUBJECT[Tumor]
-			RNASeqBam    = subject + "/" + RNASample + "/tophat_"+RNASample+"/accepted_hits.bam" 
+			RNASeqBam    = subject + "/" + RNASample + "/"+RNASample+".star.final.bam"
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
@@ -117,7 +130,7 @@ if len(config['sample_RNASeq']) > 0:
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 ###########################################################################
-localrules: Khanlab_Pipeline, RNASeq, IGV_Session 
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput 
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
@@ -125,6 +138,7 @@ rule Khanlab_Pipeline:
 		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject= SUBS),
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
+		expand("{subject}/{subject}/db/{subject}.{group}", subject= SUBS, group=['germline', 'somatic', 'rnaseq',]),
 		SOMATIC,
 		ALL_EXPRESSED,
 		"RNASeq.done",
@@ -138,6 +152,8 @@ rule Khanlab_Pipeline:
 	shell: """
 	#######################
 	echo "Pipeline Finished Successfully!!"	 >{output}
+	umask 007
+	chgrp -R khanlab *
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {input.wait4job} ${{Final}}
@@ -868,12 +884,12 @@ rule PPH2:
 	module load polyphen2/{version}
 	if [ -s {input.pph} ]; then
 		mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph} 2>{log}
-		pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
+		pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
 		perl {input.convertor}  {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt >{output} 2>>{log}
 	else 
 		touch {output}
 	fi
-	
+	rm -f {wildcards.subject}/annotation/AnnotationInput.pph.inter*	
 	#######################
 	"""
 ############
@@ -916,7 +932,7 @@ rule CombineAnnotation:
 	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
 	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} >>{subject}/annotation/AnnotationInput.annotations.final.txt
 	perl {input.filter} {subject}/annotation/AnnotationInput.annotations.final.txt 0.1 >{subject}/annotation/AnnotationInput.annotations.final.txt.hold
-	mv {subject}/annotation/AnnotationInput.annotations.final.txt.hold {subject}/annotation/AnnotationInput.annotations.final.txt
+	mv -f {subject}/annotation/AnnotationInput.annotations.final.txt.hold {subject}/annotation/AnnotationInput.annotations.final.txt
 	#######################
 	"""
 ############
@@ -962,6 +978,21 @@ rule Expressed:
 	perl {input.convertor} {input.Mutation} {input.RNASeq} > {output} 2>{log}
 	#######################
 	"""
+############
+#       Database Input
+############
+rule DBinput:
+	input:
+		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
+		convertor=NGS_PIPELINE + "/scripts/" + config["DBinput"]
+	output: "{subject}/{subject}/db/{subject}.{group}"
+	params:
+		rulename  = "makeDBinput"
+	shell: """
+	#######################
+	perl {input.convertor} {input.txtFiles} >{output}
+	#######################
+	"""	
 ############
 #	**END**
 ############

@@ -1,6 +1,7 @@
 #!/bin/sh
 #PBS -N ANNOVAR
 cd $1 ###
+echo `pwd`
 file="$2.anno"   ###
 DATADIR="/data/Clinomics/Ref/annovar/"
 CUSTOM=$3    ###

@@ -50,6 +50,7 @@
 	"annoInput"		: "MakeAnnotationInputs.pl",
 	"filterVars"		: "filterVariants.pl",
 	"makeQC"		: "makeQC.pl",
+	"DBinput"		: "makeDBVariantFile.pl",
 	"extractReadsdeFuse"	: "extractReadsdeFuse.sh",
 	"fAEV"			: "findAlreadyExistingVariants.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
