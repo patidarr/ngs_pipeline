@@ -714,6 +714,7 @@ rule Sub_Platypus:
 	module load platypus/{version}
 	LIST=`echo {input.bams}|sed -e 's/ /,/g'`
 	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref} --logFileName={log}
+	sed -i 's/.bwa.final//g' {output.vcf}
 	#######################
 	"""
 ############
@@ -744,7 +745,7 @@ rule  FreeBayes:
 	#######################
 	"""
 ############
-#	snpEff and vcf2txt
+#	snpEff
 ############
 rule snpEff:
 	input:
