@@ -136,9 +136,12 @@ include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
 DBFiles =[]
+ActionableFiles =[]
 for subject in SUBJECT_ANNO.keys():
 	for group in SUBJECT_ANNO[subject].keys():
 		DBFiles +=[subject+"/"+subject+"/db/"+subject+"."+group] 
+		ActionableFiles +=[subject+"/Actionable/"+subject+"."+group+".actionable.txt"] 
+		
 ###########################################################################
 localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput,AttachAnnotation,Expressed,vcf2txt 
 rule Khanlab_Pipeline:
@@ -147,26 +150,23 @@ rule Khanlab_Pipeline:
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject= SUBS),
+		expand("{subject}/annotation/Annotations.coding.rare.txt", subject= SUBS),
 		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
 		SOMATIC,
 		DBFiles,
+		ActionableFiles,
 		ALL_EXPRESSED,
 		"RNASeq.done",
 		expand("{subject}/igv/session_{subject}.xml",subject= SUBS),
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
-	output:
-		"Status"
-	log: "log/FINAL"
 	version: "1.0"
-	message: "Final Rule, Genotyping"
 	shell: """
 	#######################
-	echo "Pipeline Finished Successfully!!"	 >{output}
-#	umask 007
 	chgrp -R khanlab *
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {input.wait4job} ${{Final}}
+	echo -e "Pipeline finished successfully.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab NGS Pipeline" `whoami`@mail.nih.gov
 	#######################
 	"""
 ############
@@ -181,7 +181,6 @@ rule fastqc:
 		"{base}/{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	log: "log/fastqc.{sample}"
 	version: config["fastqc"]
-	message: "Running Fastqc on {wildcards.sample}"
 	params:
 		rulename  = "fastqc",
 		batch     = config["job_fastqc"]
@@ -205,7 +204,6 @@ rule BWA:
 		temp("{base}/{sample}/{sample}.bwa.bam.bai")
 	log: "log/bwa.{sample}"
 	version: config["bwa"]
-	message: "Running bwa on {wildcards.sample}"
 	params:
 		rulename  = "bwa",
 		platform  = config["platform"],
@@ -236,7 +234,6 @@ rule Novoalign:
 		temp("{subject}/{sample}/{sample}.novo.bam.bai")
 	log: "log/novoalign.{sample}"
 	version: config["novocraft"]
-	message: "Running Novoalign on {wildcards.sample}"
 	params:
 		rulename  = "novoalign",
 		batch     = config["job_novoalign"],
@@ -267,7 +264,6 @@ rule Genotyping:
 		loh="{base}/{sample}/qc/{sample}.{aligner}.loh"
 	log: "log/genotyping.{sample}"
 	version: config["samtools_old"]
-	message: "Making Genotyping Input file on {input.bam}"
 	params:
 		rulename  = "genotype",
 		batch     = config["job_genotype"],
@@ -293,7 +289,6 @@ rule BamQC:
 		"{base}/{sample}/qc/BamQC/qualimapReport.html"
 	log: "log/bamqc.{sample}"
 	version: config["qualimap"]
-	message: "Running BamQC on {wildcards.sample}"
 	params: 
 		rulename = "bamqc",
 		batch	 = config["job_qualimap"],
@@ -317,7 +312,6 @@ rule QC_Sum:
 		"QC_AllSamples.txt"
 	log: "log/qc_sum"
 	version: "v1.1"
-	message: "Collecting QC on all samples"
 	params:
 		rulename = "qc_sum",
 		batch    = config['job_default']
@@ -334,7 +328,6 @@ rule flagstat:
 	output: "{base}/{sample}/qc/{sample}.{aligner}.flagstat.txt"
 	log:    "log/flagstat.{sample}"
 	version: config["samtools"]
-	message: "Running samtools flagstat on {wildcards.sample}"
 	params:
 		rulename  = "flagstat",
 		batch     = config["job_flagstat"]
@@ -354,7 +347,6 @@ rule HotSpotCoverage:
 	output: "{base}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
 	log: "log/hotspotCoverage.{sample}"
 	version: config["bedtools"]
-	message: "Running Hotspot Coverage on {wildcards.sample}"
 	params:
 		rulename  = "HotSpotCov",
 		batch     = config["job_hotspot"],
@@ -378,7 +370,6 @@ rule Coverage:
 		"{subject}/{sample}/qc/{sample}.bwa.coverage.txt"
 	log: "log/coverage.{sample}"
 	version: config["bedtools"]
-	message: "Running Coverage on {input.bam}"
 	params:
 		rulename = "coverage",
 		batch    = config["job_bedtools"]
@@ -398,7 +389,6 @@ rule CoveragePlot:
 	output: "{subject}/qc/{subject}.coveragePlot.png",
 	log: "log/coverage.{subject}"
 	version: config["R"]
-	message: "Generating Coverage Plot on {wildcards.subject}"
 	params:
 		rulename = "covplot",
 		batch    = config["job_covplot"]
@@ -422,7 +412,6 @@ rule Circos:
 		"{subject}/qc/{subject}.circos.png",
 	log: "log/circos.{subject}"
 	version: config["R"]
-	message: "Generating CIRCOS Plot on {wildcards.subject}"
 	params:
 		rulename = "Circos",
 		batch    = config["job_covplot"]
@@ -444,7 +433,6 @@ rule BoxPlot_Hotspot:
 		"{subject}/qc/{subject}.hotspot_coverage.png",
 	log: "log/boxplot.{subject}"
 	version: config["R"]
-	message: "Generating BoxPlot Plot on {wildcards.subject}"
 	params:
 		rulename = "Boxplot",
 		batch    = config["job_covplot"]
@@ -469,7 +457,6 @@ rule Picard_MarkDup:
 		metrics="{subject}/{sample}/qc/{base}.markdup.txt"
 	log:    "log/markdup.{sample}.{base}"
 	version: config["picard"]
-	message: "Running picard mark duplicates on {wildcards.sample}"
 	params:
 		rulename  = "mark_dup",
 		batch     = config["job_markdup"],
@@ -497,7 +484,6 @@ rule GATK:
 		index="{base}/{sample}/{sample}.bwa.final.bam.bai",
 	log:    "log/gatk.{sample}"
 	version: config["GATK"]
-	message: "Running GATK Best practices on {input.bam}"
 	params:
 		rulename  = "gatk",
 		batch     = config["job_gatk"]
@@ -525,7 +511,6 @@ rule Bam2MPG:
 		snps="{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
 	log: "log/bam2mpg.{sample}"
 	version: config["bam2mpg"]
-	message: "Running Bam2MPG on {input.bam}"
 	params:
 		rulename  = "bam2mpg",
 		batch     = config["job_bam2mpg"],
@@ -582,7 +567,6 @@ rule Sub_MPG:
 		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
 	log: "log/mpg.{subject}"
 	version: config["vcftools"]
-	message: "Merge sample level mpg files to subject level {subject}"
 	params:
 		rulename = "mergevcf",
 		batch    = config["job_default"],
@@ -612,7 +596,6 @@ rule MuTect:
 		coverage="{subject}/{Tumor}/qc/{Tumor}.mutect.coverage.wig.txt"
 	log:	"log/mutect.{Tumor}"
 	version: config["MuTect"]
-	message: "MuTect on {wildcards.Tumor}"
 	params:
 		rulename = "MuTect",
 		batch    = config["job_mutect"],
@@ -653,7 +636,6 @@ rule Strelka:
 		indels="{subject}/{Tumor}/calls/{Tumor}.strelka.indels.raw.vcf"
 	log:    "log/strelka.{Tumor}"
 	version: config["strelka"]
-	message: "Strelka on {wildcards.Tumor}"
 	params:
 		rulename = "Strelka",
 		batch    = config["job_strelka"],
@@ -688,7 +670,6 @@ rule Sub_HapCall:
 		vcf="{subject}/{subject}/calls/{subject}.hapcaller.raw.vcf"
 	log: "log/hapcaller.{subject}"
 	version: config["GATK"]
-	message: "Haplotype Caller on {wildcards.subject}"
 	params:
 		rulename = "HC",
 		batch    = config["job_gatk"]
@@ -715,7 +696,6 @@ rule Sub_Platypus:
 		vcf="{subject}/{subject}/calls/{subject}.platypus.raw.vcf"
 	log: "log/platypus.{subject}"
 	version: config["platypus"]
-	message: "Platypus on {wildcards.subject}"
 	params:
 		rulename = "PLAT",
 		batch    = config["job_platypus"]
@@ -740,7 +720,6 @@ rule  FreeBayes:
 		vcf="{subject}/{sample}/calls/{sample}.freebayes.vcf"
 	log:    "log/freebayes.{sample}"
 	version: config["freebayes"]
-	message: "Freebayes on {wildcards.subject}"
 	params:
 		rulename = "freebayes",
 		batch    = config["job_freebayes"],
@@ -766,7 +745,6 @@ rule snpEff:
 		eff="{subject}/calls/{base}.raw.snpEff.vcf"
 	log: "log/snpEff.{base}"
 	version: config["snpEff"]
-	message: "snpEff on {input.vcf}"
 	params:
 		rulename      ="snpEff",
 		batch	      =config["job_snpeff"],
@@ -812,7 +790,6 @@ rule FormatInput:
 		"{subject}/annotation/AnnotationInput.sift",
 	log: "log/FormatInput.{subject}"
 	version: config["annovar"]
-	message: "Making Annotation input {wildcards.subject}"
 	params:
 		rulename   = "FormatInput",
 		batch      = config["job_default"],
@@ -837,7 +814,6 @@ rule Annotation:
 		"{subject}/annotation/AnnotationInput.docm"
 	log: "log/Annovar.{subject}"
 	version: config["annovar"]
-	message: "Custom annotation on {wildcards.subject}"
 	params:
 		rulename   = "Annotation",
 		batch      = config["job_annovar"],
@@ -859,7 +835,6 @@ rule SIFT:
 	output: "{subject}/annotation/AnnotationInput.sift.out"
 	log: "log/SIFT.{subject}"
 	version: config["SIFT"]
-	message: "SIFT on {wildcards.subject}"
 	params:
 		rulename   = "SIFT",
 		batch      = config["job_SIFT"],
@@ -886,7 +861,6 @@ rule PPH2:
 	output: "{subject}/annotation/AnnotationInput.pph2.out"
 	log: "log/PPH2.{subject}"
 	version: config["polyphen2"]
-	message: "pph2 on {wildcards.subject}"
 	params:
 		rulename   = "PPH2",
 		batch      = config["job_PPH2"],
@@ -915,10 +889,9 @@ rule CombineAnnotation:
 		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"],
 		filter     = NGS_PIPELINE + "/scripts/" + config["filterVars"],
 		coding     = NGS_PIPELINE + "/scripts/" + config["proteincoding"]
-	output: "{subject}/annotation/AnnotationInput.annotations.final.txt.tmp"
+	output: "{subject}/annotation/Annotations.coding.rare.txt"
 	log: "log/CombineAnnotation.{subject}"
 	version: "1.0"
-	message: "Merge Annotation {wildcards.subject}"
 	params:
 		rulename   = "combine",
 		batch	   = config["job_Combine"],
@@ -942,9 +915,10 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.civic
 {wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
 	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
-	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} >>{subject}/annotation/AnnotationInput.annotations.final.txt
-	perl {input.coding} {subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - 0.1 >{subject}/annotation/AnnotationInput.annotations.final.txt.hold
-	mv -f {subject}/annotation/AnnotationInput.annotations.final.txt.hold {subject}/annotation/AnnotationInput.annotations.final.txt
+	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} >>{wildcards.subject}/annotation/AnnotationInput.annotations.final.txt
+	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - 0.1 |sort |uniq >{wildcards.subject}/annotation/Annotations.coding.rare.txt
+
+	rm -rf {wildcards.subject}/annotation/AnnotationInput.anno.* {wildcards.subject}/annotation/AnnotationInput.hgmd {wildcards.subject}/annotation/AnnotationInput.match {wildcards.subject}/annotation/AnnotationInput.candl {wildcards.subject}/annotation/AnnotationInput.tcc {wildcards.subject}/annotation/AnnotationInput.mcg {wildcards.subject}/annotation/AnnotationInput.civic {wildcards.subject}/annotation/AnnotationInput.anno.pcg 
 	#######################
 	"""
 ############
@@ -953,25 +927,23 @@ rule CombineAnnotation:
 rule AttachAnnotation:
 	input:
 		txt="{subject}/{base1}/calls/{base}.snpEff.txt",
-		ref="{subject}/annotation/AnnotationInput.annotations.final.txt.tmp",
+		ref="{subject}/annotation/Annotations.coding.rare.txt",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["addBack"]
 	output:
 		txt="{subject}/{base1}/calls/{base}.annotated.txt"
 	log: "log/attach_annotation.{subject}.{base}"
 	version: "1.0"
-	message: "Annotate {input.txt}"
 	params:
 		rulename   = "add",
 		batch      = config["job_addbackann"],
 	shell: """
 	#######################
-	perl {input.convertor} {subject}/annotation/AnnotationInput.annotations.final.txt  {input.txt} >{output.txt} 2>{log}
+	perl {input.convertor} {wildcards.subject}/annotation/Annotations.coding.rare.txt  {input.txt} >{output.txt} 2>{log}
 	#######################
 	"""
 ############
 #       Expressed
 ############
-print(expressedPairs)
 rule Expressed:
 	input: 
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
@@ -980,7 +952,6 @@ rule Expressed:
 	output: "{subject}/{sample}/calls/{base}.annotated.expressed.txt"
 	log: "log/expressed.{base}"
 	version: config["samtools"]
-	message: "Running Expressed mpileup on {wildcards.sample} {wildcards.base}"
 	params:
 		rulename  = "Expressed",
 		batch     = config["job_expressed"],
@@ -1006,6 +977,69 @@ rule DBinput:
 	perl {input.convertor} {input.txtFiles} >{output}
 	#######################
 	"""	
+############
+#       Actionable
+############
+rule Actionable_S:
+	input:
+		somatic="{subject}/{subject}/db/{subject}.somatic",
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
+		annotation="{subject}/annotation/Annotations.coding.rare.txt",
+		refFile= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
+	output:
+		somatic="{subject}/Actionable/{subject}.somatic.actionable.txt",
+	params:
+		rulename  = "ActionableMutations"
+	shell: """
+	#######################
+	perl {input.convertor} somatic  {input.refFile} {input.somatic} | perl {input.annotate} {input.annotation} - >{output.somatic}
+	#######################
+	"""
+############
+#       Actionable
+############
+rule Actionable_G:
+	input:
+		germline="{subject}/{subject}/db/{subject}.germline",
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
+		annotation="{subject}/annotation/Annotations.coding.rare.txt",
+		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
+		cancerGeneCensus = config["annovar_data"]+"germline_cancerPredisposition_gene_list.txt",
+	output:
+		germline="{subject}/Actionable/{subject}.germline.actionable.txt",
+	params:
+		rulename  = "ActionableMutations"
+	shell: """
+	#######################
+	if [ -e {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
+	then 
+		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} > {output.germline}
+	else
+		touch /spin1/scratch/temp
+		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} > {output.germline}
+	fi
+	#######################
+	"""
+############
+#       Actionable
+############
+rule Actionable_R:
+	input:
+		rnaseq="{subject}/{subject}/db/{subject}.rnaseq",
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
+		annotation="{subject}/annotation/Annotations.coding.rare.txt",
+		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
+		cancerGeneCensus = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",
+	output:
+		rnaseq="{subject}/Actionable/{subject}.rnaseq.actionable.txt",
+	params:
+		rulename  = "ActionableMutations"
+	shell: """
+	#######################
+	echo "Construction Site" > {output.rnaseq}
+	#######################
+	"""
 ############
 #	**END**
 ############

@@ -17,7 +17,7 @@ while(<FH>){
 	}
 	else{
 		my $rnaseq;		
-		$d[0] =~ s/chr//g;
+#		$d[0] =~ s/chr//g;
 		$rnaseq = `samtools mpileup -d1000000000000 -r $d[0]:$d[1]-$d[1] "$BAM" 2>/scratch/out |cut -f 3-5`;
 		chomp $rnaseq;
 		if($rnaseq =~ /\d/){ # Have coverage 

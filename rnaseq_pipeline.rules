@@ -12,12 +12,8 @@ for subject,samples in config['RNASeq'].items():
 for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
-		RNASEQ_BAM += [subject+"/"+sample+"/tophat_"+sample+"/accepted_hits.bam"]
-		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam"]	
-		RNASEQ_BAM1 += [subject+"/"+sample+"/"+sample+".star.final.bam.bai"]
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
 		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.raw.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
@@ -26,7 +22,6 @@ for subject  in config['RNASeq'].keys():
 		for gtf in config['GTF']:
 			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 RNA_CALLS =[]
-
 #add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
 for Subject in config['RNASeq']:
 	if Subject in config['RNASeq']:
@@ -62,7 +57,6 @@ rule RNASeq:
 
 	output:
 		touch("RNASeq.done")
-	message: "End of RNASeq"
 	shell: """
 	#######################
 	echo "Everything is done on RNASeq samples" >{output}
@@ -80,7 +74,6 @@ rule tophat:
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
 	log: "log/tophat.{sample}"
 	version: config["tophat"]
-#	message: "Running tophat on {wildcards.sample}"
 	params:
 		rulename  = "tophat",
 		batch     = config["job_tophat"],
@@ -160,7 +153,6 @@ rule fusioncatcher:
 		"{base}/{sample}/fusion/fusion-catcher.txt"
 	log: "log/fc.{sample}"
 	version: config['fusioncatcher']
-	message: "Running FusionCatcher on {wildcards.sample}"
 	params:
 		rulename = "fc",
 		batch    = config['job_fusioncatch']
@@ -185,7 +177,6 @@ rule deFuse:
 		"{base}/{sample}/fusion/defuse.Reads/defuse.done"
 	log: "log/deFuse.{sample}"
 	version: config["defuse"]
-	message: "Running deFuse on {wildcards.sample}"
 	params:
 		rulename = "deFuse",
 		batch    = config["job_deFuse"]
@@ -232,7 +223,6 @@ rule STAR:
 		temp("{base}/{sample}/{sample}.star.bam"),
 		temp("{base}/{sample}/{sample}.star.bam.bai")
 	version: config["STAR"]
-	message: "Running STAR on {wildcards.sample}"
 	params:
 		rulename  = "STAR",
 		batch     = config['job_STAR'],
@@ -313,7 +303,6 @@ rule GATK_RNASeq:
 		index="{base}/{sample}/{sample}.star.final.bam.bai",
 	log:    "log/gatk.{sample}"
 	version: config["GATK"]
-	message: "Running GATK Best practices on {input.bam}"
 	params:
 		rulename  = "gatk",
 		batch     = config["job_gatk"]
@@ -343,7 +332,6 @@ rule HapCall_RNASeq:
 		vcf="{base}/{sample}/calls/{sample}.hapcaller.raw.vcf"
 	log: "log/hapcaller.{sample}"
 	version: config["GATK"]
-	message: "Haplotype Caller on {wildcards.sample}"
 	params:
 		rulename = "HC",
 		batch    = config["job_gatk"]
@@ -367,7 +355,6 @@ rule coverage:
 		"{subject}/{sample}/qc/{sample}.star.coverage.txt"
 	log: "log/coverage.{sample}"
 	version: config["bedtools"]
-	message: "Running Coverage on {input.bam}"
 	params:
 		rulename = "coverage",
 		batch    = config["job_bedtools"]
