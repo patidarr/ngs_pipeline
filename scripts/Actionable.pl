@@ -4,15 +4,16 @@ use warnings;
 
 if($ARGV[0] eq 'somatic'){
 	Somatic($ARGV[1], $ARGV[2]);
-	# 1 == Annotations
+	# 1 == HotspotFile [reference]
 	# 2 == somaticFile
 }
 elsif($ARGV[0] eq 'germline'){
-	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4]);
+	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5]);
 	# 1 == somaticFile
 	# 2 == germlineFil
 	# 3 == Annotations
 	# 4 == CancerGene List [reference]
+	# 5 == HotspotFile [reference]
 }
 elsif($ARGV[0] eq 'rnaseq'){
 #	Rnaseq($ARGV[1], $ARGV[2])
@@ -20,7 +21,7 @@ elsif($ARGV[0] eq 'rnaseq'){
 
 sub Germline{
 	# First remove anything somatic
-	my ($somatic, $germline, $annotation, $cancerGeneList) = (@_);
+	my ($somatic, $germline, $annotation, $cancerGeneList, $hotspot) = (@_);
 
 	unless (open(ANN_FH, "$somatic")){
 		print STDERR "Can not open file $somatic\n";
@@ -58,10 +59,22 @@ sub Germline{
 	my %CANCER_GENE;
 	while(<REF>){
 		chomp;
-		my @local = split ("\t", $_);
-		$CANCER_GENE{$local[0]} ='yes';
+		$CANCER_GENE{$_} ='yes';
 	}
 	close REF;
+	# HotSpot site 
+	unless(open(HOT, "$hotspot")){
+		print STDERR "Can not open file $hotspot\n";
+		exit;
+	}
+	my %HOT_SPOT;
+	while(<HOT>){
+		chomp;
+		my @local = split ("\t", $_);
+		my $key = join "\t", @local[0..2];
+		$HOT_SPOT{"$key"} = $local[3];
+	}
+	close HOT;
 	# Germline mutation to work on.
 	unless (open (ORI,"$germline")){
 		print STDERR "Can not open file $germline\n";
@@ -82,12 +95,23 @@ sub Germline{
 		#if (!exists $DATA{$site_sample}){ # i.e. position in sample is germline
 			my $source = findSource($ANNOTATION{"$site"});
 			my @ANN = split("\t", $ANNOTATION{"$site"});
-			if($source =~ /[ACMG-clinvar|hgmd|CancerGene]/){
-				my $vaf = VAF($temp[9], $temp[10]);
-				if($source =~ /^CancerGene$/ and (exists $CANCER_GENE{$ANN[1]})){
+			my $vaf = VAF($temp[9], $temp[10]);
+			if(($temp[9] !~ /\D/) and $temp[9] >=10 and $vaf >=0.25){
+				if($source =~ /[ACMG-clinvar|hgmd]/){
+					if(exists $CANCER_GENE{$ANN[1]}){
+						$source = $source.";CancerGene";
+						if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
+							$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
+						}
+					}
+					if(exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
+						$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
+					
+					}
 					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\n";
 				}
-				else{
+				elsif(exists $CANCER_GENE{$ANN[1]}){
+					$source = $source."CancerGene";
 					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\n";
 				}
 			}
@@ -106,9 +130,6 @@ sub findSource{
 	}
 	if($ANN[63] =~ /^Disease causing mutation$/){  # HGMD
 		$source{'hgmd'} = 'yes';	
-	}
-	if($ANN[3] =~ /stop/ or $ANN[3] =~ /frameshift/ or $ANN[3] =~ /nonsynonymous/){
-		$source{'CancerGene'} = 'yes';
 	}
 	my $return = join(";", (sort keys %source));
 	return($return);

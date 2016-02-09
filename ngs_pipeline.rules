@@ -29,6 +29,13 @@ configfile: NGS_PIPELINE +"/config_cluster.json"
 ###########################################################################
 config['germlineCallers'] = [ "hapcaller", "bam2mpg", "platypus"]
 config['somaticCallers'] = ["MuTect", "strelka"]
+
+
+
+###########################################################################
+#
+#			Conversion
+#
 ###########################################################################
 SUBJECT_TO_SAMPLE  = {}
 for subject in config['subject']:
@@ -39,35 +46,44 @@ for subject,samples in config['subject'].items():
     for sample in samples:
         SAMPLE_TO_SUBJECT[sample]=subject
 ###########################################################################
+
+
 ####
 #### Targets
 ####
 SUBS  = []
-for subject,samples in config['subject'].items():
-	SUBS.append(subject)
-
-ALL_SAMPLES = config["samples"]
-ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
-ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
-ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] 
-ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] 
-ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']] 
-ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['samples']]
-###########################################################################
-SUB_BAMS= {} 
+SUB_BAMS= {}
 SUB_COV = {}
 SUB_LOH = {}
 SUB_MPG = {}
 SUB_HOT = {}
-for Subject  in config['subject']:
-	SUB_BAMS[Subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_COV[Subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_HOT[Subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_LOH[Subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-	SUB_MPG[Subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][Subject]]
-###########################################################################
+SAMPLES =[]
 somaticPairs = {}
 pairedCapture = {}
+QC=[]
+for subject in config['subject'].keys():
+	QC.append(subject+"/qc/"+subject+".coveragePlot.png")
+	QC.append(subject+"/qc/"+subject+".circos.png")
+	QC.append(subject+"/qc/"+subject+".hotspot_coverage.png")
+	QC.append(subject+"/annotation/Annotations.coding.rare.txt")
+	QC.append(subject+"/igv/session_"+subject+".xml")
+	SUBS.append(subject)
+	SUB_BAMS[subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_COV[subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_HOT[subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_LOH[subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	for sample in config['subject'][subject]:
+		SAMPLES.append(sample)
+	
+ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
+ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
+ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
+ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+QC.append(ALL_QC)
+QC.append(ALL_FASTQC)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
@@ -90,8 +106,8 @@ SOMATIC =[]
 for subject in SUBS:
 	local  = []
 	local.extend([(subject+"/"+subject+"/calls/"+subject+".hapcaller.snpEff.txt"),
-				(subject+"/"+subject+"/calls/"+subject+".platypus.snpEff.txt"),
-				(subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
+		      (subject+"/"+subject+"/calls/"+subject+".platypus.snpEff.txt"),
+		      (subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
 	germline = [w.replace('snpEff','annotated') for w in local]
@@ -101,13 +117,15 @@ for sample in config['sample_references'].keys():
 	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
 	local.extend([ (subject+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
-				 (subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
-				 (subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")])
+		       (subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
+		       (subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
+	])
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
         if subject in SUBJECT_VCFS:
                  SUBJECT_VCFS[subject].extend(local)
+
 	somatic = [w.replace('snpEff','annotated') for w in local]
 	if sample in config['sample_RNASeq']:
 		somatic = [w.replace('MuTect.annotated','MuTect.annotated.expressed') for w in somatic]
@@ -135,38 +153,35 @@ include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
+varFiles=[]
 DBFiles =[]
 ActionableFiles =[]
 for subject in SUBJECT_ANNO.keys():
 	for group in SUBJECT_ANNO[subject].keys():
 		DBFiles +=[subject+"/"+subject+"/db/"+subject+"."+group] 
 		ActionableFiles +=[subject+"/Actionable/"+subject+"."+group+".actionable.txt"] 
-		
+		for varFile in SUBJECT_ANNO[subject][group]:
+			varFiles.append(varFile)
 ###########################################################################
 localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput,AttachAnnotation,Expressed,vcf2txt 
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
-		expand("{subject}/qc/{subject}.coveragePlot.png", subject= SUBS),
-		expand("{subject}/qc/{subject}.circos.png", subject= SUBS),
-		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject= SUBS),
-		expand("{subject}/annotation/Annotations.coding.rare.txt", subject= SUBS),
-		expand("{subject}/{subject}/calls/{subject}.{caller}.annotated.txt", subject= SUBS, caller=config['germlineCallers']),
-		SOMATIC,
+		QC,
+		varFiles,
 		DBFiles,
 		ActionableFiles,
-		ALL_EXPRESSED,
 		"RNASeq.done",
-		expand("{subject}/igv/session_{subject}.xml",subject= SUBS),
-		wait4job= NGS_PIPELINE + "/scripts/" + config["block"],
 	version: "1.0"
+	params: 
+		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]	
 	shell: """
 	#######################
-	chgrp -R khanlab *
+#	chgrp -R khanlab *
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
-#	perl {input.wait4job} ${{Final}}
-	echo -e "Pipeline finished successfully.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab NGS Pipeline" `whoami`@mail.nih.gov
+#	perl {params.wait4job} ${{Final}}
+#	echo -e "Pipeline finished successfully.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab NGS Pipeline" `whoami`@mail.nih.gov
 	#######################
 	"""
 ############
@@ -980,7 +995,7 @@ rule DBinput:
 ############
 #       Actionable
 ############
-rule Actionable_S:
+rule Actionable_Somatic:
 	input:
 		somatic="{subject}/{subject}/db/{subject}.somatic",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
@@ -990,7 +1005,8 @@ rule Actionable_S:
 	output:
 		somatic="{subject}/Actionable/{subject}.somatic.actionable.txt",
 	params:
-		rulename  = "ActionableMutations"
+		rulename  = "ActionableMutations",
+		batch    = config['job_default']
 	shell: """
 	#######################
 	perl {input.convertor} somatic  {input.refFile} {input.somatic} | perl {input.annotate} {input.annotation} - >{output.somatic}
@@ -999,32 +1015,34 @@ rule Actionable_S:
 ############
 #       Actionable
 ############
-rule Actionable_G:
+rule Actionable_Germline:
 	input:
 		germline="{subject}/{subject}/db/{subject}.germline",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
 		annotation="{subject}/annotation/Annotations.coding.rare.txt",
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 		cancerGeneCensus = config["annovar_data"]+"germline_cancerPredisposition_gene_list.txt",
+		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 	output:
 		germline="{subject}/Actionable/{subject}.germline.actionable.txt",
 	params:
-		rulename  = "ActionableMutations"
+		rulename  = "ActionableMutations",
+		batch    = config['job_default']
 	shell: """
 	#######################
 	if [ -e {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
 	then 
-		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} > {output.germline}
+		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot}> {output.germline}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} > {output.germline}
+		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot}> {output.germline}
 	fi
 	#######################
 	"""
 ############
 #       Actionable
 ############
-rule Actionable_R:
+rule Actionable_RNAseq:
 	input:
 		rnaseq="{subject}/{subject}/db/{subject}.rnaseq",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
@@ -1034,7 +1052,8 @@ rule Actionable_R:
 	output:
 		rnaseq="{subject}/Actionable/{subject}.rnaseq.actionable.txt",
 	params:
-		rulename  = "ActionableMutations"
+		rulename  = "ActionableMutations",
+		batch    = config['job_default']
 	shell: """
 	#######################
 	echo "Construction Site" > {output.rnaseq}
