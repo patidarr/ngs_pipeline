@@ -5,10 +5,6 @@
       "Sample_NCI0047tumor_E_C4PJ0ANXX"
     ]
   },
-  "samples": [
-    "Sample_NCI0047blood_E_C4PJ0ANXX",
-    "Sample_NCI0047tumor_E_C4PJ0ANXX"
-  ],
   "sample_references": {
     "Sample_NCI0047tumor_E_C4PJ0ANXX": [
       "Sample_NCI0047blood_E_C4PJ0ANXX"
