@@ -6,22 +6,21 @@ from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 # Snakemake Base location
 try:
-    NGS_PIPELINE=os.environ['NGS_PIPELINE']
+	NGS_PIPELINE=os.environ['NGS_PIPELINE']
 except KeyError:
-    NGS_PIPELINE="/data/khanlab/projects/patidar/Serpentine"
-    pass
+	NGS_PIPELINE="/data/khanlab/projects/patidar/Serpentine"
+	pass
 #Basic utility functions
 try:
-    WORK_DIR=os.environ['WORK_DIR']
+	WORK_DIR=os.environ['WORK_DIR']
 except KeyError:
 	print("I can not locate your work directory")
 	quit()
-
 try:
-    DATA_DIR=os.environ['DATA_DIR']
+	DATA_DIR=os.environ['DATA_DIR']
 except KeyError:
-        print("I can not locate your DATA directory")
-        quit()
+	print("I can not locate your DATA directory")
+	quit()
 
 shell.prefix("set -eo pipefail; ")
 configfile: NGS_PIPELINE +"/config_common.json"
@@ -33,15 +32,13 @@ configfile: NGS_PIPELINE +"/config_cluster.json"
 ###########################################################################
 SUBJECT_TO_SAMPLE  = {}
 for subject in config['subject']:
-        SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['subject'][subject])
+	SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['subject'][subject])
 ###########################################################################
 SAMPLE_TO_SUBJECT  = {}
 for subject,samples in config['subject'].items():
-    for sample in samples:
-        SAMPLE_TO_SUBJECT[sample]=subject
+	for sample in samples:
+		SAMPLE_TO_SUBJECT[sample]=subject
 ###########################################################################
-
-
 ####
 #### Targets
 ####
@@ -86,13 +83,11 @@ if len(config['sample_references']) > 0:
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 ###########################################################################
-
 def add_to_SUBJECT_ANNO(subject, category,file_list):
 	if category not in SUBJECT_ANNO[subject]:
 		SUBJECT_ANNO[subject][category] = file_list
 	else:
 		SUBJECT_ANNO[subject][category].extend(file_list)
-
 SUBJECT_ANNO = dict([(key, {}) for key in SUBS])
 ###########################################################################
 SUBJECT_VCFS = {}
@@ -110,15 +105,17 @@ for subject in SUBS:
 for sample in config['sample_references'].keys():
 	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
-	local.extend([ (subject+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
-		       (subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
-		       (subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
-	])
+	local.extend(
+		[ (subject+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
+		(subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
+		(subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
+		]
+	)
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
-        if subject in SUBJECT_VCFS:
-                 SUBJECT_VCFS[subject].extend(local)
+	if subject in SUBJECT_VCFS:
+		SUBJECT_VCFS[subject].extend(local)
 
 	somatic = [w.replace('snpEff','annotated') for w in local]
 	if sample in config['sample_RNASeq']:
@@ -168,7 +165,7 @@ rule Khanlab_Pipeline:
 		"RNASeq.done",
 	version: "1.0"
 	params: 
-		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]	
+		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]
 	shell: """
 	#######################
 #	chgrp -R khanlab *
@@ -285,7 +282,7 @@ rule Genotyping:
 	cp -f {output.gt} {params.dest}/{wildcards.sample}.gt 2>>{log}
 	perl {input.vcf2loh} {output.vcf} >{output.loh} 2>>{log}
 	#######################
-	"""	
+	"""
 ############
 #       BamQC
 ############
@@ -350,7 +347,7 @@ rule flagstat:
 #       Hotspot Coverage
 ############
 rule HotSpotCoverage:
-	input:	
+	input:
 		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
 		interval=config["hotspot_intervals"]
 	output: "{base}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
@@ -533,7 +530,7 @@ rule Bam2MPG:
 	fi
 
 	module load bam2mpg/{version}
-	module load vcftools/{params.vcftools}	
+	module load vcftools/{params.vcftools}
 	for CHR in `seq 1 22` X Y;
 	do
 	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam} &
@@ -883,7 +880,7 @@ rule PPH2:
 	else 
 		touch {output}
 	fi
-	rm -rf {wildcards.subject}/annotation/AnnotationInput.pph.inter*	
+	rm -rf {wildcards.subject}/annotation/AnnotationInput.pph.inter*
 	#######################
 	"""
 ############

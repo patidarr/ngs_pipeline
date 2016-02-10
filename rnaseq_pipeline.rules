@@ -17,7 +17,7 @@ for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
@@ -204,8 +204,8 @@ rule deFuse:
 	do 
 		echo "get_reads.pl -c {input.config} -o {wildcards.base}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt" 
 	done >{wildcards.base}/{wildcards.sample}/fusion/cmd.swarm
-	cat {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm | parallel -j ${{SLURM_CPUS_ON_NODE}} --no-notice	
-	touch {wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/defuse.done	
+	cat {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm | parallel -j ${{SLURM_CPUS_ON_NODE}} --no-notice
+	touch {wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/defuse.done
 	rm -rf {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq 
 	rm -rf {wildcards.base}/{wildcards.sample}/fusion/temp {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm
 	#######################
@@ -241,7 +241,7 @@ rule STAR:
 		--outFileNamePrefix {wildcards.sample} \
 		--runThreadN ${{SLURM_CPUS_ON_NODE}} \
 		--outFilterMismatchNmax 2
-	echo "Finished Step 1"	
+	echo "Finished Step 1"
 
 	# make splice junctions database file out of SJ.out.tab, filter out non-canonical junctions
 	mkdir GenomeForPass2
@@ -268,15 +268,15 @@ rule STAR:
 		--readFilesIn {input.R1} {input.R2}\
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample}_pass2
-	echo "Finished Step 4"	
+	echo "Finished Step 4"
 	
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load picard/{params.picard}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $PICARDJARPATH/AddOrReplaceReadGroups.jar\
-        VALIDATION_STRINGENCY=SILENT\
-        INPUT={wildcards.sample}_pass2Aligned.out.sam\
-        OUTPUT={params.home}/{wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.bam\
-        SORT_ORDER=coordinate RGLB={wildcards.sample} RGPU={wildcards.sample} RGPL=ILLUMINA RGSM={wildcards.sample} RGCN=khanlab
+	VALIDATION_STRINGENCY=SILENT\
+	INPUT={wildcards.sample}_pass2Aligned.out.sam\
+	OUTPUT={params.home}/{wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.bam\
+	SORT_ORDER=coordinate RGLB={wildcards.sample} RGPU={wildcards.sample} RGPL=ILLUMINA RGSM={wildcards.sample} RGCN=khanlab
 
 	echo "Finished Step 5"
 	module load samtools
@@ -333,12 +333,12 @@ rule HapCall_RNASeq:
 		rulename = "HC",
 		batch    = config["job_gatk"]
 	shell: """
-        #######################
+	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf --dbsnp {input.dbsnp} -dontUseSoftClippedBases -stand_call_conf 30 -stand_emit_conf 30 -log {log}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T VariantFiltration -R {input.ref} -V /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf -window 35 -cluster 3 --filterExpression "FS > 30.0 || QD < 2" -filterName "RNASeqFilters_FS_QD" -o {output.vcf}
-        #######################
+	#######################
 	"""
 ############
 # Coverage
@@ -367,8 +367,8 @@ rule coverage:
 rule sub_fusion:
 	input:
 		tophat="{subject}/{sample}/tophatfusion_out/result.txt",
-#                fc="{subject}/{sample}/fusion/fusion-catcher.txt",
-                defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
+		fc="{subject}/{sample}/fusion/fusion-catcher.txt",
+		defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
 		mitelman  = config["Mitelman"]
 	output:
