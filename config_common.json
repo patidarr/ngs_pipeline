@@ -54,7 +54,8 @@
 	"DBinput"		: "makeDBVariantFile.pl",
 	"extractReadsdeFuse"	: "extractReadsdeFuse.sh",
 	"fAEV"			: "findAlreadyExistingVariants.pl",
-	"Actionable"		: "Actionable.pl",
+	"Actionable_mutation"	: "Actionable.pl",
+	"Actionable_fusion"	: "ActionableFusion.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
 	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",
@@ -74,6 +75,7 @@
 	"BowtieIndex"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genome",
 	"tophat_post_ref"	: "/data/khanlab/ref/Tophat_post",
 	"Novo_index"		: "/fdb/novoalign/chr_all_hg19.nbx",
+	"Mitelman"		: "/data/khanlab/ref/GATK/hg19/fusion/Mitelman/gene_pairs_list",
 	"STAR_ref"		: "/data/khanlab/ref/GATK/hg19/STAR_hg19_index",
 	"GTF"			: {
 				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",

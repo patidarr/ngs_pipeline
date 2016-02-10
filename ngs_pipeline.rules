@@ -27,12 +27,6 @@ shell.prefix("set -eo pipefail; ")
 configfile: NGS_PIPELINE +"/config_common.json"
 configfile: NGS_PIPELINE +"/config_cluster.json"
 ###########################################################################
-config['germlineCallers'] = [ "hapcaller", "bam2mpg", "platypus"]
-config['somaticCallers'] = ["MuTect", "strelka"]
-
-
-
-###########################################################################
 #
 #			Conversion
 #
@@ -146,11 +140,6 @@ if len(config['sample_RNASeq']) > 0:
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
 			
 ###########################################################################
-#				RNASeq Rules				  # 
-###########################################################################
-include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
-include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
-###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
 varFiles=[]
@@ -164,6 +153,11 @@ for subject in SUBJECT_ANNO.keys():
 			varFiles.append(varFile)
 ###########################################################################
 localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput,AttachAnnotation,Expressed,vcf2txt 
+###########################################################################
+#                               RNASeq Rules                              #
+###########################################################################
+include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 rule Khanlab_Pipeline:
 	input: 
 		"QC_AllSamples.txt",
@@ -998,9 +992,10 @@ rule DBinput:
 rule Actionable_Somatic:
 	input:
 		somatic="{subject}/{subject}/db/{subject}.somatic",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/Annotations.coding.rare.txt",
 		refFile= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		cgc    = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 	output:
 		somatic="{subject}/Actionable/{subject}.somatic.actionable.txt",
@@ -1009,7 +1004,7 @@ rule Actionable_Somatic:
 		batch    = config['job_default']
 	shell: """
 	#######################
-	perl {input.convertor} somatic  {input.refFile} {input.somatic} | perl {input.annotate} {input.annotation} - >{output.somatic}
+	perl {input.convertor} somatic  {input.refFile} {input.cgc} {input.somatic} {input.annotation} >{output.somatic}
 	#######################
 	"""
 ############
@@ -1018,7 +1013,7 @@ rule Actionable_Somatic:
 rule Actionable_Germline:
 	input:
 		germline="{subject}/{subject}/db/{subject}.germline",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/Annotations.coding.rare.txt",
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 		cancerGeneCensus = config["annovar_data"]+"germline_cancerPredisposition_gene_list.txt",
@@ -1045,7 +1040,7 @@ rule Actionable_Germline:
 rule Actionable_RNAseq:
 	input:
 		rnaseq="{subject}/{subject}/db/{subject}.rnaseq",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable"],
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/Annotations.coding.rare.txt",
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 		cancerGeneCensus = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",

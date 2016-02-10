@@ -1,19 +1,21 @@
 RNASEQ_BAM =[]
-RNASEQ_BAM1 =[]
 RNASEQ_FUSION1=[]
 RNASEQ_FUSION =[]
 CUFFLINKS=[]
-
+RNA_CALLS =[]
 SUB2RNA = {}
+SUB_RNASEQ=[]
+SUB_FUSION={}
 for subject,samples in config['RNASeq'].items():
+	SUB_RNASEQ.append(subject)
 	for sample in samples:
 		SUB2RNA[sample]=subject
-
 for subject  in config['RNASeq'].keys():
+	ActionableFiles +=[subject+"/Actionable/"+subject+".fusion.actionable.txt"]
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
@@ -21,27 +23,24 @@ for subject  in config['RNASeq'].keys():
 		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
 		for gtf in config['GTF']:
 			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-RNA_CALLS =[]
-#add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
-for Subject in config['RNASeq']:
-	if Subject in config['RNASeq']:
-		if Subject in SUBJECT_VCFS:
-			SUBJECT_VCFS[Subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-		else:
-			SUBJECT_VCFS[Subject] = []
-			SUBJECT_VCFS[Subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-		RNA_CALLS += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]	
-		if Subject in SUB_HOT:
-			SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-			SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-			SUB_COV[Subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-		else:
-			SUB_HOT[Subject] = []
-			SUB_LOH[Subject] = []
-			SUB_COV[Subject] = []
-			SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-			SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-			SUB_COV[Subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	SUB_FUSION[subject] = ["{subject}/{sample}/fusion/{sample}.actionable.fusion.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	if subject in SUBJECT_VCFS:
+		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	else:
+		SUBJECT_VCFS[subject] = []
+		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	if subject in SUB_HOT:
+		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	else:
+		SUB_HOT[Subject] = []
+		SUB_LOH[Subject] = []
+		SUB_COV[Subject] = []
+		SUB_HOT[Subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_LOH[Subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_COV[Subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############
@@ -51,10 +50,10 @@ rule RNASeq:
 		RNASEQ_FUSION,
 		CUFFLINKS,
 		RNA_CALLS,
+		SUB_FUSION,
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
-
 	output:
 		touch("RNASeq.done")
 	shell: """
@@ -84,7 +83,6 @@ rule tophat:
 	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2} 2>{log}
 	mv -f /lscratch/${{SLURM_JOBID}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
-
 	#######################
 	"""
 ############
@@ -226,7 +224,6 @@ rule STAR:
 	params:
 		rulename  = "STAR",
 		batch     = config['job_STAR'],
-#		star_ref  = "/data/khanlab/apps/RNASeq_pipeline/Annotation/hg19_Broad_resource_bundle/STAR_hg19_index",
 		star_ref  = config['STAR_ref'],
 		awk       = NGS_PIPELINE + "/scripts/SJDB.awk",
 		home      = WORK_DIR,
@@ -234,7 +231,6 @@ rule STAR:
 	shell: """
 	#######################
 	module load STAR/{version}
-	
 	cd /lscratch/${{SLURM_JOBID}}/
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
@@ -362,5 +358,41 @@ rule coverage:
 	#######################
 	module load bedtools/{version}
 	bedtools coverage -abam {input.bam} -b {input.interval} -hist |grep "^all" > {output}
+	#######################
+	"""
+############
+# Filter fusion for every library
+############
+rule sub_fusion:
+	input:
+		tophat="{subject}/{sample}/tophatfusion_out/result.txt",
+                fc="{subject}/{sample}/fusion/fusion-catcher.txt",
+                defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
+		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
+		mitelman  = config["Mitelman"]
+	output:
+		"{subject}/{sample}/fusion/{sample}.actionable.fusion.txt"
+	params:
+		rulename = "Actionable_F",
+		batch    = config["job_default"]
+	shell: """
+	#######################
+	perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} >{output}
+	#######################
+	"""
+############
+# Combine filtered fusions to actionable.
+############
+rule Actionable_fusion:
+	input:
+		fusion=lambda wildcards: SUB_FUSION[wildcards.subject]
+	output:
+		"{subject}/Actionable/{subject}.fusion.actionable.txt"
+	params:
+		rulename = "Actionable_F",
+		batch    = config["job_default"]
+	shell: """
+	#######################
+	cat {input.fusion} |sort |uniq >{output}
 	#######################
 	"""
