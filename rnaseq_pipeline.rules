@@ -11,11 +11,13 @@ for subject,samples in config['RNASeq'].items():
 	for sample in samples:
 		SUB2RNA[sample]=subject
 for subject  in config['RNASeq'].keys():
+	DBFiles         +=[subject+"/"+subject+"/db/"+subject+".rnaseq"]
 	ActionableFiles +=[subject+"/Actionable/"+subject+".fusion.actionable.txt"]
+	ActionableFiles +=[subject+"/Actionable/"+subject+".rnaseq.actionable.txt"]
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
@@ -50,7 +52,6 @@ rule RNASeq:
 		RNASEQ_FUSION,
 		CUFFLINKS,
 		RNA_CALLS,
-		SUB_FUSION,
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
@@ -366,7 +367,7 @@ rule coverage:
 rule sub_fusion:
 	input:
 		tophat="{subject}/{sample}/tophatfusion_out/result.txt",
-                fc="{subject}/{sample}/fusion/fusion-catcher.txt",
+#                fc="{subject}/{sample}/fusion/fusion-catcher.txt",
                 defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
 		mitelman  = config["Mitelman"]
@@ -377,7 +378,13 @@ rule sub_fusion:
 		batch    = config["job_default"]
 	shell: """
 	#######################
-	perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} >{output}
+	if [-e {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt ]
+	then
+		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt >{output}
+	else
+		touch /spin1/scratch/temp
+		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt >{output}
+	fi
 	#######################
 	"""
 ############
