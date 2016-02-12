@@ -16,8 +16,8 @@ for subject  in config['RNASeq'].keys():
 	ActionableFiles +=[subject+"/Actionable/"+subject+".rnaseq.actionable.txt"]
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/tophatfusion_out/result.txt"]
-		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/tophat-fusion.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
@@ -51,15 +51,16 @@ rule RNASeq:
 		RNASEQ_BAM,
 		RNASEQ_FUSION,
 		CUFFLINKS,
+		
 		RNA_CALLS,
+		expand("{subject}/Actionable/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
-	output:
-		touch("RNASeq.done")
+	output: temp("rnaseqDone")
 	shell: """
 	#######################
-	echo "Everything is done on RNASeq samples" >{output}
+	echo "This is the end of RNASeq" >{output}
 	#######################
 	"""
 ############
@@ -94,7 +95,8 @@ rule tophat_fusion:
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"	
 	output: 
-		"{base}/{sample}/tophatfusion_out/result.txt"
+		"{base}/{sample}/tophatfusion_out/result.txt",
+		"{base}/{sample}/fusion/tophat-fusion.txt"
 	version: config["tophat"]
 	params:
 		rulename = "tp",
@@ -112,6 +114,7 @@ rule tophat_fusion:
 	ln -s {params.tp_ref}/* .
 	tophat-fusion-post -p ${{SLURM_CPUS_ON_NODE}} --num-fusion-pairs 1 {params.ref}
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
+	sed -i  '1s/^/Sample\\tGene_left\\tChr_left\\tCoordinate_left\\tGene_right\\tChr_right\\tCoordinate_right\\t#SpanningReads\\t#SpanningMatePairs\\t#SpanningMateEndOfPair\\tScore\\n/' ../tophatfusion_out/result.txt
 	ln -s ../tophatfusion_out/result.html fusion/tophat-fusion.html
 	ln -s ../tophatfusion_out/result.txt  fusion/tophat-fusion.txt
 	#######################
@@ -366,8 +369,8 @@ rule coverage:
 ############
 rule sub_fusion:
 	input:
-		tophat="{subject}/{sample}/tophatfusion_out/result.txt",
-		fc="{subject}/{sample}/fusion/fusion-catcher.txt",
+		tophat="{subject}/{sample}/fusion/tophat-fusion.txt",
+#		fc="{subject}/{sample}/fusion/fusion-catcher.txt",
 		defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
 		mitelman  = config["Mitelman"]
@@ -380,10 +383,10 @@ rule sub_fusion:
 	#######################
 	if [-e {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt ]
 	then
-		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt >{output}
+		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ >{output}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt >{output}
+		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ >{output}
 	fi
 	#######################
 	"""

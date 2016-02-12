@@ -9,7 +9,7 @@ if($ARGV[0] eq 'somatic'){
 	# 3 == somaticFile
 	# 4 == Annotations
 }
-elsif($ARGV[0] eq 'germline'){
+elsif($ARGV[0] eq 'germline' or $ARGV[0] eq 'rnaseq'){
 	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5]);
 	# 1 == somaticFile
 	# 2 == germlineFile
@@ -17,10 +17,9 @@ elsif($ARGV[0] eq 'germline'){
 	# 4 == CancerGene List [reference]
 	# 5 == HotspotFile [reference]
 }
-elsif($ARGV[0] eq 'rnaseq'){
-#	Rnaseq($ARGV[1], $ARGV[2])
+else{
+	die $!;
 }
-
 sub Germline{
 	# First remove anything somatic
 	my ($somatic, $germline, $annotation, $cancerGeneList, $hotspot) = (@_);
@@ -99,7 +98,7 @@ sub Germline{
 			my @ANN = split("\t", $ANNOTATION{"$site"});
 			my $vaf = VAF($temp[9], $temp[10]);
 			if(($temp[9] !~ /\D/) and $temp[9] >=10 and $vaf >=0.25){
-				if($source =~ /[ACMG-clinvar|hgmd]/){
+				if($source =~ /[ACMG-clinvar|hgmd|ACMG]/){
 					if(exists $CANCER_GENE{$ANN[1]}){
 						$source = $source.";CancerGene";
 						if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
@@ -126,9 +125,12 @@ sub findSource{
 	my ($input)= (@_);
 	my %source;
 	my @ANN = split("\t", $input);
-	if($ANN[60] =~ /CLINSIG=(.*pathogenic.*);CLNDBN=/ and $ANN[1] eq $ANN[146]){    # Clinvar
-		if ($1 =~ /^pathogenic/ or $1 =~ /\|pathogenic/ or $1 =~ /^probable-pathogenic/ or $1 =~ /\|probable-pathogenic/){
-			$source{'ACMG-clinvar'} = 'yes';
+	if ($ANN[1] eq $ANN[146]){
+		$source{'ACMG'} = 'yes';
+		if($ANN[60] =~ /CLINSIG=(.*pathogenic.*);CLNDBN=/ and $ANN[1]){    # Clinvar
+			if ($1 =~ /^pathogenic/ or $1 =~ /\|pathogenic/ or $1 =~ /^probable-pathogenic/ or $1 =~ /\|probable-pathogenic/){
+				$source{'ACMG-clinvar'} = 'yes';
+			}
 		}
 	}
 	if($ANN[63] =~ /^Disease causing mutation$/){  # HGMD

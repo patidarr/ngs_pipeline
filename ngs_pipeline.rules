@@ -53,11 +53,11 @@ somaticPairs = {}
 pairedCapture = {}
 QC=[]
 for subject in config['subject'].keys():
-	QC.append(subject+"/qc/"+subject+".coveragePlot.png")
-	QC.append(subject+"/qc/"+subject+".circos.png")
-	QC.append(subject+"/qc/"+subject+".hotspot_coverage.png")
-	QC.append(subject+"/annotation/Annotations.coding.rare.txt")
-	QC.append(subject+"/igv/session_"+subject+".xml")
+	QC.extend(subject+"/qc/"+subject+".coveragePlot.png")
+	QC.extend(subject+"/qc/"+subject+".circos.png")
+	QC.extend(subject+"/qc/"+subject+".hotspot_coverage.png")
+	QC.extend(subject+"/annotation/Annotations.coding.rare.txt")
+	QC.extend(subject+"/igv/session_"+subject+".xml")
 	SUBS.append(subject)
 	SUB_BAMS[subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_COV[subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
@@ -73,8 +73,8 @@ ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-QC.append(ALL_QC)
-QC.append(ALL_FASTQC)
+QC.extend(ALL_QC)
+QC.extend(ALL_FASTQC)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
@@ -157,12 +157,17 @@ include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 rule Khanlab_Pipeline:
 	input: 
+		expand("{subject}/annotation/Annotations.coding.rare.txt", subject=SUBS),
+		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
+		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
+		"rnaseqDone",
 		"QC_AllSamples.txt",
-		QC,
+		ALL_QC, ALL_FASTQC,
 		varFiles,
 		DBFiles,
-		ActionableFiles,
-		"RNASeq.done",
+		ActionableFiles
 	version: "1.0"
 	params: 
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]
@@ -894,9 +899,9 @@ rule CombineAnnotation:
 		convertor  = NGS_PIPELINE + "/scripts/" + config["CombineAnno"],
 		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"],
 		filter     = NGS_PIPELINE + "/scripts/" + config["filterVars"],
-		coding     = NGS_PIPELINE + "/scripts/" + config["proteincoding"]
+		coding     = NGS_PIPELINE + "/scripts/" + config["proteincoding"],
+		blacklisted      = config["annovar_data"]+ "hg19_blacklistedSites.txt"
 	output: "{subject}/annotation/Annotations.coding.rare.txt"
-	log: "log/CombineAnnotation.{subject}"
 	version: "1.0"
 	params:
 		rulename   = "combine",
@@ -922,7 +927,7 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
 	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
 	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} >>{wildcards.subject}/annotation/AnnotationInput.annotations.final.txt
-	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - 0.1 |sort |uniq >{wildcards.subject}/annotation/Annotations.coding.rare.txt
+	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.1 |sort |uniq >{wildcards.subject}/annotation/Annotations.coding.rare.txt
 
 	rm -rf {wildcards.subject}/annotation/AnnotationInput.anno.* {wildcards.subject}/annotation/AnnotationInput.hgmd {wildcards.subject}/annotation/AnnotationInput.match {wildcards.subject}/annotation/AnnotationInput.candl {wildcards.subject}/annotation/AnnotationInput.tcc {wildcards.subject}/annotation/AnnotationInput.mcg {wildcards.subject}/annotation/AnnotationInput.civic {wildcards.subject}/annotation/AnnotationInput.anno.pcg 
 	#######################
@@ -1041,6 +1046,7 @@ rule Actionable_RNAseq:
 		annotation="{subject}/annotation/Annotations.coding.rare.txt",
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 		cancerGeneCensus = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",
+		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 	output:
 		rnaseq="{subject}/Actionable/{subject}.rnaseq.actionable.txt",
 	params:
@@ -1048,7 +1054,8 @@ rule Actionable_RNAseq:
 		batch    = config['job_default']
 	shell: """
 	#######################
-	echo "Construction Site" > {output.rnaseq}
+	touch /spin1/scratch/temp
+	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot}> {output.rnaseq}
 	#######################
 	"""
 ############
