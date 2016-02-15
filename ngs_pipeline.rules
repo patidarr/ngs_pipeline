@@ -42,6 +42,7 @@ for subject,samples in config['subject'].items():
 ####
 #### Targets
 ####
+PATIENTS =[]
 SUBS  = []
 SUB_BAMS= {}
 SUB_COV = {}
@@ -66,7 +67,9 @@ for subject in config['subject'].keys():
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
-	
+for subject  in config['RNASeq'].keys():
+        if subject not in PATIENTS:
+                PATIENTS.append(subject)	
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
@@ -83,12 +86,12 @@ if len(config['sample_references']) > 0:
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 ###########################################################################
-def add_to_SUBJECT_ANNO(subject, category,file_list):
+SUBJECT_ANNO = dict([(key, {}) for key in PATIENTS])
+def add_to_SUBJECT_ANNO(subject, category, file_list):
 	if category not in SUBJECT_ANNO[subject]:
 		SUBJECT_ANNO[subject][category] = file_list
 	else:
 		SUBJECT_ANNO[subject][category].extend(file_list)
-SUBJECT_ANNO = dict([(key, {}) for key in SUBS])
 ###########################################################################
 SUBJECT_VCFS = {}
 SOMATIC =[]
@@ -157,7 +160,7 @@ include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 rule Khanlab_Pipeline:
 	input: 
-		expand("{subject}/annotation/Annotations.coding.rare.txt", subject=SUBS),
+		#expand("{subject}/annotation/Annotations.coding.rare.txt", subject=SUBS),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
@@ -165,9 +168,9 @@ rule Khanlab_Pipeline:
 		"rnaseqDone",
 		"QC_AllSamples.txt",
 		ALL_QC, ALL_FASTQC,
-		varFiles,
-		DBFiles,
-		ActionableFiles
+		#varFiles,
+		#DBFiles,
+		#ActionableFiles
 	version: "1.0"
 	params: 
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]
@@ -796,9 +799,8 @@ rule FormatInput:
 		txtFiles=lambda wildcards: SUBJECT_VCFS[wildcards.subject],
 		convertor= NGS_PIPELINE + "/scripts/" + config["annoInput"]
 	output: 
-		"{subject}/annotation/AnnotationInput.anno", 
-		"{subject}/annotation/AnnotationInput.pph",
-		"{subject}/annotation/AnnotationInput.sift",
+		temp("{subject}/annotation/AnnotationInput.anno"), 
+		temp("{subject}/annotation/AnnotationInput.sift")
 	log: "log/FormatInput.{subject}"
 	version: config["annovar"]
 	params:
@@ -811,6 +813,7 @@ rule FormatInput:
 	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/allSites
 	perl {params.fAEV} {wildcards.subject}/annotation/allSites annovar/AnnotationInput.final.txt {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt {wildcards.subject}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/annotation/AnnotationInput 2>{log}
+	rm -rf "{wildcards.subject}/annotation/AnnotationInput.pph",
 	#######################
 	"""
 ############
@@ -822,7 +825,7 @@ rule Annotation:
 		TableAnnovar=NGS_PIPELINE + "/scripts/" + config["Annovar"],
 		custom     =NGS_PIPELINE + "/scripts/" + config["customAnno"]
 	output:
-		"{subject}/annotation/AnnotationInput.docm"
+		temp("{subject}/annotation/AnnotationInput.docm")
 	log: "log/Annovar.{subject}"
 	version: config["annovar"]
 	params:
@@ -833,7 +836,7 @@ rule Annotation:
 	shell: """
 	#######################
 	module load annovar/{version}
-	sh {input.TableAnnovar} {wildcards.subject}/annotation AnnotationInput {input.custom} 2>>{log}
+	sh {input.TableAnnovar} {wildcards.subject}/annotation AnnotationInput {input.custom} {params.RefData} 2>>{log}
 	#######################
 	"""
 ############
@@ -843,7 +846,8 @@ rule SIFT:
 	input:
 		sift="{subject}/annotation/AnnotationInput.sift",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["SiftParse"]
-	output: "{subject}/annotation/AnnotationInput.sift.out"
+	output: 
+		temp("{subject}/annotation/AnnotationInput.sift.out")
 	log: "log/SIFT.{subject}"
 	version: config["SIFT"]
 	params:
@@ -862,7 +866,7 @@ rule SIFT:
 	#######################
 	"""
 ############
-#       PPH2
+#       PPH2   ** Not in use**
 ############
 rule PPH2:
 	input:
@@ -895,7 +899,6 @@ rule CombineAnnotation:
 	input:
 		anno="{subject}/annotation/AnnotationInput.docm", 
 		sift="{subject}/annotation/AnnotationInput.sift.out", 
-		pph2="{subject}/annotation/AnnotationInput.pph2.out",
 		convertor  = NGS_PIPELINE + "/scripts/" + config["CombineAnno"],
 		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"],
 		filter     = NGS_PIPELINE + "/scripts/" + config["filterVars"],
@@ -915,8 +918,8 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.anno.clinseq
 {wildcards.subject}/annotation/AnnotationInput.anno.cadd
 {wildcards.subject}/annotation/AnnotationInput.sift.out
-{wildcards.subject}/annotation/AnnotationInput.pph2.out
-{wildcards.subject}/annotation/AnnotationInput.anno.clinvar
+{wildcards.subject}/annotation/AnnotationInput.clinvar
+{wildcards.subject}/annotation/AnnotationInput.anno.cosmic
 {wildcards.subject}/annotation/AnnotationInput.hgmd
 {wildcards.subject}/annotation/AnnotationInput.match
 {wildcards.subject}/annotation/AnnotationInput.docm

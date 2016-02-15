@@ -3,7 +3,7 @@
 cd $1 ###
 echo `pwd`
 file="$2.anno"   ###
-DATADIR="/data/Clinomics/Ref/annovar/"
+DATADIR=$4
 CUSTOM=$3    ###
 BUILD=hg19
 ###############################
@@ -88,10 +88,10 @@ table_annovar.pl\
 	--dot2underline\
 	-out $file\
 	-remove\
-	-protocol clinvar_20150330,cosmic70\
-	-operation f,f\
+	-protocol cosmic70\
+	-operation f\
 	-nastring "NA"
-mv $file.hg19_multianno.txt $file.clinvar
+mv $file.hg19_multianno.txt $file.cosmic
 ################################
 # Add PCG 
 #
@@ -107,6 +107,12 @@ annotate_variation.pl\
 awk -F "\t" '{OFS="\t"};{print $3,$4,$5,$6,$7,$2}' $file.${BUILD}_generic_dropped |sed -e 's/,/\t/g' >$file.pcg
 head -1 $DATADIR/${BUILD}_PCG_112015.txt >>$file.pcg
 rm -rf $file.${BUILD}_generic_dropped $file.${BUILD}_generic_filtered
+################################
+# Add HGMD
+#
+################################
+OUT=`echo $file |sed -e 's/.anno//g'`
+$CUSTOM $DATADIR/${BUILD}_clinvar_20160203.txt $file >$OUT.clinvar
 ################################
 # Add HGMD
 #

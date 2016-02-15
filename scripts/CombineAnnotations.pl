@@ -14,7 +14,7 @@ chomp(my @files = <LIST>);
 close LIST;
 my %ALL_SITES;
 unless (open(FH, "$files[0]")){
-	print STDERR "$files[0]";
+	print STDERR "$files[0]\n";
 	die;
 }
 while(<FH>){
