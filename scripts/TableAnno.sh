@@ -88,7 +88,7 @@ table_annovar.pl\
 	--dot2underline\
 	-out $file\
 	-remove\
-	-protocol cosmic70\
+	-protocol cosmic76\
 	-operation f\
 	-nastring "NA"
 mv $file.hg19_multianno.txt $file.cosmic

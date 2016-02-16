@@ -60,6 +60,7 @@ for subject in config['subject'].keys():
 	QC.extend(subject+"/annotation/Annotations.coding.rare.txt")
 	QC.extend(subject+"/igv/session_"+subject+".xml")
 	SUBS.append(subject)
+	PATIENTS.append(subject)
 	SUB_BAMS[subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_COV[subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_HOT[subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
@@ -67,9 +68,15 @@ for subject in config['subject'].keys():
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
+
+###########################################################################
+#		Add RNASeq only samples to PATIENTS
+###########################################################################
 for subject  in config['RNASeq'].keys():
         if subject not in PATIENTS:
                 PATIENTS.append(subject)	
+
+###########################################################################
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
@@ -160,7 +167,7 @@ include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 rule Khanlab_Pipeline:
 	input: 
-		#expand("{subject}/annotation/Annotations.coding.rare.txt", subject=SUBS),
+		expand("{subject}/annotation/Annotations.coding.rare.txt", subject=SUBS),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
@@ -168,8 +175,8 @@ rule Khanlab_Pipeline:
 		"rnaseqDone",
 		"QC_AllSamples.txt",
 		ALL_QC, ALL_FASTQC,
-		#varFiles,
-		#DBFiles,
+		varFiles,
+		DBFiles,
 		#ActionableFiles
 	version: "1.0"
 	params: 
@@ -856,13 +863,17 @@ rule SIFT:
 		build      = config["SIFTbuild"]
 	shell: """
 	#######################
-	module load python/2.7.4
-	module load SIFT/{version}
-	DIR=`pwd`
-	cd ${{DIR}}/`dirname {input.sift}`
-	FILE=`basename {input.sift}`
-	SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
-	perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
+	if [ -s {input.sift} ]; then
+		module load python/2.7.4
+		module load SIFT/{version}
+		DIR=`pwd`
+		cd ${{DIR}}/`dirname {input.sift}`
+		FILE=`basename {input.sift}` 
+		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
+	else
+		echo -e "Chr\\tStart\\tEnd\\tRef\\tAlt\\tSIFT Prediction\\tSIFT Score" >{output}
+	fi
 	#######################
 	"""
 ############

@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use File::Basename;
+use List::Util qw(first);
 #
 # Author Rajesh Patidar rajbtpatidar@gmail.com
 # This script takes the Patient ID and make a table of all the variants in the following format to be loaded to the database
@@ -38,6 +39,9 @@ foreach my $file(@ARGV){
 		chomp;
 		my @line = split("\t", $_);
 		if($. ==1 and $_ =~ /^Chr/){
+			$last_index_of_annotation = first { $line[$_] eq 'ACMG_LSDB' } 0..$#line;
+			$index_qual = first { $line[$_] eq 'QUAL' } 0..$#line;
+			$index_fs   = first { $line[$_] eq 'QUAL' } 0..$#line;	
 			for (my $i=$last_index_of_annotation+5; $i<$#line; $i+=5){
 				my $tmp = $line[$i];
 				$tmp =~ s/Sample_//;

@@ -17,7 +17,7 @@ for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/tophat-fusion.txt"]
-		RNASEQ_FUSION1 += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
+		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
@@ -50,9 +50,8 @@ rule RNASeq:
 	input:
 		RNASEQ_BAM,
 		RNASEQ_FUSION,
-		CUFFLINKS,
-		
-		RNA_CALLS,
+		#CUFFLINKS,
+		#RNA_CALLS,
 		expand("{subject}/Actionable/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
@@ -114,7 +113,7 @@ rule tophat_fusion:
 	ln -s {params.tp_ref}/* .
 	tophat-fusion-post -p ${{SLURM_CPUS_ON_NODE}} --num-fusion-pairs 1 {params.ref}
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
-	sed -i  '1s/^/Sample\\tGene_left\\tChr_left\\tCoordinate_left\\tGene_right\\tChr_right\\tCoordinate_right\\t#SpanningReads\\t#SpanningMatePairs\\t#SpanningMateEndOfPair\\tScore\\n/' ../tophatfusion_out/result.txt
+	sed -i  '1s/^/Sample\\tGene_left\\tChr_left\\tCoordinate_left\\tGene_right\\tChr_right\\tCoordinate_right\\t#SpanningReads\\t#SpanningMatePairs\\t#SpanningMateEndOfPair\\tScore\\n/' tophatfusion_out/result.txt
 	ln -s ../tophatfusion_out/result.html fusion/tophat-fusion.html
 	ln -s ../tophatfusion_out/result.txt  fusion/tophat-fusion.txt
 	#######################
@@ -161,7 +160,7 @@ rule fusioncatcher:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ --skip-filter-mt -s '2,2,2,2,2' -a '10,10,10,10,10' 2>{log}
+	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ -s '2,2,2,2,2' -a '10,10,10,10,10' 2>{log}
 	cp /lscratch/${{SLURM_JOBID}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""
