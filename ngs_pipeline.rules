@@ -177,7 +177,7 @@ rule Khanlab_Pipeline:
 		ALL_QC, ALL_FASTQC,
 		varFiles,
 		DBFiles,
-		#ActionableFiles
+		ActionableFiles
 	version: "1.0"
 	params: 
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]

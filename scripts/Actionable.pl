@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use List::Util qw(first);
 
 if($ARGV[0] eq 'somatic'){
 	Somatic($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4]);
@@ -125,15 +126,13 @@ sub findSource{
 	my ($input)= (@_);
 	my %source;
 	my @ANN = split("\t", $input);
-	if ($ANN[1] eq $ANN[146]){
+	if ($ANN[1] eq $ANN[147]){
 		$source{'ACMG'} = 'yes';
-		if($ANN[60] =~ /CLINSIG=(.*pathogenic.*);CLNDBN=/ and $ANN[1]){    # Clinvar
-			if ($1 =~ /^pathogenic/ or $1 =~ /\|pathogenic/ or $1 =~ /^probable-pathogenic/ or $1 =~ /\|probable-pathogenic/){
-				$source{'ACMG-clinvar'} = 'yes';
-			}
+		if ($ANN[57] =~ /^Pathogenic/ or $ANN[57] =~ /\|Pathogenic/ or $ANN[57] =~ /^Likely Pathogenic/ or $ANN[57] =~ /\|Likely Pathogenic/){
+			$source{'ACMG-clinvar'} = 'yes';
 		}
 	}
-	if($ANN[63] =~ /^Disease causing mutation$/){  # HGMD
+	if($ANN[64] =~ /^Disease causing mutation$/){  # HGMD
 		$source{'hgmd'} = 'yes';	
 	}
 	my $return = join(";", (sort keys %source));

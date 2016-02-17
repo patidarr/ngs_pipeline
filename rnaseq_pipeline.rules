@@ -50,8 +50,8 @@ rule RNASeq:
 	input:
 		RNASEQ_BAM,
 		RNASEQ_FUSION,
-		#CUFFLINKS,
-		#RNA_CALLS,
+		CUFFLINKS,
+		RNA_CALLS,
 		expand("{subject}/Actionable/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
@@ -369,7 +369,7 @@ rule coverage:
 rule sub_fusion:
 	input:
 		tophat="{subject}/{sample}/fusion/tophat-fusion.txt",
-#		fc="{subject}/{sample}/fusion/fusion-catcher.txt",
+		fc="{subject}/{sample}/fusion/fusion-catcher.txt",
 		defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
 		mitelman  = config["Mitelman"]
