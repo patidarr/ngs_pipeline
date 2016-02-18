@@ -160,7 +160,7 @@ rule fusioncatcher:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ -s '2,2,2,2,2' -a '10,10,10,10,10' 2>{log}
+	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ 2>{log}
 	cp /lscratch/${{SLURM_JOBID}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""
