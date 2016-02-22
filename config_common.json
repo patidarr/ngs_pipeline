@@ -31,6 +31,7 @@
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
+	"exon_exp"		: "exon_exp.sh",
 	"coverage"		: "coverage.R",
 	"circos"		: "circos.R",
 	"boxplot"		: "boxplot.R",
