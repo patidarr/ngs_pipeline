@@ -76,6 +76,8 @@
 	"BowtieIndex"		: "/fdb/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genome",
 	"tophat_post_ref"	: "/data/khanlab/ref/Tophat_post",
 	"Novo_index"		: "/fdb/novoalign/chr_all_hg19.nbx",
+	"TCGA_fusion"		: "/data/khanlab/ref/GATK/hg19/fusion/TCGA.fusion",
+	"omim_fusion" 		: "/data/khanlab/ref/GATK/hg19/fusion/omim.fusions.txt",
 	"Mitelman"		: "/data/khanlab/ref/GATK/hg19/fusion/Mitelman/gene_pairs_list",
 	"STAR_ref"		: "/data/khanlab/ref/GATK/hg19/STAR_hg19_index",
 	"GTF"			: {

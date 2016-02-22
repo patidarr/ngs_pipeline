@@ -373,7 +373,9 @@ rule sub_fusion:
 		fc="{subject}/{sample}/fusion/fusion-catcher.txt",
 		defuse="{subject}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
-		mitelman  = config["Mitelman"]
+		mitelman  = config["Mitelman"],
+		omim	  = config["omim_fusion"],
+		TCGA      = config["TCGA_fusion"]
 	output:
 		"{subject}/{sample}/fusion/{sample}.actionable.fusion.txt"
 	params:
@@ -381,12 +383,12 @@ rule sub_fusion:
 		batch    = config["job_default"]
 	shell: """
 	#######################
-	if [-e {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt ]
+	if [ -e {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt ]
 	then
-		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ >{output}
+		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ |sort >{output}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} {input.mitelman} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ >{output}
+		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ |sort >{output}
 	fi
 	#######################
 	"""
