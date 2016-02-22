@@ -1,4 +1,5 @@
 {
+	"group"			: "khanlab",
 	"platform"		: "Illumina",
 	"samtools"		: "1.2",
 	"samtools_old"		: "0.1.19",
