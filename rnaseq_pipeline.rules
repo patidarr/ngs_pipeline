@@ -1,7 +1,7 @@
 RNASEQ_BAM =[]
 RNASEQ_FUSION1=[]
 RNASEQ_FUSION =[]
-CUFFLINKS=[]
+EXPRESSION=[]
 RNA_CALLS =[]
 SUB2RNA = {}
 SUB_RNASEQ=[]
@@ -24,8 +24,10 @@ for subject  in config['RNASeq'].keys():
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
 		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
+		EXPRESSION += [subject+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
+		EXPRESSION += [subject+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]	
 		for gtf in config['GTF']:
-			CUFFLINKS += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
+			EXPRESSION += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{sample}/fusion/{sample}.actionable.fusion.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUBJECT_VCFS:
@@ -51,7 +53,7 @@ rule RNASeq:
 	input:
 		RNASEQ_BAM,
 		RNASEQ_FUSION,
-		CUFFLINKS,
+		EXPRESSION,
 		RNA_CALLS,
 		expand("{subject}/Actionable/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
@@ -144,6 +146,33 @@ rule cufflinks:
 	/usr/bin/python {input.convertor} isoforms {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2 
 	#######################
 	"""
+############
+#       Exon Expression
+############
+rule exon_exp:
+	input:
+		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
+		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
+		convertor =NGS_PIPELINE + "/scripts/" +config["exon_exp"],
+		ucsc=config["exon_Bed_UCSC"],
+		ens=config["exon_Bed_ENS"],
+	output:
+		ucsc="{base}/{sample}/exonExp_UCSC/{sample}.exonExpression.UCSC.txt",
+		ens="{base}/{sample}/exonExp_ENS/{sample}.exonExpression.ENS.txt"
+	version: config['samtools']
+	params:
+		rulename   = "exonExp",
+		batch      =config['job_exonExp']
+	shell: """
+	#######################
+	module load samtools/{version}
+	totalReads=`samtools flagstat {input.bam} |head -1 | sed 's/\s/\\t/g' | cut -f1`
+
+	sh {input.convertor} ${{totalReads}} {input.ucsc} {input.bam} {output.ucsc} &
+	sh {input.convertor} ${{totalReads}} {input.ens} {input.bam} {output.ens} &
+	wait
+	#######################
+        """
 ############
 #       Fusioncatcher
 ############

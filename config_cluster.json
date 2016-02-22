@@ -3,6 +3,7 @@
 	"job_snpeff"     : "--partition=ccr --time=04:00:00 --mem=10G  --cpus-per-task=32 --gres=lscratch:05",
 	"job_addbackann" : "--partition=ccr --time=00:20:00 --mem=2G   --cpus-per-task=1 ",
         "job_Combine"    : "--partition=ccr  --time=05:00:00   --mem=2G  --cpus-per-task=1 ",
+        "job_exonExp"    : "--partition=ccr  --time=4-24:00:00   --mem=2G  --cpus-per-task=2",
 
 	"job_flagstat"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2 ",
         "job_genotype"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2 ",

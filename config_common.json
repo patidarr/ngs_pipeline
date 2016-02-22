@@ -81,6 +81,8 @@
 	"omim_fusion" 		: "/data/khanlab/ref/GATK/hg19/fusion/omim.fusions.txt",
 	"Mitelman"		: "/data/khanlab/ref/GATK/hg19/fusion/Mitelman/gene_pairs_list",
 	"STAR_ref"		: "/data/khanlab/ref/GATK/hg19/STAR_hg19_index",
+	"exon_Bed_UCSC"		: "/data/khanlab/ref/GATK/hg19/hg19_UCSC.bed",
+	"exon_Bed_ENS"		: "/data/khanlab/ref/GATK/hg19/hg19_ENSEMBL.bed",
 	"GTF"			: {
 				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",
 				"UCSC": "/data/khanlab/ref/GATK/hg19/Homo_sapiens.hg19.032013.gtf"

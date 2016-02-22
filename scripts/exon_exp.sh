@@ -3,17 +3,18 @@
 # Author: Rajesh Patidar rajbtpatidar@gmail.com
 # Takes a bed file and calculate sum, RPKM and log2(RPKM) for every bed entry
 #
-module load samtools/0.1.19
+#module load samtools/0.1.19
 mil=1000000000
 constant="0.01"
-BedFile=$1
-bamFile=$2
-outFile=$3
+total_reads=$1
+BedFile=$2
+bamFile=$3
+outFile=$4
 if [ -f "$outFile" ];then
 	rm $outFile
 fi
 
-total_reads=`samtools flagstat $bamFile |head -1 | sed 's/\s/\t/g' | cut -f1`
+#total_reads=`samtools flagstat $bamFile |head -1 | sed 's/\s/\t/g' | cut -f1`
 #total_reads=407932018
 
 while read -r line
