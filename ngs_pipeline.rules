@@ -401,16 +401,24 @@ rule copyNumber:
 ############
 rule CN_LRR:
 	input:
-		lambda wildcards: somaticCopy[wildcards.Tumor],
+		files=lambda wildcards: somaticCopy[wildcards.Tumor],
+		ref=config["gene_coord"],
+		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"]
 	output:
 		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
+	version: config["bedtools"]
 	params:
 		rulename = "LRR",
 		batch    = config["job_default"],
 	shell: """
 	#######################
-	echo -e "Chr\\tStart\\tEnd\\tGene\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR" >{output.out}	
-	paste {input} |cut -f 1-5,10 |awk '{{OFS="\\t"}};{{if($5>0){{print $1,$2,$3,$4,$5,$6,$6/$5,log(($6/$5)+0.01)/log(2)}}else {{print $1,$2,$3,$4,$5,$6,$6/0.01,log($6+0.01)/log(2)}}}}' >>{output.out}
+	echo -e "Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)" >{output.out}	
+	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{if($4>0){{print $1,$2,$3,$4,$5,$5/$4,log(($5/$4)+0.01)/log(2)}}else {{print $1,$2,$3,$4,$5,$5/0.01,log($5+0.01)/log(2)}}}}' >{output.out}.temp1
+	
+	module load bedtools/{version}
+	intersectBed -a {input.ref} -b {input.files[0]} >{output}.temp
+	perl {input.tool} {output}.temp {output.out}.temp1 >>{output.out}
+	rm -rf {output.out}.temp1 {output}.temp
 	#######################
 	"""
 ############

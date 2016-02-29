@@ -23,10 +23,10 @@ while (<ORI>){
 	my @temp = split("\t", $_);
 	my $key  ="$temp[0]\t$temp[1]";
 	if(exists $ANNOVAR{$key}){
-		print "$temp[0]\t$temp[1]\t$temp[3]\t$ANNOVAR{$key}\n";
+		print "$_\t$ANNOVAR{$key}\n";
 	}
 	else{
-		print "$temp[0]\t$temp[1]\t$temp[3]\t--\n";
+		print "$_\t--\n";
 	}
 }
 close ORI;

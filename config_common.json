@@ -59,6 +59,7 @@
 	"fAEV"			: "findAlreadyExistingVariants.pl",
 	"Actionable_mutation"	: "Actionable.pl",
 	"Actionable_fusion"	: "ActionableFusion.pl",
+	"AddGene"		: "AddGene.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
 	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",
@@ -84,6 +85,7 @@
 	"STAR_ref"		: "/data/khanlab/ref/GATK/hg19/STAR_hg19_index",
 	"exon_Bed_UCSC"		: "/data/khanlab/ref/GATK/hg19/hg19_UCSC.bed",
 	"exon_Bed_ENS"		: "/data/khanlab/ref/GATK/hg19/hg19_ENSEMBL.bed",
+	"gene_coord"		: "/data/khanlab/ref/GATK/hg19/gene_coordinates.txt",
 	"GTF"			: {
 				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",
 				"UCSC": "/data/khanlab/ref/GATK/hg19/Homo_sapiens.hg19.032013.gtf"
