@@ -24,9 +24,9 @@ do
 	sum=`samtools depth -Q 10 -r $mpileup_cord $bamFile | awk '{sum += $3} END {if (NR > 0) print sum  / NR;}'`; 
 	if [ -z "$sum" ];then
 		sum="0"
-		echo -e "$mpileup_cord\\t$sum" >> $outFile
+		echo -e "${elements[0]}\\t${elements[1]}\\t${elements[2]}\\t$sum" >> $outFile
 	else
 		RPKM=`echo "($sum * $mil)/ $total_reads "|bc`
-		echo -e "$mpileup_cord\\t$RPKM" >> $outFile
+		echo -e "${elements[0]}\\t${elements[1]}\\t${elements[2]}\\t$RPKM" >> $outFile
 	fi
 done < $BedFile
