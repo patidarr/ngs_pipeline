@@ -413,7 +413,7 @@ rule CN_LRR:
 	shell: """
 	#######################
 	echo -e "Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)" >{output.out}	
-	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{if($4>0){{print $1,$2,$3,$4,$5,$5/$4,log(($5/$4)+0.01)/log(2)}}else {{print $1,$2,$3,$4,$5,$5/0.01,log($5+0.01)/log(2)}}}}' >{output.out}.temp1
+	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{if($4>0){{print $1,$2,$3,$4,$5,$5/$4,log(($5/$4)+0.01)/log(2)}}else {{print $1,$2,$3,$4,$5,$5,log($5+0.01)/log(2)}}}}' >{output.out}.temp1
 	
 	module load bedtools/{version}
 	intersectBed -a {input.ref} -b {input.files[0]} >{output}.temp
