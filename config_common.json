@@ -32,6 +32,7 @@
 	"defuse"		: "0.7.0",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
 	"exon_exp"		: "exon_exp.sh",
+	"copyNumber"		: "copyNumber.sh",
 	"coverage"		: "coverage.R",
 	"circos"		: "circos.R",
 	"boxplot"		: "boxplot.R",

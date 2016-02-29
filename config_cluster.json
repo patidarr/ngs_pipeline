@@ -1,15 +1,16 @@
 {
-	"job_default"    : "--partition=ccr --time=01:00:00   ",
+	"job_default"    : "--partition=ccr --time=01:00:00",
 	"job_snpeff"     : "--partition=ccr --time=04:00:00 --mem=10G  --cpus-per-task=32 --gres=lscratch:05",
-	"job_addbackann" : "--partition=ccr --time=00:20:00 --mem=2G   --cpus-per-task=1 ",
-        "job_Combine"    : "--partition=ccr  --time=05:00:00   --mem=2G  --cpus-per-task=1 ",
+	"job_copynumber" : "--partition=ccr --time=24:00:00 --mem=10G  --cpus-per-task=25 --gres=lscratch:10",
+	"job_addbackann" : "--partition=ccr --time=00:20:00 --mem=2G   --cpus-per-task=1",
+        "job_Combine"    : "--partition=ccr  --time=05:00:00   --mem=2G  --cpus-per-task=1",
         "job_exonExp"    : "--partition=ccr  --time=4-24:00:00   --mem=2G  --cpus-per-task=2",
 
-	"job_flagstat"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2 ",
-        "job_genotype"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2 ",
+	"job_flagstat"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2",
+        "job_genotype"   : "--partition=norm --time=05:00:00  --mem=2G   --cpus-per-task=2",
 	
-	"job_fastqc"     : "--partition=b1  --time=01:00:00   --mem=19G  --cpus-per-task=10 ",
-	"job_expressed"  : "--partition=b1  --time=1-05:00:00 --mem=2G   --cpus-per-task=1 ",
+	"job_fastqc"     : "--partition=b1  --time=01:00:00   --mem=19G  --cpus-per-task=10",
+	"job_expressed"  : "--partition=b1  --time=1-05:00:00 --mem=2G   --cpus-per-task=1",
 	"job_qualimap"   : "--partition=b1  --time=04:00:00   --mem=19G  --cpus-per-task=16 --gres=lscratch:40",
 	"job_fusioncatch": "--partition=ccr  --time=4-24:00:00 --mem=60g --cpus-per-task=16 --gres=lscratch:600",
         "job_tophatPost" : "--partition=b1  --time=1-10:00:00 --mem=225g --cpus-per-task=32",
@@ -18,13 +19,13 @@
 
 	"job_novoalign"  : "--partition=ibfdr --time=20:00:00   --mem=58G --nodes=2 --ntasks=3 --exclusive",
 
-        "job_bwa"        : "--partition=ccr --time=20:00:00   --mem=50G  --cpus-per-task=32 ",
+        "job_bwa"        : "--partition=ccr --time=20:00:00   --mem=50G  --cpus-per-task=32",
 	"job_STAR"	 : "--partition=ccr --time=05:00:00   --mem=50g  --cpus-per-task=32 --gres=lscratch:600",
 	"job_PPH2"       : "--partition=ccr --time=2-24:00:00 --mem=4G  --cpus-per-task=2 --gres=lscratch:10",
 	"job_SIFT"       : "--partition=ccr --time=2-24:00:00 --mem=4G  --cpus-per-task=2 --gres=lscratch:10",
         "job_tophat"     : "--partition=ccr --time=2-24:00:00 --mem=65G  --cpus-per-task=32 --exclusive --gres=lscratch:400",
 	"job_cufflinks"  : "--partition=ccr --time=3-24:00:00 --mem=30g  --cpus-per-task=15",	
-	"job_hotspot"    : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=20 ",
+	"job_hotspot"    : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=20",
 	"job_markdup"    : "--partition=ccr --time=05:00:00   --mem=19G  --cpus-per-task=15 --gres=lscratch:40",
 	"job_bedtools"   : "--partition=ccr --time=10:00:00   --mem=30G  --cpus-per-task=10",
 	"job_covplot"    : "--partition=ccr --time=01:00:00   --mem=01G  --cpus-per-task=1 --gres=lscratch:01",
@@ -33,7 +34,7 @@
 	"job_mutect"     : "--partition=ccr --time=24:00:00 --mem=20G  --cpus-per-task=32 --gres=lscratch:10",
 	"job_strelka"	 : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=32 --gres=lscratch:20",
 	"job_platypus"	 : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=32 --gres=lscratch:20",
-	"job_freebayes"  : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=32 ",
-	"job_vcf2txt"	 : "--partition=ccr --time=01:00:00   --mem=5G   --cpus-per-task=2 ",
-	"job_annovar"    : "--partition=ccr --time=2-05:00:00 --mem=10G  --cpus-per-task=5 "
+	"job_freebayes"  : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=32",
+	"job_vcf2txt"	 : "--partition=ccr --time=01:00:00   --mem=5G   --cpus-per-task=2",
+	"job_annovar"    : "--partition=ccr --time=2-05:00:00 --mem=10G  --cpus-per-task=5"
 }

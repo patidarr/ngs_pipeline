@@ -13,9 +13,11 @@ for subject,samples in config['RNASeq'].items():
 		SUB2RNA[sample]=subject
 for subject  in config['RNASeq'].keys():
 	DBFiles         +=[subject+"/"+subject+"/db/"+subject+".rnaseq"]
-	ActionableFiles +=[subject+"/Actionable/"+subject+".fusion.actionable.txt"]
-	ActionableFiles +=[subject+"/Actionable/"+subject+".rnaseq.actionable.txt"]
+	ActionableFiles +=[subject+ACT_DIR+subject+".fusion.actionable.txt"]
+	ActionableFiles +=[subject+ACT_DIR+subject+".rnaseq.actionable.txt"]
 	for sample in config['RNASeq'][subject]:
+		RNASEQ_BAM += [subject+"/"+sample+"/"+sample+".star.final.bam"]
+		RNASEQ_BAM += [subject+"/"+sample+"/"+sample+".tophat.final.bam"]
 		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/tophat-fusion.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
@@ -55,7 +57,7 @@ rule RNASeq:
 		RNASEQ_FUSION,
 		EXPRESSION,
 		RNA_CALLS,
-		expand("{subject}/Actionable/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
+		expand("{subject}/"+ACT_DIR+"/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
@@ -87,6 +89,25 @@ rule tophat:
 	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2} 2>{log}
 	mv -f /lscratch/${{SLURM_JOBID}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
+	#######################
+	"""
+############
+#       Link Tophat bam file
+############
+rule symlink_tophatBam:
+	input:
+		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
+		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
+	output:
+		bam="{base}/{sample}/{sample}.tophat.final.bam",
+		bai="{base}/{sample}/{sample}.tophat.final.bam.bai"
+	params:
+		rulename  = "tophat_link",
+	shell: """
+	#######################
+	cd {wildcards.base}/{wildcards.sample}/
+	ln -s tophat_{wildcards.sample}/accepted_hits.bam {wildcards.sample}.tophat.final.bam
+	ln -s tophat_{wildcards.sample}/accepted_hits.bam.bai {wildcards.sample}.tophat.final.bam.bai	
 	#######################
 	"""
 ############
@@ -168,9 +189,22 @@ rule exon_exp:
 	module load samtools/{version}
 	totalReads=`samtools flagstat {input.bam} |head -1 | sed 's/\s/\\t/g' | cut -f1`
 
-	sh {input.convertor} ${{totalReads}} {input.ucsc} {input.bam} {output.ucsc} &
-	sh {input.convertor} ${{totalReads}} {input.ens} {input.bam} {output.ens} &
+        split -d -l 12000 {input.ucsc} /lscratch/${{SLURM_JOBID}}/ucsc
+        for file in /lscratch/${{SLURM_JOBID}}/ucsc*
+        do
+		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
+        done
+        wait;
+        cat /lscratch/${{SLURM_JOBID}}/ucsc*.out >{output.ucsc}
+	rm -rf /lscratch/${{SLURM_JOBID}}/*	
+
+	split -d -l 15000 {input.ens} /lscratch/${{SLURM_JOBID}}/ens
+	for file in /lscratch/${{SLURM_JOBID}}/ens*
+	do
+		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
+	done 
 	wait
+	cat /lscratch/${{SLURM_JOBID}}/ens*.out >{output.ens}	
 	#######################
         """
 ############
@@ -414,10 +448,10 @@ rule sub_fusion:
 	#######################
 	if [ -e {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt ]
 	then
-		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ |sort >{output}
+		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/{ACT_DIR}/ |sort >{output}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/Actionable/ |sort >{output}
+		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/{ACT_DIR}/ |sort >{output}
 	fi
 	#######################
 	"""
@@ -428,7 +462,7 @@ rule Actionable_fusion:
 	input:
 		fusion=lambda wildcards: SUB_FUSION[wildcards.subject]
 	output:
-		"{subject}/Actionable/{subject}.fusion.actionable.txt"
+		"{subject}/{ACT_DIR}/{subject}.fusion.actionable.txt"
 	params:
 		rulename = "Actionable_F",
 		batch    = config["job_default"]

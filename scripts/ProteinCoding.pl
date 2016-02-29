@@ -8,7 +8,7 @@ while(<FH>){
 	if($_ =~ /^Chr/){
 		print "$_\n";
 	}
-	elsif($d[5] =~ /^exonic/ and ($d[8] =~ /nonsynonymous/ or $d[8] =~ /stop/ or $d[8] =~ /^frameshift/)){
+	elsif($d[5] =~ /^exonic/ and ($d[8] =~ /nonsynonymous/ or $d[8] =~ /stop/ or $d[8] =~ /^frameshift/ or $d[8] =~ /^nonframeshift substitution/)){
 		print "$_\n";
 	}
 	elsif($d[5] =~ /^splicing/){

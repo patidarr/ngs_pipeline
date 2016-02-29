@@ -84,7 +84,7 @@ sub Germline{
 	}
 	my $head =`grep -m1 -P "^Chr\tStart\tEnd\tRef\tAlt\t" $annotation |sort |uniq`;
 	chomp($head);
-	print "$head\tSample\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\n";
+	print "$head\tSample\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
 	while (<ORI>){
 		chomp;
 		my @temp = split("\t", $_);
@@ -95,27 +95,36 @@ sub Germline{
 		$vcf = join "\t", @temp[5..$end];
 		if (!exists $DATA{$site}){ # i.e. position is germline!!
 		#if (!exists $DATA{$site_sample}){ # i.e. position in sample is germline
-			my $source = findSource($ANNOTATION{"$site"});
+			my ($source, $level) = findSource($ANNOTATION{"$site"});
 			my @ANN = split("\t", $ANNOTATION{"$site"});
 			my $vaf = VAF($temp[9], $temp[10]);
 			if(($temp[9] !~ /\D/) and $temp[9] >=10 and $vaf >=0.25){
 				if($source =~ /[ACMG-clinvar|hgmd|ACMG]/){
 					if(exists $CANCER_GENE{$ANN[1]}){
+						if ($ANN[0] =~ /splicing/ or $ANN[3] =~ /stopgain/ or $ANN[3]=~ /^frameshift/){
+							$level = "stringent";
+						}
 						$source = $source.";CancerGene";
 						if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
+							$level  = "stringent";
 							$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
 						}
 					}
 					else{
 						if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
+							$level  = "stringent";
 							$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
 						}	
 					}
-					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\n";
+					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\t$level\n";
 				}
 				elsif(exists $CANCER_GENE{$ANN[1]}){
+					$level="2";
+					if ($ANN[0] =~ /splicing/ or $ANN[3] =~ /stopgain/ or $ANN[3]=~ /^frameshift/){
+						$level = "stringent";
+					}
 					$source = $source."CancerGene";
-					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\n";
+					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\t$level\n";
 				}
 			}
 		}
@@ -125,18 +134,26 @@ sub Germline{
 sub findSource{
 	my ($input)= (@_);
 	my %source;
+	my $level;
 	my @ANN = split("\t", $input);
 	if ($ANN[1] eq $ANN[147]){
 		$source{'ACMG'} = 'yes';
+		$level="2";
 		if ($ANN[57] =~ /^Pathogenic/ or $ANN[57] =~ /\|Pathogenic/ or $ANN[57] =~ /^Likely Pathogenic/ or $ANN[57] =~ /\|Likely Pathogenic/){
 			$source{'ACMG-clinvar'} = 'yes';
+			$level = "stringent";
 		}
 	}
 	if($ANN[64] =~ /^Disease causing mutation$/){  # HGMD
-		$source{'hgmd'} = 'yes';	
+		$source{'HGMD'} = 'yes';
+		$level="2";
+		if ($ANN[57] =~ /^Pathogenic/ or $ANN[57] =~ /\|Pathogenic/ or $ANN[57] =~ /^Likely Pathogenic/ or $ANN[57] =~ /\|Likely Pathogenic/){
+			$source{'HGMD-clinvar'} = 'yes';
+			$level = "stringent";
+		}
 	}
 	my $return = join(";", (sort keys %source));
-	return($return);
+	return($return, $level);
 }
 sub Somatic{
 #/data/Clinomics/Ref/annovar/hg19_SomaticActionableSites.txt NCI0276/NCI0276/db/NCI0276.somatic

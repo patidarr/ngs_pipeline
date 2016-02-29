@@ -7,21 +7,13 @@ from snakemake.exceptions import MissingInputException
 # Snakemake Base location
 try:
 	NGS_PIPELINE=os.environ['NGS_PIPELINE']
-except KeyError:
-	NGS_PIPELINE="/data/khanlab/projects/patidar/Serpentine"
-	pass
-#Basic utility functions
-try:
 	WORK_DIR=os.environ['WORK_DIR']
-except KeyError:
-	print("I can not locate your work directory")
-	quit()
-try:
 	DATA_DIR=os.environ['DATA_DIR']
+	ACT_DIR=os.environ['ACT_DIR']
 except KeyError:
-	print("I can not locate your DATA directory")
-	quit()
-
+	NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
+	ACT_DIR="/Actionable/"
+	pass
 shell.prefix("set -eo pipefail; ")
 configfile: NGS_PIPELINE +"/config_common.json"
 configfile: NGS_PIPELINE +"/config_cluster.json"
@@ -51,6 +43,7 @@ SUB_MPG = {}
 SUB_HOT = {}
 SAMPLES =[]
 somaticPairs = {}
+somaticCopy = {}
 pairedCapture = {}
 QC=[]
 for subject in config['subject'].keys():
@@ -83,15 +76,19 @@ ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 QC.extend(ALL_QC)
 QC.extend(ALL_FASTQC)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
 			TumorBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
+			TumorCopy = "{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
 			NormalBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+			NormalCopy = "{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
+			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
 ###########################################################################
 SUBJECT_ANNO = dict([(key, {}) for key in PATIENTS])
 def add_to_SUBJECT_ANNO(subject, category, file_list):
@@ -101,6 +98,7 @@ def add_to_SUBJECT_ANNO(subject, category, file_list):
 		SUBJECT_ANNO[subject][category].extend(file_list)
 ###########################################################################
 SUBJECT_VCFS = {}
+COPY_NUMBER=[]
 SOMATIC =[]
 for subject in SUBS:
 	local  = []
@@ -120,7 +118,8 @@ for sample in config['sample_references'].keys():
 		(subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
 		(subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
-	)
+	)	
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -132,7 +131,6 @@ for sample in config['sample_references'].keys():
 		somatic = [w.replace('MuTect.annotated','MuTect.annotated.expressed') for w in somatic]
 		somatic = [w.replace('strelka.snvs.annotated','strelka.snvs.annotated.expressed') for w in somatic]
 	add_to_SUBJECT_ANNO(subject,"somatic",somatic)
-
 ###########################################################################
 ###########################################################################
 ALL_EXPRESSED =[]
@@ -155,18 +153,28 @@ ActionableFiles =[]
 for subject in SUBJECT_ANNO.keys():
 	for group in SUBJECT_ANNO[subject].keys():
 		DBFiles +=[subject+"/"+subject+"/db/"+subject+"."+group] 
-		ActionableFiles +=[subject+"/Actionable/"+subject+"."+group+".actionable.txt"] 
+		ActionableFiles +=[subject+ACT_DIR+subject+"."+group+".actionable.txt"] 
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
-localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput,AttachAnnotation,Expressed,vcf2txt 
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput,AttachAnnotation,Expressed,vcf2txt,symlink_tophatBam 
 ###########################################################################
 #                               RNASeq Rules                              #
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
+ALL_VCFs =[]
+for subject in SUBJECT_VCFS.keys():
+	for vcf in SUBJECT_VCFS[subject]:
+		vcf = vcf.replace('snpEff.txt', 'raw.vcf')
+		ALL_VCFs +=[vcf]
+		vcf = vcf.replace('raw.vcf', 'raw.snpEff.vcf')
+		ALL_VCFs +=[vcf]
 rule Khanlab_Pipeline:
 	input: 
+		SUB_IGV.values(),
+		COPY_NUMBER,
+		ALL_VCFs,
 		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
@@ -358,6 +366,51 @@ rule flagstat:
 	#######################
 	module load samtools/{version}
 	samtools flagstat {input} > {output}
+	#######################
+	"""
+############
+#       Copy Number for every Bed Region
+############
+rule copyNumber:
+	input:
+		bam="{base}/{sample}/{sample}.bwa.final.bam",
+		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
+		flagstat="{base}/{sample}/qc/{sample}.bwa.flagstat.txt",
+		tool=NGS_PIPELINE+ "/scripts/" + config["copyNumber"]
+	output:
+		"{base}/{sample}/copyNumber/{sample}.count.txt"
+	version: config["samtools"]
+	params:
+		rulename  = "CopyNumber",
+		batch     = config["job_copynumber"]
+	shell: """
+	#######################
+	module load samtools/{version}
+	TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
+	split -d -l 12000 {input.interval} /lscratch/${{SLURM_JOBID}}/input
+	for file in /lscratch/${{SLURM_JOBID}}/input*
+	do
+		sh {input.tool} ${{TotalReads}} ${{file}} {input.bam} ${{file}}.out &
+	done
+	wait;
+	cat /lscratch/${{SLURM_JOBID}}/input*.out >{output}
+	#######################
+	"""
+############
+#       MuTect
+############
+rule CN_LRR:
+	input:
+		lambda wildcards: somaticCopy[wildcards.Tumor],
+	output:
+		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
+	params:
+		rulename = "LRR",
+		batch    = config["job_default"],
+	shell: """
+	#######################
+	echo -e "Chr\\tStart\\tEnd\\tGene\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR" >{output.out}	
+	paste {input} |cut -f 1-5,10 |awk '{{OFS="\\t"}};{{if($5>0){{print $1,$2,$3,$4,$5,$6,$6/$5,log(($6/$5)+0.01)/log(2)}}else {{print $1,$2,$3,$4,$5,$6,$6/0.01,log($6+0.01)/log(2)}}}}' >>{output.out}
 	#######################
 	"""
 ############
@@ -622,7 +675,8 @@ rule MuTect:
 	params:
 		rulename = "MuTect",
 		batch    = config["job_mutect"],
-		vcforder = NGS_PIPELINE + "/scripts/" +config["vcfOrderCol"]
+		vcforder = NGS_PIPELINE + "/scripts/" +config["vcfOrderCol"],
+		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4"
 	shell: """
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
@@ -639,6 +693,7 @@ rule MuTect:
 		--coverage_file {output.coverage} \
 		--out {output.call_stats} \
 		--vcf {output.vcf}.vcf \
+		{params.mt}\
 		> {log} 2>&1
 	
 	{params.vcforder} -i {output.vcf}.vcf -o {output.vcf}
@@ -1017,7 +1072,7 @@ rule Actionable_Somatic:
 		cgc    = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 	output:
-		somatic="{subject}/Actionable/{subject}.somatic.actionable.txt",
+		somatic="{subject}/{ACT_DIR}/{subject}.somatic.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config['job_default']
@@ -1038,7 +1093,7 @@ rule Actionable_Germline:
 		cancerGeneCensus = config["annovar_data"]+"germline_cancerPredisposition_gene_list.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 	output:
-		germline="{subject}/Actionable/{subject}.germline.actionable.txt",
+		germline="{subject}/{ACT_DIR}/{subject}.germline.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config['job_default']
@@ -1065,7 +1120,7 @@ rule Actionable_RNAseq:
 		cancerGeneCensus = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 	output:
-		rnaseq="{subject}/Actionable/{subject}.rnaseq.actionable.txt",
+		rnaseq="{subject}/{ACT_DIR}/{subject}.rnaseq.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config['job_default']

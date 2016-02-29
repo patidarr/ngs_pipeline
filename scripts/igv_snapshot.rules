@@ -13,7 +13,7 @@ for Subject in config['subject']:
 	SUB_IGV[Subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=IGV_DNA[s], sample=s) for s in config['subject'][Subject]]
 	if Subject in config['RNASeq']:
 		SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-		SUB_IGV[Subject] += ["{subject}/{sample}/tophat_{sample}/accepted_hits.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
+		SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 
 
 rule IGV_Session:
