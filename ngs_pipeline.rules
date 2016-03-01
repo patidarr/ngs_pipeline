@@ -418,6 +418,9 @@ rule CN_LRR:
 	module load bedtools/{version}
 	intersectBed -a {input.ref} -b {input.files[0]} >{output}.temp
 	perl {input.tool} {output}.temp {output.out}.temp1 >>{output.out}
+	med=`cut -f4 {output.out} |grep -v Normal |sort -n | awk '{{count[NR] = $1;}}END {{if (NR % 2) {{print count[(NR + 1) / 2];}} else {{print (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0;}}}}'`
+	
+	
 	rm -rf {output.out}.temp1 {output}.temp
 	#######################
 	"""
@@ -1100,6 +1103,10 @@ rule Actionable_Germline:
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 		cancerGeneCensus = config["annovar_data"]+"germline_cancerPredisposition_gene_list.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		tsid   = config["annovar_data"]+"TruSightInheritedDiseases.txt",
+		jsw    = config["annovar_data"]+"CancerGenes_JSW.txt",
+		clt2   = config["annovar_data"]+"ClinomicsTier2GeneList.txt"
+
 	output:
 		germline="{subject}/{ACT_DIR}/{subject}.germline.actionable.txt",
 	params:
@@ -1109,10 +1116,10 @@ rule Actionable_Germline:
 	#######################
 	if [ -e {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
 	then 
-		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot}> {output.germline}
+		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} > {output.germline}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot}> {output.germline}
+		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} > {output.germline}
 	fi
 	#######################
 	"""
@@ -1127,6 +1134,9 @@ rule Actionable_RNAseq:
 		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
 		cancerGeneCensus = config["annovar_data"]+"CancerGenesCensus.02.07.16.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		tsid   = config["annovar_data"]+"TruSightInheritedDiseases.txt",
+		jsw    = config["annovar_data"]+"CancerGenes_JSW.txt",
+		clt2   = config["annovar_data"]+"ClinomicsTier2GeneList.txt"
 	output:
 		rnaseq="{subject}/{ACT_DIR}/{subject}.rnaseq.actionable.txt",
 	params:
@@ -1135,7 +1145,7 @@ rule Actionable_RNAseq:
 	shell: """
 	#######################
 	touch /spin1/scratch/temp
-	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot}> {output.rnaseq}
+	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} > {output.rnaseq}
 	#######################
 	"""
 ############

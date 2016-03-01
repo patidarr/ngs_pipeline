@@ -57,7 +57,7 @@
 	"DBinput"		: "makeDBVariantFile.pl",
 	"extractReadsdeFuse"	: "extractReadsdeFuse.sh",
 	"fAEV"			: "findAlreadyExistingVariants.pl",
-	"Actionable_mutation"	: "Actionable.pl",
+	"Actionable_mutation"	: "Actionable.v2.pl",
 	"Actionable_fusion"	: "ActionableFusion.pl",
 	"AddGene"		: "AddGene.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
