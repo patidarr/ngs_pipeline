@@ -2,7 +2,12 @@
 use strict;
 use warnings;
 use List::Util qw(first);
-
+my $index_of_clinvar=57;
+my $index_of_ACMG=147;
+my $index_of_HGMD=64;
+my $index_of_Gene=1;
+my $idx_anno_region=0;
+my $idx_anno_eff=3;
 if($ARGV[0] eq 'somatic'){
 	Somatic($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4]);
 	# 1 == HotspotFile [reference]
@@ -28,11 +33,10 @@ sub OpneFH{
 	my ($file) =(@_);
 	my $FH;
 	unless (open($FH, "$file")){
-                print STDERR "Can not open file $file\n";
-                exit;
-        }
+		print STDERR "Can not open file $file\n";
+		exit;
+	}
 	return($FH);
-
 }
 sub FillHASH{
 	my ($FH) =(@_);
@@ -104,7 +108,6 @@ sub Germline{
 						$level  = "stringent";
 						
 					}
-					print STDERR "$source\t\t$level\n";
 					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\t$level\n";
 				}
 			}
@@ -115,57 +118,52 @@ sub Germline{
 sub findSource{
 	my ($input, $cancerGeneList, $inherited, $JW, $CL)= (@_);
 	my %source;
-	my $level;
+	my $level = "2";
 	my %CANCER_GENE     =FillHASH(OpneFH($cancerGeneList));
 	my %INHERITED_GENE  =FillHASH(OpneFH($inherited));
 	my %JW_List         =FillHASH(OpneFH($JW));
 	my %CL_List         =FillHASH(OpneFH($CL));
 	my @ANN = split("\t", $input);
-	if ($ANN[1] eq $ANN[147]){
+	if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
 		$source{'ACMG'} = 'yes';
-		$level="2";
-		if ($ANN[57] =~ /^Pathogenic/ or $ANN[57] =~ /\|Pathogenic/ or $ANN[57] =~ /^Likely Pathogenic/ or $ANN[57] =~ /\|Likely Pathogenic/){
+		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/ or $ANN[$index_of_clinvar] =~ /\|Pathogenic/ or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/ or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/){
 			$source{'ACMG-clinvar'} = 'yes';
+			delete $source{'ACMG'};
 			$level = "stringent";
 		}
 	}
-	if($ANN[64] =~ /^Disease causing mutation$/){  # HGMD
+	if($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){  # HGMD
 		$source{'HGMD'} = 'yes';
-		$level="2";
-		if ($ANN[57] =~ /^Pathogenic/ or $ANN[57] =~ /\|Pathogenic/ or $ANN[57] =~ /^Likely Pathogenic/ or $ANN[57] =~ /\|Likely Pathogenic/){
+		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/ or $ANN[$index_of_clinvar] =~ /\|Pathogenic/ or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/ or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/){
 			$source{'HGMD-clinvar'} = 'yes';
+			delete $source{'HGMD'};
 			$level = "stringent";
 		}
 	}
-	if (exists $CANCER_GENE{$ANN[1]}){
-                $source{'CancerGeneCensus'} = 'yes';
-                $level="2";
-                if ($ANN[0] =~ /splicing/ or $ANN[3] =~ /stopgain/ or $ANN[3]=~ /^frameshift/){
-                        $level = "stringent";
-                }
-        }
-	if (exists $INHERITED_GENE{$ANN[1]}){
+	if (exists $CANCER_GENE{$ANN[$index_of_Gene]}){
+		$source{'CancerGeneCensus'} = 'yes';
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+			$level = "stringent";
+		}
+	}
+	if (exists $INHERITED_GENE{$ANN[$index_of_Gene]}){
 		$source{'InheritedDiseases'} = 'yes';
-		$level="2";
-		if ($ANN[0] =~ /splicing/ or $ANN[3] =~ /stopgain/ or $ANN[3]=~ /^frameshift/){
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
 			$level = "stringent";
 		}
 	}
-	if (exists $JW_List{$ANN[1]}){
+	if (exists $JW_List{$ANN[$index_of_Gene]}){
 		$source{'JW_germline'} = 'yes';
-		$level="2";
-		if ($ANN[0] =~ /splicing/ or $ANN[3] =~ /stopgain/ or $ANN[3]=~ /^frameshift/){
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
 			$level = "stringent";
 		}
 	}
-	if (exists $CL_List{$ANN[1]}){
+	if (exists $CL_List{$ANN[$index_of_Gene]}){
 		$source{'ClinOmicsTier2'} = 'yes';
-		$level="2";
-		if ($ANN[0] =~ /splicing/ or $ANN[3] =~ /stopgain/ or $ANN[3]=~ /^frameshift/){
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
 			$level = "stringent";
 		}
 	}
-
 	my $return = join(";", (sort keys %source));
 	return($return, $level);
 }
@@ -223,7 +221,7 @@ sub Somatic{
 		chomp;
 		my @temp = split("\t", $_);
 		my $val;
-		my $vcf;	
+		my $vcf;
 		my $end = @temp - 1 ;
 		my $vaf = VAF($temp[9], $temp[10]);
 		my $key = join "\t", @temp[0..4];
@@ -241,7 +239,6 @@ sub Somatic{
 	}
 	close ORI;
 }
-
 sub VAF{
 	my ($total, $var) = (@_);
 	my $vaf =0;
@@ -255,5 +252,4 @@ sub VAF{
 		$vaf = sprintf("%0.2f", $var/$total);
 		return($vaf);
 	}
-
 }
