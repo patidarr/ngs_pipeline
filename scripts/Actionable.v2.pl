@@ -99,7 +99,7 @@ sub Germline{
 			my @ANN = split("\t", $ANNOTATION{"$site"});
 			my $vaf = VAF($temp[9], $temp[10]);
 			if(($temp[9] !~ /\D/) and $temp[9] >=10 and $vaf >=0.25){
-				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CancerGeneCensus]/){
+				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CGCensus_Hereditary]/){
 					if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
 						$level  = "stringent";
 						$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
@@ -141,7 +141,7 @@ sub findSource{
 		}
 	}
 	if (exists $CANCER_GENE{$ANN[$index_of_Gene]}){
-		$source{'CancerGeneCensus'} = 'yes';
+		$source{'CGCensus_Hereditary'} = 'yes';
 		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
 			$level = "stringent";
 		}

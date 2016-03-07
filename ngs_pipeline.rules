@@ -120,6 +120,7 @@ for sample in config['sample_references'].keys():
 		]
 	)	
 	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -192,8 +193,9 @@ rule Khanlab_Pipeline:
 		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]
 	shell: """
 	#######################
-#	find . -group $USER -exec chgrp {params.group} {{}} \;
-#	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
+	find log/ -type f -empty -delete
+	find . -group $USER -exec chgrp {params.group} {{}} \;
+	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {params.wait4job} ${{Final}}
@@ -274,7 +276,8 @@ rule Novoalign:
 	#######################
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
-	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} 2>{log}| samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
+#	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} 2>{log}| samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
+	novoalign -c ${{SLURM_CPUS_ON_NODE}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} 2>{log}| samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
 	samtools index {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
 	"""
@@ -403,9 +406,12 @@ rule CN_LRR:
 	input:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
-		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"]
+		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"],
+		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
 		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
+		final="{subject}/{Tumor}/copyNumber/{Tumor}.hq.txt",
+		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.filtered.txt"
 	version: config["bedtools"]
 	params:
 		rulename = "LRR",
@@ -413,15 +419,18 @@ rule CN_LRR:
 	shell: """
 	#######################
 	echo -e "Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)" >{output.out}	
-	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{if($4>0){{print $1,$2,$3,$4,$5,$5/$4,log(($5/$4)+0.01)/log(2)}}else {{print $1,$2,$3,$4,$5,$5,log($5+0.01)/log(2)}}}}' >{output.out}.temp1
+	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 	
 	module load bedtools/{version}
-	intersectBed -a {input.ref} -b {input.files[0]} >{output}.temp
-	perl {input.tool} {output}.temp {output.out}.temp1 >>{output.out}
-	med=`cut -f4 {output.out} |grep -v Normal |sort -n | awk '{{count[NR] = $1;}}END {{if (NR % 2) {{print count[(NR + 1) / 2];}} else {{print (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0;}}}}'`
-	
-	
-	rm -rf {output.out}.temp1 {output}.temp
+	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
+	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
+	awk '{{if($4>=30) print $0}}' {output.out} >{output.final}
+	mean=`cut -f7 {output.final}|grep -v LRR |awk '{{sum+=$1}} END {{print sum/NR}}'`
+	stdDev=`cut -f7 {output.final}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
+	min=`echo "${{mean}}-(2*${{stdDev}})"|bc`
+	max=`echo "${{mean}}+(2*${{stdDev}})"|bc`
+	perl {input.filter} {output.final} ${{min}} ${{max}} > {output.filtered}
+	rm -rf {output.out}.temp1 {output.out}.temp
 	#######################
 	"""
 ############

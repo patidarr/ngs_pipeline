@@ -118,7 +118,7 @@ $CUSTOM $DATADIR/${BUILD}_clinvar_20160203.txt $file >$OUT.clinvar
 #
 ################################
 OUT=`echo $file |sed -e 's/.anno//g'`
-$CUSTOM $DATADIR/${BUILD}_hgmd.2015.3.txt $file >$OUT.hgmd
+$CUSTOM $DATADIR/${BUILD}_hgmd.2015.4.txt $file >$OUT.hgmd
 ################################
 # Add MATCH Trial
 #
