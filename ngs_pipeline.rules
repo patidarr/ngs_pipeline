@@ -1117,7 +1117,8 @@ rule Actionable_Germline:
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
 		jsw    = config["annovar_data"]+"geneLists/CancerGenes_JSW.txt",
-		clt2   = config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt"
+		clt2   = config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt",
+		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt"
 
 	output:
 		germline="{subject}/{ACT_DIR}/{subject}.germline.actionable.txt",
@@ -1128,10 +1129,10 @@ rule Actionable_Germline:
 	#######################
 	if [ -e {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
 	then 
-		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} > {output.germline}
+		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} > {output.germline}
+		perl {input.convertor} germline /spin1/scratch/temp                                                    {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
 	fi
 	#######################
 	"""
@@ -1148,7 +1149,8 @@ rule Actionable_RNAseq:
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
 		jsw    = config["annovar_data"]+"geneLists/CancerGenes_JSW.txt",
-		clt2   = config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt"
+		clt2   = config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt",
+		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt"
 	output:
 		rnaseq="{subject}/{ACT_DIR}/{subject}.rnaseq.actionable.txt",
 	params:
@@ -1157,7 +1159,7 @@ rule Actionable_RNAseq:
 	shell: """
 	#######################
 	touch /spin1/scratch/temp
-	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} > {output.rnaseq}
+	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.rnaseq}
 	#######################
 	"""
 ############
