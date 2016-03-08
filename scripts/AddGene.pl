@@ -3,16 +3,19 @@ use strict;
 use warnings;
 
 open(ANN_FH, "$ARGV[0]");
-my %ANNOVAR;
+my %GENE;
+my %STRAND;
 my $cols=0;
 while(<ANN_FH>){
         chomp;
         my @local = split ("\t", $_);
-	if (exists $ANNOVAR{"$local[0]\t$local[1]"}){
-		$ANNOVAR{"$local[0]\t$local[1]"} = $ANNOVAR{"$local[0]\t$local[1]"}."; $local[3]";
+	if (exists $GENE{"$local[0]\t$local[1]"}){
+		$GENE{"$local[0]\t$local[1]"} = $GENE{"$local[0]\t$local[1]"}."; $local[3]";
+		$STRAND{"$local[0]\t$local[1]"} = $STRAND{"$local[0]\t$local[1]"}."; $local[4]";
 	}
 	else{
-		$ANNOVAR{"$local[0]\t$local[1]"} = $local[3];
+		$GENE{"$local[0]\t$local[1]"} = $local[3];
+		$STRAND{"$local[0]\t$local[1]"} = $local[4];
 	}
 }
 close ANN_FH;
@@ -22,11 +25,11 @@ while (<ORI>){
         chomp;
 	my @temp = split("\t", $_);
 	my $key  ="$temp[0]\t$temp[1]";
-	if(exists $ANNOVAR{$key}){
-		print "$_\t$ANNOVAR{$key}\n";
+	if(exists $GENE{$key}){
+		print "$_\t$GENE{$key}\t$STRAND{$key}\n";
 	}
 	else{
-		print "$_\t--\n";
+		print "$_\t--\t--\n";
 	}
 }
 close ORI;
