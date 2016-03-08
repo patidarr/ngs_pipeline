@@ -16,7 +16,7 @@ if($ARGV[0] eq 'somatic'){
 	# 4 == Annotations
 }
 elsif($ARGV[0] eq 'germline' or $ARGV[0] eq 'rnaseq'){
-	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8]);
+	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $ARGV[9]);
 	# 1 == somaticFile
 	# 2 == germlineFile
 	# 3 == Annotations
@@ -25,6 +25,7 @@ elsif($ARGV[0] eq 'germline' or $ARGV[0] eq 'rnaseq'){
 	# 6 == Inherited Diseases [reference]
 	# 7 == JW_germline [reference]
 	# 8 == ClinOmics Tier2 [reference]
+	# 9 == Genetics_HumanRef [reference]
 }
 else{
 	die $!;
@@ -49,7 +50,7 @@ sub FillHASH{
 	return(%HASH);
 }
 sub Germline{
-	my ($somatic, $germline, $annotation, $cancerGeneList, $hotspot, $inherited, $JW, $CL) = (@_);
+	my ($somatic, $germline, $annotation, $cancerGeneList, $hotspot, $inherited, $JW, $CL, $GHR) = (@_);
 	my $SOM = OpneFH($somatic);
 	my $ANN = OpneFH($annotation);
 	my $HOT = OpneFH($hotspot);
@@ -95,11 +96,11 @@ sub Germline{
 		$vcf = join "\t", @temp[5..$end];
 		if (!exists $DATA{$site}){ # i.e. position is germline!!
 		#if (!exists $DATA{$site_sample}){ # i.e. position in sample is germline
-			my ($source, $level) = findSource($ANNOTATION{"$site"}, $cancerGeneList, $inherited, $JW, $CL);
+			my ($source, $level) = findSource($ANNOTATION{"$site"}, $cancerGeneList, $inherited, $JW, $CL, $GHR);
 			my @ANN = split("\t", $ANNOTATION{"$site"});
 			my $vaf = VAF($temp[9], $temp[10]);
 			if(($temp[9] !~ /\D/) and $temp[9] >=10 and $vaf >=0.25){
-				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CGCensus_Hereditary]/){
+				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CGCensus_Hereditary|Genetics_HumanRef]/){
 					if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
 						$level  = "stringent";
 						$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
@@ -116,13 +117,14 @@ sub Germline{
 	close $ORI;
 }
 sub findSource{
-	my ($input, $cancerGeneList, $inherited, $JW, $CL)= (@_);
+	my ($input, $cancerGeneList, $inherited, $JW, $CL, $GHR)= (@_);
 	my %source;
 	my $level = "2";
 	my %CANCER_GENE     =FillHASH(OpneFH($cancerGeneList));
 	my %INHERITED_GENE  =FillHASH(OpneFH($inherited));
 	my %JW_List         =FillHASH(OpneFH($JW));
 	my %CL_List         =FillHASH(OpneFH($CL));
+	my %GHR_List        =FillHASH(OpneFH($GHR));
 	my @ANN = split("\t", $input);
 	if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
 		$source{'ACMG'} = 'yes';
@@ -176,6 +178,16 @@ sub findSource{
                         $level = "stringent";
                 }
 	}
+	if (exists $GHR_List{$ANN[$index_of_Gene]}){
+		$source{'Genetics_HumanRef'} = 'yes';
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+		$level = "stringent";
+		}
+		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+			$source{'Genetics_HumanRef'} = 'yes';
+			$level = "stringent";
+		}
+        }
 	my $return = join(";", (sort keys %source));
 	return($return, $level);
 }
