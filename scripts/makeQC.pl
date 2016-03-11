@@ -6,12 +6,15 @@ my $dir="$ARGV[0]";
 # Print Header
 #
 
-print "Sample\tDiagnosis\tTotal Reads\tRead Length\t%GC\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE\tInsert Size (Median)\tMapping Quality (Mean)\tCoverage (Mean)\n";
+print "Sample\tLibrary\tDiagnosis\tTotal Reads\tRead Length\t%GC\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE\tInsert Size (Median)\tMapping Quality (Mean)\tCoverage (Mean)\n";
 #print "Sample\tTotal Reads\tRead Length\t%GC\tMapped Reads\tUNPAIRED_READS_EXAMINED\tREAD_PAIRS_EXAMINED\tUNMAPPED_READS\tUNPAIRED_READ_DUPLICATES\tREAD_PAIR_DUPLICATES\tREAD_PAIR_OPTICAL_DUPLICATES\tPERCENT_DUPLICATION\tESTIMATED_LIBRARY_SIZE\n";
 
 for my $Sample( <$dir/*\/*>){
 	if (-e "$Sample/qc"){
 		my ($name,$path) = fileparse($Sample);
+		my ($patient) =`basename $path`;
+		chomp $patient;
+		print "$patient\t";
 		my $fastqc = "$path/$name/qc/fastqc/$name"."_R1_fastqc/fastqc_data.txt";	
 		if (open (FH , $fastqc)){
 			print "$name\t";

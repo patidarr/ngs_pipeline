@@ -76,16 +76,16 @@ ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 QC.extend(ALL_QC)
 QC.extend(ALL_FASTQC)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
 			TumorBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
-			TumorCopy = "{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
+			TumorCopy = "{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
 			NormalBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			NormalCopy = "{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+			NormalCopy = "{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
@@ -119,8 +119,10 @@ for sample in config['sample_references'].keys():
 		(subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
 	)	
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.new.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.new.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.new.annotated.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.new.filtered.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -372,7 +374,7 @@ rule flagstat:
 	#######################
 	"""
 ############
-#       Copy Number for every Bed Region
+#       Reads Count for every Bed Region on bam file
 ############
 rule copyNumber:
 	input:
@@ -381,7 +383,7 @@ rule copyNumber:
 		flagstat="{base}/{sample}/qc/{sample}.bwa.flagstat.txt",
 		tool=NGS_PIPELINE+ "/scripts/" + config["copyNumber"]
 	output:
-		"{base}/{sample}/copyNumber/{sample}.count.txt"
+		"{base}/{sample}/copyNumber/{sample}.count.tmp.txt"
 	version: config["samtools"]
 	params:
 		rulename  = "CopyNumber",
@@ -389,6 +391,7 @@ rule copyNumber:
 	shell: """
 	#######################
 	module load samtools/{version}
+	#TotalReads=`samtools view -bh -L {input.interval} {input.bam} |samtools flagstat - |head -1|sed -e 's/\s/\\t/g' |cut -f 1`
 	TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
 	split -d -l 12000 {input.interval} /lscratch/${{SLURM_JOBID}}/input
 	for file in /lscratch/${{SLURM_JOBID}}/input*
@@ -400,19 +403,21 @@ rule copyNumber:
 	#######################
 	"""
 ############
-#       MuTect
+#       Somatic Copy Number
 ############
 rule CN_LRR:
 	input:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
+		index=config["reference"].replace('.fasta', '.index.txt'),
 		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"],
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
-		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
-		final="{subject}/{Tumor}/copyNumber/{Tumor}.hq.txt",
-	version: config["bedtools"]
+		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.new.txt",
+		hq="{subject}/{Tumor}/copyNumber/{Tumor}.hq.new.txt",
+		final="{subject}/{Tumor}/copyNumber/{Tumor}.CN.new.annotated.txt",
+		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.new.filtered.txt"	
 	params:
 		rulename = "LRR",
 		batch    = config["job_default"],
@@ -421,18 +426,26 @@ rule CN_LRR:
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}	
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 	
-	module load bedtools/{version}
+	module load bedtools/2.25.0
 	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
 	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
 
-	awk '{{if($4>=30) print $0}}' {output.out} >{output.final}
-	mean=`cut -f7 {output.final}|grep -v LRR |awk '{{sum+=$1}} END {{print sum/NR}}'`
-	stdDev=`cut -f7 {output.final}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
+	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
+	mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%d\\n", sum/NR)}}'`
+	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
 	min=`echo "${{mean}}-(2*${{stdDev}})"|bc`
 	max=`echo "${{mean}}+(2*${{stdDev}})"|bc`
 
-	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sortBed -header -i - |sort |uniq >{wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.txt
-
+	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sort |uniq |sortBed -faidx {input.index} -header -i - >{output.final}
+	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.new.txt
+	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
+	
+	head -1 {output.final} >{output.filtered}
+	for gene in ${{geneList}};
+	do
+		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
+	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
+	cp -f {output.filtered} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.CN.new.filtered.txt
 	rm -rf {output.out}.temp1 {output.out}.temp
 	#######################
 	"""
