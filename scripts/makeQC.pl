@@ -18,7 +18,7 @@ for my $Sample( <$dir/*\/*>){
 		my $fastqc = "$path/$name/qc/fastqc/$name"."_R1_fastqc/fastqc_data.txt";	
 		if (open (FH , $fastqc)){
 			print "$name\t";
-			my $diagnosis =`sed -n '/"Diagnosis"/, /}/ p' samplesheet.json |grep "$name" |cut -d ":" -f 2 |sed -e 's/,//g'`;
+			my $diagnosis =`sed -n '/"Diagnosis"/, /}/ p' Diagnosis.json |grep "$name" |cut -d ":" -f 2 |sed -e 's/,//g'`;
 			chomp $diagnosis;
 			print "$diagnosis\t";
 			while(<FH>){
