@@ -431,7 +431,8 @@ rule CN_LRR:
 	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
 
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%d\\n", sum/NR)}}'`
+	mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%.2f\\n", sum/NR)}}'`
+	
 	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
 	min=`echo "${{mean}}-(2*${{stdDev}})"|bc`
 	max=`echo "${{mean}}+(2*${{stdDev}})"|bc`
@@ -583,6 +584,27 @@ rule Picard_MarkDup:
 	######################
 	"""
 ############
+# copy novo bam to novo.final bam
+############
+rule copyNovoBam:
+	input:
+		bam="{base}/{sample}/{sample}.novo.dd.bam",
+		bai="{base}/{sample}/{sample}.novo.dd.bam.bai",
+	output:
+		bam="{base}/{sample}/{sample}.novo.final.bam",
+		bai="{base}/{sample}/{sample}.novo.final.bam.bai",
+	params:
+		rulename = "copy",
+		batch    = config['job_default']
+	shell: """
+	#######################
+	
+	mv {input.bam} {output.bam}
+	mv {input.bai} {output.bai}
+	
+	#######################
+	"""
+############
 #       GATK Best Practices
 ############
 rule GATK:
@@ -615,8 +637,8 @@ rule GATK:
 ############
 rule Bam2MPG:
 	input:
-		bam="{subject}/{sample}/{sample}.novo.dd.bam",
-		bai="{subject}/{sample}/{sample}.novo.dd.bam.bai",
+		bam="{subject}/{sample}/{sample}.novo.final.bam",
+		bai="{subject}/{sample}/{sample}.novo.final.bam.bai",
 		ref=config["reference"],
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
 	output:
