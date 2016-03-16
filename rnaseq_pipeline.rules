@@ -77,7 +77,6 @@ rule tophat:
 	output: 
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam", 
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
-	log: "log/tophat.{sample}"
 	version: config["tophat"]
 	params:
 		rulename  = "tophat",
@@ -86,7 +85,7 @@ rule tophat:
 	shell: """
 	#######################
 	module load tophat/{version}
-	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2} 2>{log}
+	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
 	mv -f /lscratch/${{SLURM_JOBID}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 	#######################
@@ -154,7 +153,6 @@ rule cufflinks:
 	output:
 		"{base}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking_log2",
 		"{base}/{sample}/cufflinks_{gtf}/isoforms.fpkm_tracking_log2"
-	log: "log/cufflinks.{sample}"
 	version: config['cufflinks']
 	params:
 		rulename   = "cuff",
@@ -162,7 +160,7 @@ rule cufflinks:
 	shell: """
 	#######################
 	module load cufflinks/{version}
-	cufflinks -p ${{SLURM_CPUS_ON_NODE}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam} 2>{log}
+	cufflinks -p ${{SLURM_CPUS_ON_NODE}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
 	/usr/bin/python {input.convertor} genes {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking_log2
 	/usr/bin/python {input.convertor} isoforms {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2 
 	#######################
@@ -216,7 +214,6 @@ rule fusioncatcher:
 		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 	output: 
 		"{base}/{sample}/fusion/fusion-catcher.txt"
-	log: "log/fc.{sample}"
 	version: config['fusioncatcher']
 	params:
 		rulename = "fc",
@@ -224,7 +221,7 @@ rule fusioncatcher:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/ 2>{log}
+	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/
 	cp /lscratch/${{SLURM_JOBID}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""
@@ -240,7 +237,6 @@ rule deFuse:
 		"{base}/{sample}/fusion/defuse.raw.txt",
 		"{base}/{sample}/fusion/defuse.filtered.txt",
 		"{base}/{sample}/fusion/defuse.Reads/defuse.done"
-	log: "log/deFuse.{sample}"
 	version: config["defuse"]
 	params:
 		rulename = "deFuse",
@@ -262,7 +258,7 @@ rule deFuse:
 		-p ${{SLURM_CPUS_ON_NODE}} \
 		-n {wildcards.sample}\
 		-o {wildcards.base}/{wildcards.sample}/fusion/temp\
-		-s direct 2>{log} 
+		-s direct 
 	cp {wildcards.base}/{wildcards.sample}/fusion/temp/results.filtered.tsv  {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt
 	cp {wildcards.base}/{wildcards.sample}/fusion/temp/results.tsv           {wildcards.base}/{wildcards.sample}/fusion/defuse.raw.txt
 	
@@ -364,7 +360,6 @@ rule GATK_RNASeq:
 	output:
 		bam="{base}/{sample}/{sample}.star.final.bam",
 		index="{base}/{sample}/{sample}.star.final.bam.bai",
-	log:    "log/gatk.{sample}"
 	version: config["GATK"]
 	params:
 		rulename  = "gatk",
@@ -373,12 +368,12 @@ rule GATK_RNASeq:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS > {log} 2>&1
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS 
 	
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals >> {log} 2>&1
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam >>{log} 2>&1
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt >>{log} 2>&1
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
 	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
 	######################
 	"""
@@ -393,7 +388,6 @@ rule HapCall_RNASeq:
 		dbsnp=config["dbsnp"]
 	output:
 		vcf="{base}/{sample}/calls/{sample}.hapcaller.raw.vcf"
-	log: "log/hapcaller.{sample}"
 	version: config["GATK"]
 	params:
 		rulename = "HC",
@@ -402,7 +396,7 @@ rule HapCall_RNASeq:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf --dbsnp {input.dbsnp} -dontUseSoftClippedBases -stand_call_conf 30 -stand_emit_conf 30 -log {log}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf --dbsnp {input.dbsnp} -dontUseSoftClippedBases -stand_call_conf 30 -stand_emit_conf 30
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T VariantFiltration -R {input.ref} -V /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf -window 35 -cluster 3 --filterExpression "FS > 30.0 || QD < 2" -filterName "RNASeqFilters_FS_QD" -o {output.vcf}
 	#######################
 	"""
@@ -416,7 +410,6 @@ rule coverage:
 		interval=config["refSeq_bed"]
 	output:
 		"{subject}/{sample}/qc/{sample}.star.coverage.txt"
-	log: "log/coverage.{sample}"
 	version: config["bedtools"]
 	params:
 		rulename = "coverage",
