@@ -17,7 +17,7 @@
 	
 	"job_deFuse"     : "--partition=largemem --time=24:00:00   --mem=240g --cpus-per-task=32",
 
-	"job_novoalign"  : "--partition=ibfdr --time=20:00:00   --mem=58G --nodes=1 --ntasks=1 --exclusive",
+	"job_novoalign"  : "--partition=ibfdr --time=20:00:00   --nodes=2 --ntasks=3 --exclusive",
 
         "job_bwa"        : "--partition=ccr --time=20:00:00   --mem=50G  --cpus-per-task=32",
 	"job_STAR"	 : "--partition=ccr --time=05:00:00   --mem=50g  --cpus-per-task=32 --gres=lscratch:600",

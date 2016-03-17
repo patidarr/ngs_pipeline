@@ -41,6 +41,7 @@ for subject  in config['RNASeq'].keys():
 		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUB_HOT[subject] = []
 		SUB_LOH[subject] = []
@@ -48,6 +49,7 @@ for subject  in config['RNASeq'].keys():
 		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############

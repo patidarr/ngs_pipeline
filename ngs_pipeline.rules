@@ -39,6 +39,7 @@ SUBS  = []
 SUB_BAMS= {}
 SUB_COV = {}
 SUB_LOH = {}
+SUB_GT  = {}
 SUB_MPG = {}
 SUB_HOT = {}
 SAMPLES =[]
@@ -47,28 +48,22 @@ somaticCopy = {}
 pairedCapture = {}
 QC=[]
 for subject in config['subject'].keys():
-	QC.extend(subject+"/qc/"+subject+".coveragePlot.png")
-	QC.extend(subject+"/qc/"+subject+".circos.png")
-	QC.extend(subject+"/qc/"+subject+".hotspot_coverage.png")
-	QC.extend(subject+"/annotation/"+subject+".Annotations.coding.rare.txt")
-	QC.extend(subject+"/igv/session_"+subject+".xml")
 	SUBS.append(subject)
 	PATIENTS.append(subject)
 	SUB_BAMS[subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_COV[subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_HOT[subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_LOH[subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_GT[subject]  = ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
-
 ###########################################################################
 #		Add RNASeq only samples to PATIENTS
 ###########################################################################
 for subject  in config['RNASeq'].keys():
         if subject not in PATIENTS:
                 PATIENTS.append(subject)	
-
 ###########################################################################
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -78,6 +73,13 @@ ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
+ALL_QC     += expand("{subject}/qc/{subject}.coveragePlot.png", subject=PATIENTS)
+ALL_QC     += expand("{subject}/qc/{subject}.circos.png", subject=PATIENTS)
+ALL_QC     += expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=PATIENTS)
+ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
+ALL_QC     += expand("{subject}/igv/session_{subject}.xml", subject=PATIENTS)
+
 QC.extend(ALL_FASTQC)
 QC.extend(ALL_QC)
 if len(config['sample_references']) > 0:
@@ -161,7 +163,7 @@ for subject in SUBJECT_ANNO.keys():
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
-localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Circos, CoveragePlot, BoxPlot_Hotspot
 ###########################################################################
 #                               RNASeq Rules                              #
 ###########################################################################
@@ -182,6 +184,7 @@ rule Khanlab_Pipeline:
 		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
 		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
 		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
 		"rnaseqDone",
@@ -192,8 +195,9 @@ rule Khanlab_Pipeline:
 		ActionableFiles
 	version: "1.0"
 	params: 
-		group =config["group"],
-		wait4job= NGS_PIPELINE + "/scripts/" + config["block"]
+		rulename = "Final",
+		group    = config["group"],
+		wait4job = NGS_PIPELINE + "/scripts/" + config["block"]
 	shell: """
 	#######################
 #	find log/ -type f -empty -delete
@@ -276,8 +280,8 @@ rule Novoalign:
 	#######################
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
-#	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
-	novoalign -c ${{SLURM_CPUS_ON_NODE}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
+	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
+#	novoalign -c ${{SLURM_CPUS_ON_NODE}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
 	samtools index {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
 	"""
@@ -308,6 +312,45 @@ rule Genotyping:
 	perl {input.vcf2genotype} {output.vcf} >{output.gt} 
 	cp -f {output.gt} {params.dest}/{wildcards.sample}.gt 
 	perl {input.vcf2loh} {output.vcf} >{output.loh} 
+	#######################
+	"""
+############
+# Genotyping On Sample
+############
+rule SampleGT:
+	input:
+		gtFiles=lambda wildcards: SUB_GT[wildcards.subject],
+		mail =NGS_PIPELINE + "/scripts/tsv2html.sh",
+		score=NGS_PIPELINE + "/scripts/scoreGenotyes.pl"
+	output:
+		"{subject}/qc/{subject}.genotyping.txt",
+	version: config["R"]
+	params:
+		rulename = "Circos",
+		batch    = config["job_covplot"]
+	shell: """
+	#######################
+	mkdir -p {wildcards.subject}/qc/GT
+	mkdir -p {wildcards.subject}/qc/RATIO/
+	cp {input.gtFiles} {wildcards.subject}/qc/GT/
+	echo Sample >{wildcards.subject}/qc/RATIO/FirstColumn
+	
+	for file in {wildcards.subject}/qc/GT/*
+	do
+		sample=`basename ${{file}} .gt`
+		echo ${{sample}} >>{wildcards.subject}/qc/RATIO/FirstColumn
+		echo ${{sample}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
+		for file2 in {wildcards.subject}/qc/GT/*
+		do
+			perl {input.score} ${{file}} ${{file2}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
+		done
+	done
+	paste {wildcards.subject}/qc/RATIO/FirstColumn {wildcards.subject}/qc/RATIO/*.ratio >{wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	rm -rf {wildcards.subject}/qc/GT/ {wildcards.subject}/qc/RATIO/
+	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" patidarr@mail.nih.gov -c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -s 'Genotyping Result on {wildcards.subject}'
 	#######################
 	"""
 ############
@@ -813,6 +856,7 @@ rule Sub_Platypus:
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.platypus.raw.vcf"
 	version: config["platypus"]
+	log: "log/platypus.{subject}"
 	params:
 		rulename = "PLAT",
 		batch    = config["job_platypus"]
@@ -820,7 +864,7 @@ rule Sub_Platypus:
 	#######################
 	module load platypus/{version}
 	LIST=`echo {input.bams}|sed -e 's/ /,/g'`
-	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref} 
+	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref}  --logFileName={log}
 	sed -i 's/.bwa.final//g' {output.vcf}
 	#######################
 	"""

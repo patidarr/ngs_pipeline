@@ -31,7 +31,7 @@ snakemake\
 	--directory $WORK_DIR \
 	--snakefile $SNAKEFILE \
 	--configfile $SAM_CONFIG \
-	--jobname '{rulename}.{jobid}' \
+	--jobname '{params.rulename}.{jobid}' \
 	--nolock \
 	-k -p -T \
 	-j 3000 \
