@@ -3,18 +3,19 @@ for subject,samples in config['subject'].items():
 	for sample in samples:
 		IGV_DNA[sample]=subject
 
-IGV_RNA = {}
-for subject,samples in config['RNASeq'].items():
-	for sample in samples:
-		IGV_RNA[sample]=subject
-
 SUB_IGV ={}
 for Subject in config['subject']:
 	SUB_IGV[Subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=IGV_DNA[s], sample=s) for s in config['subject'][Subject]]
-	if Subject in config['RNASeq']:
-		SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
-		SUB_IGV[Subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=IGV_RNA[s], sample=s) for s in config['RNASeq'][Subject]]
 
+for Subject in config['RNASeq']:
+	if Subject in SUB_IGV:
+		SUB_IGV[Subject] += [Subject+"/"+sample+"/"+sample+".star.final.bam"]
+		SUB_IGV[Subject] += [Subject+"/"+sample+"/"+sample+".tophat.final.bam"]
+	else:
+		SUB_IGV[Subject] = []
+		for sample in config['RNASeq'][Subject]:
+			SUB_IGV[Subject] += [Subject+"/"+sample+"/"+sample+".star.final.bam"]
+			SUB_IGV[Subject] += [Subject+"/"+sample+"/"+sample+".tophat.final.bam"]
 
 rule IGV_Session:
 	input: bams=lambda wildcards: SUB_IGV[wildcards.subject]

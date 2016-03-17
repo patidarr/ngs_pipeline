@@ -46,7 +46,6 @@ SAMPLES =[]
 somaticPairs = {}
 somaticCopy = {}
 pairedCapture = {}
-QC=[]
 for subject in config['subject'].keys():
 	SUBS.append(subject)
 	PATIENTS.append(subject)
@@ -79,9 +78,6 @@ ALL_QC     += expand("{subject}/qc/{subject}.circos.png", subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=PATIENTS)
 ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/igv/session_{subject}.xml", subject=PATIENTS)
-
-QC.extend(ALL_FASTQC)
-QC.extend(ALL_QC)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
