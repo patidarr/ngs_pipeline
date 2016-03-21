@@ -239,7 +239,7 @@ sub Somatic{
 	close REF;
 	print "Chr\tStart\tEnd\tRef\tAlt\t";
 	print $ANNOTATION{"Chr\tStart\tEnd\tRef\tAlt"};
-	print "\tSample\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\n";
+	print "\tSample\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
 	while (<ORI>){
 		chomp;
 		my @temp = split("\t", $_);
@@ -251,12 +251,15 @@ sub Somatic{
 		$val = "$temp[0]\t$temp[1]\t$temp[2]";
 		$vcf = join "\t", @temp[5..$end];
 		if (exists $DATA{$val}){
-			print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$DATA{$val}\n";
+			print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$DATA{$val}\tTier1\n";
 		}
 		else{
 			my @local = split("\t",$ANNOTATION{$key});
-			if (exists $CGC{$local[1]} and( $local[3] =~ /stopgain/ or $local[3]=~ /^frameshift/ or $local[0] =~ /splicing/)){
-				print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\n";
+			if (exists $CGC{$local[1]}){
+				if ($local[3] =~ /stopgain/ or $local[3]=~ /^frameshift/ or $local[0] =~ /splicing/){
+					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier2\n";
+				}
+				print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier3\n";
 			}
 		}
 	}
