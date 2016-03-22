@@ -11,6 +11,14 @@ else{
 	print STDERR "$ARGV[0] does not looks like a valid argument\n";
 	die;
 }
+if (!defined $ARGV[2]){
+	print STDERR "Minimum is not defined $ARGV[2]\n";
+	die;
+}
+if (!defined $ARGV[3]){
+        print STDERR "Maximum is not defined $ARGV[3]\n";
+        die;
+}
 
 sub filter{
 	my $file= $ARGV[1];

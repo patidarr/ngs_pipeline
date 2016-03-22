@@ -42,6 +42,7 @@ SUB_LOH = {}
 SUB_GT  = {}
 SUB_MPG = {}
 SUB_HOT = {}
+SUB_IGV = {}
 SAMPLES =[]
 somaticPairs = {}
 somaticCopy = {}
@@ -55,6 +56,7 @@ for subject in config['subject'].keys():
 	SUB_LOH[subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_GT[subject]  = ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
 ###########################################################################
@@ -71,7 +73,7 @@ ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.coveragePlot.png", subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.circos.png", subject=PATIENTS)
@@ -82,9 +84,9 @@ if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
 			TumorBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
-			TumorCopy = "{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
+			TumorCopy = "{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
 			NormalBam = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			NormalCopy = "{subject}/{sample}/copyNumber/{sample}.count.tmp.txt".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+			NormalCopy = "{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
@@ -118,10 +120,14 @@ for sample in config['sample_references'].keys():
 		(subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
 	)	
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.new.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.new.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.new.annotated.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.new.filtered.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.v1.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.v1.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v1.annotated.txt"]
+	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v1.filtered.txt"]
+        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.v2.txt"]
+        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.v2.txt"]
+        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v2.annotated.txt"]
+        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v2.filtered.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -164,7 +170,7 @@ localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Ex
 #                               RNASeq Rules                              #
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
-include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
+#include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -185,7 +191,8 @@ rule Khanlab_Pipeline:
 		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
 		"rnaseqDone",
 		"QC_AllSamples.txt",
-		ALL_QC, ALL_FASTQC, ALL_BAMS,
+		ALL_QC, ALL_FASTQC, 
+       		ALL_BAMS,
 		varFiles,
 		DBFiles,
 		ActionableFiles
@@ -197,7 +204,7 @@ rule Khanlab_Pipeline:
 	shell: """
 	#######################
 #	find log/ -type f -empty -delete
-#	find . -group $USER -exec chgrp {params.group} {{}} \;
+	find . -group $USER -exec chgrp {params.group} {{}} \;
 #	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
@@ -322,7 +329,7 @@ rule SampleGT:
 		"{subject}/qc/{subject}.genotyping.txt",
 	version: config["R"]
 	params:
-		rulename = "Circos",
+		rulename = "SampleGT",
 		batch    = config["job_covplot"]
 	shell: """
 	#######################
@@ -408,6 +415,7 @@ rule flagstat:
 	"""
 ############
 #       Reads Count for every Bed Region on bam file
+#	 capture region corrected
 ############
 rule copyNumber:
 	input:
@@ -416,16 +424,16 @@ rule copyNumber:
 		flagstat="{base}/{sample}/qc/{sample}.bwa.flagstat.txt",
 		tool=NGS_PIPELINE+ "/scripts/" + config["copyNumber"]
 	output:
-		"{base}/{sample}/copyNumber/{sample}.count.tmp.txt"
+		"{base}/{sample}/copyNumber/{sample}.count.txt"
 	version: config["samtools"]
 	params:
-		rulename  = "CopyNumber",
+		rulename  = "CN",
 		batch     = config["job_copynumber"]
 	shell: """
 	#######################
 	module load samtools/{version}
-	#TotalReads=`samtools view -bh -L {input.interval} {input.bam} |samtools flagstat - |head -1|sed -e 's/\s/\\t/g' |cut -f 1`
-	TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
+	TotalReads=`samtools view -bh -L {input.interval} {input.bam} |samtools flagstat - |head -1|sed -e 's/\s/\\t/g' |cut -f 1`
+	#TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
 	split -d -l 12000 {input.interval} /lscratch/${{SLURM_JOBID}}/input
 	for file in /lscratch/${{SLURM_JOBID}}/input*
 	do
@@ -447,10 +455,10 @@ rule CN_LRR:
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
-		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.new.txt",
-		hq="{subject}/{Tumor}/copyNumber/{Tumor}.hq.new.txt",
-		final="{subject}/{Tumor}/copyNumber/{Tumor}.CN.new.annotated.txt",
-		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.new.filtered.txt"	
+		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.v1.txt",
+		hq="{subject}/{Tumor}/copyNumber/{Tumor}.hq.v1.txt",
+		final="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v1.annotated.txt",
+		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v1.filtered.txt"	
 	params:
 		rulename = "LRR",
 		batch    = config["job_default"],
@@ -464,14 +472,14 @@ rule CN_LRR:
 	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
 
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%.2f\\n", sum/NR)}}'`
-	
+	#mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%.2f\\n", sum/NR)}}'`
+	median=`cut -f7 {output.hq}|grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
 	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
-	min=`echo "${{mean}}-(2*${{stdDev}})"|bc`
-	max=`echo "${{mean}}+(2*${{stdDev}})"|bc`
+	min=`echo "${{median}}-(2*${{stdDev}})"|bc`
+	max=`echo "${{median}}+(2*${{stdDev}})"|bc`
 
-	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sort |uniq |sortBed -faidx {input.index} -header -i - >{output.final}
-	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.new.txt
+	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
+	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.v1.txt
 	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
 	
 	head -1 {output.final} >{output.filtered}
@@ -479,7 +487,66 @@ rule CN_LRR:
 	do
 		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
 	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
-	cp -f {output.filtered} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.CN.new.filtered.txt
+	cp -f {output.filtered} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.CN.v1.filtered.txt
+	rm -rf {output.out}.temp1 {output.out}.temp
+	#######################
+	"""
+############
+#       Somatic Copy Number LRR Corrected
+############
+rule CN_LRR1:
+	input:
+		files=lambda wildcards: somaticCopy[wildcards.Tumor],
+		ref=config["gene_coord"],
+		index=config["reference"].replace('.fasta', '.index.txt'),
+		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"],
+		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
+		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
+	output:
+		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.v2.txt",
+		hq="{subject}/{Tumor}/copyNumber/{Tumor}.hq.v2.txt",
+		final="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v2.annotated.txt",
+		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v2.filtered.txt"
+	params:
+		rulename = "LRR",
+		batch    = config["job_default"],
+	shell: """
+	#######################
+	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
+	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
+	
+	module load bedtools/2.25.0
+	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
+	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
+
+	# Created the first file
+
+	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
+	median=`cut -f7 {output.hq}|grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
+	
+	corr_factor=`echo "0 - ${{median}}"|bc`
+	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}.corrected
+	grep -v Ratio {output.out} |awk -v factor=${{corr_factor}} '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,$6,$7 + (factor),$8,$9}}' >>{output.out}.corrected
+
+	# Created corrected file
+	awk '{{if($4>=30) print $0}}' {output.out}.corrected >{output.hq}
+
+	median=`cut -f7 {output.hq}| grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
+	
+	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
+	min=`echo "${{median}}-(2.5*${{stdDev}})"|bc`
+	max=`echo "${{median}}+(2.5*${{stdDev}})"|bc`
+
+	perl {input.filter} filter {output.out}.corrected ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
+	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.v2.txt
+	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
+
+	head -1 {output.final} >{output.filtered}
+	for gene in ${{geneList}};
+	do
+		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
+	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
+	cp -f {output.filtered} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.CN.v2.filtered.txt
 	rm -rf {output.out}.temp1 {output.out}.temp
 	#######################
 	"""
@@ -542,6 +609,28 @@ rule CoveragePlot:
 		
 	module load R/{version}
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
+	#######################
+	"""
+rule IGV_Session:
+	input: bams=lambda wildcards: SUB_IGV[wildcards.subject]
+	output: "{subject}/igv/session_{subject}.xml"
+	message: "Making IGV session xml file for {wildcards.subject}"
+	params:
+		rulename = "igv_session",
+		work_dir =  WORK_DIR
+	shell: """
+	#######################
+	dir=`echo {params.work_dir} | sed -e 's/\/data\/khanlab/K:/g'`
+	echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" >{output}
+	echo "<Global genome=\\"hg19\\" locus=\\"\\" version=\\"3\\">" >>{output}
+	echo "\t<Resources>" >>{output}
+	for BAM in {input.bams}
+	do	
+		bam=`echo "${{dir}}/${{BAM}}" |sed -e 's/\//\\\\\\/g'`
+		echo "\t\t<Resource path=\\"${{bam}}\\"/>" >>{output}
+	done 
+	echo "\t</Resources>" >>{output}
+	echo "</Global>" >>{output}
 	#######################
 	"""
 ############

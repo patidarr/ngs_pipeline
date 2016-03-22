@@ -19,7 +19,7 @@ export WORK_DIR="/data/khanlab/projects/patidar/Snakemake"
 export DATA_DIR="/data/khanlab/projects/DATA"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
 SAM_CONFIG=$WORK_DIR/samplesheet.json
-ACT_DIR="Actionable"
+ACT_DIR="/Actionable/"
 if [ `cat $SAM_CONFIG |/usr/bin/json_verify -c` -ne "JSON is valid" ]; then
 	echo "$SAM_CONFIG is not a valid json file"
 	exit

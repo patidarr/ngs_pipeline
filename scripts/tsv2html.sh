@@ -107,7 +107,9 @@ echo "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www
 }
 #main th {
 	border: 1px solid #000000;
+	#height: 100px;
 	background-color: #CCFFCC;
+	#transform:rotate(45deg);
 }
 </style>
 
@@ -135,14 +137,14 @@ awk -F "$d" -v last=$last $head $foot '
     print "      <tr>"
     for(f = 1; f <= NF; f++)  {
       if((NR == 1 && hdr) || (NR == last && ftr)) {
-        printf "        <th>%s</th>\n", $f
+        printf "        <th align=\"center\" >%s</th>\n", $f
       }
       else
 	if ($f <0.75){
-		printf "        <td bgcolor=\"#FF0000\">%s</td>\n", $f
+		printf "        <td align=\"center\", bgcolor=\"#FF0000\">%s</td>\n", $f
 	}
 	else{
-		printf "        <td>%s</td>\n", $f
+		printf "        <td align=\"center\" >%s</td>\n", $f
 	}
     }     
     print "      </tr>"

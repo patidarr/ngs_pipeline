@@ -42,15 +42,20 @@ for subject  in config['RNASeq'].keys():
 		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUB_HOT[subject] = []
 		SUB_LOH[subject] = []
 		SUB_COV[subject] = []
 		SUB_GT[subject]  = []
+		SUB_IGV[subject] = []
 		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############
@@ -371,9 +376,9 @@ rule GATK_RNASeq:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -fixMisencodedQuals
 	
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -fixMisencodedQuals
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam 
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
