@@ -20,6 +20,10 @@ git clone https://github.com/patidarr/ngs_pipeline.git
 - Haplotype Caller, Platupys, Bam2MPG, MuTect, Strelka
 - snpEff, Annovar, SIFT, pph2, Custom Annotation
 - Coverage Plot, Circos Plot, Hotspot Coverage Box Plot
+- Create input format for oncogenomics database (Patient Level)
+- Make Actionable Classification for Germline and Somatic Mutations 
+- Copy number based on the simple T/N LogRatio (N cov >=30), Corrected for Total # Reads
+- LRR adjusted to center. 
 
 ### RNASeq:
 - QC
@@ -27,9 +31,17 @@ git clone https://github.com/patidarr/ngs_pipeline.git
 - Broad Standard Practices on STAR bam
 - fusion-catcher, tophat-fusion, deFuse
 - Cufflinks (ENS and UCSC)
+- In-house Exon Expression (ENS and UCSC)
 - Haplotype Caller
 - snpEff, Annovar, SIFT, pph2, Custom Annotation
+- Actionable Fusion classification
 
+### Patient:
+- Genotyping On Patient. 
+	1000g sites are evaluated for every library and then compared (all vs all)
+	If two libraries come from a patient the match shuld be pretty good >80%
+- Still to develop:
+	If the match is below a certain threshold, break the pipeline for patient.
 
 Rulegraph
 
