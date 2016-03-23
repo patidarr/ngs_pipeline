@@ -200,7 +200,7 @@ rule Khanlab_Pipeline:
 	params: 
 		rulename = "Final",
 		group    = config["group"],
-		wait4job = NGS_PIPELINE + "/scripts/" + config["block"]
+		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl"
 	shell: """
 	#######################
 #	find log/ -type f -empty -delete
@@ -274,6 +274,7 @@ rule Novoalign:
 		temp("{subject}/{sample}/{sample}.novo.bam"),
 		temp("{subject}/{sample}/{sample}.novo.bam.bai")
 	version: config["novocraft"]
+	resources: novoalign=1
 	params:
 		rulename  = "novoalign",
 		batch     = config["job_novoalign"],
@@ -297,8 +298,8 @@ rule Genotyping:
 		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
-		vcf2genotype=NGS_PIPELINE + "/scripts/" + config["vcf2genotype"],
-		vcf2loh=NGS_PIPELINE + "/scripts/" + config["vcf2loh"],
+		vcf2genotype=NGS_PIPELINE + "/scripts/vcf2genotype.pl",
+		vcf2loh=NGS_PIPELINE + "/scripts/vcf2loh.pl",
 	output:
 		vcf="{base}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
 		gt="{base}/{sample}/qc/{sample}.{aligner}.gt",
@@ -385,7 +386,7 @@ rule QC_Sum:
 	input:
 		ALL_QC,
 		ALL_FASTQC,
-		convertor = NGS_PIPELINE + "/scripts/" + config["makeQC"]
+		convertor = NGS_PIPELINE + "/scripts/makeQC.pl"
 	output:
 		"QC_AllSamples.txt"
 	version: "v1.1"
@@ -422,7 +423,7 @@ rule copyNumber:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
 		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
 		flagstat="{base}/{sample}/qc/{sample}.bwa.flagstat.txt",
-		tool=NGS_PIPELINE+ "/scripts/" + config["copyNumber"]
+		tool=NGS_PIPELINE+ "/scripts/copyNumber.sh"
 	output:
 		"{base}/{sample}/copyNumber/{sample}.count.txt"
 	version: config["samtools"]
@@ -451,7 +452,7 @@ rule CN_LRR:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
-		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"],
+		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
@@ -499,7 +500,7 @@ rule CN_LRR1:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
-		tool=NGS_PIPELINE+ "/scripts/" +config["AddGene"],
+		tool=NGS_PIPELINE+ "/scripts//AddGene.pl",
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
@@ -596,7 +597,7 @@ rule Coverage:
 rule CoveragePlot:
 	input: 
 		covFiles=lambda wildcards: SUB_COV[wildcards.subject],
-		coverage =NGS_PIPELINE + "/scripts/" + config["coverage"]
+		coverage =NGS_PIPELINE + "/scripts/coverage.R"
 	output: "{subject}/qc/{subject}.coveragePlot.png",
 	version: config["R"]
 	params:
@@ -639,7 +640,7 @@ rule IGV_Session:
 rule Circos:
 	input:
 		lohFiles=lambda wildcards: SUB_LOH[wildcards.subject],
-		circos =NGS_PIPELINE + "/scripts/" + config["circos"]
+		circos =NGS_PIPELINE + "/scripts/circos.R"
 	output:
 		"{subject}/qc/{subject}.circos.png",
 	version: config["R"]
@@ -659,7 +660,7 @@ rule Circos:
 rule BoxPlot_Hotspot:
 	input:
 		covFiles=lambda wildcards: SUB_HOT[wildcards.subject],
-		boxplot =NGS_PIPELINE + "/scripts/" + config["boxplot"]
+		boxplot =NGS_PIPELINE + "/scripts/boxplot.R"
 	output:
 		"{subject}/qc/{subject}.hotspot_coverage.png",
 	version: config["R"]
@@ -810,14 +811,13 @@ rule Bam2MPG:
 rule Sub_MPG:
 	input:
 		vcf=lambda wildcards: SUB_MPG[wildcards.subject],
-#		convertor= NGS_PIPELINE + "/scripts/" + config["vcffilter"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
 	version: config["vcftools"]
 	params:
 		rulename = "mergevcf",
 		batch    = config["job_default"],
-		vcforder = NGS_PIPELINE + "/scripts/" +config["vcfOrderCol"]
+		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R"
 	shell: """
 	#######################
 	module load vcftools/{version}
@@ -845,7 +845,7 @@ rule MuTect:
 	params:
 		rulename = "MuTect",
 		batch    = config["job_mutect"],
-		vcforder = NGS_PIPELINE + "/scripts/" +config["vcfOrderCol"],
+		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R",
 		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4"
 	shell: """
 	#######################
@@ -1007,7 +1007,7 @@ rule snpEff:
 rule vcf2txt:
 	input:
 		eff="{subject}/calls/{base}.raw.snpEff.vcf",
-		vcf2txt=NGS_PIPELINE + "/scripts/" + config["vcf2txt"]
+		vcf2txt=NGS_PIPELINE + "/scripts/vcf2txt.pl"
 	output:
 		txt="{subject}/calls/{base}.snpEff.txt"
 	params:
@@ -1027,7 +1027,7 @@ rule vcf2txt:
 rule FormatInput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_VCFS[wildcards.subject],
-		convertor= NGS_PIPELINE + "/scripts/" + config["annoInput"]
+		convertor= NGS_PIPELINE + "/scripts/MakeAnnotationInputs.pl"
 	output: 
 		temp("{subject}/annotation/AnnotationInput.anno"), 
 		temp("{subject}/annotation/AnnotationInput.sift")
@@ -1035,7 +1035,7 @@ rule FormatInput:
 	params:
 		rulename   = "FormatInput",
 		batch      = config["job_default"],
-		fAEV       = NGS_PIPELINE + "/scripts/" + config["fAEV"]
+		fAEV       = NGS_PIPELINE + "/scripts/findAlreadyExistingVariants.pl"
 	shell: """
 	#######################
 	module load annovar/{version}
@@ -1051,8 +1051,8 @@ rule FormatInput:
 rule Annotation:
 	input: 
 		"{subject}/annotation/AnnotationInput.anno",
-		TableAnnovar=NGS_PIPELINE + "/scripts/" + config["Annovar"],
-		custom     =NGS_PIPELINE + "/scripts/" + config["customAnno"]
+		TableAnnovar=NGS_PIPELINE + "/scripts/TableAnno.sh",
+		custom     =NGS_PIPELINE + "/scripts/addAnnotation.pl"
 	output:
 		temp("{subject}/annotation/AnnotationInput.docm")
 	version: config["annovar"]
@@ -1073,7 +1073,7 @@ rule Annotation:
 rule SIFT:
 	input:
 		sift="{subject}/annotation/AnnotationInput.sift",
-		convertor  = NGS_PIPELINE + "/scripts/" + config["SiftParse"]
+		convertor  = NGS_PIPELINE + "/scripts/ParseSIFT.pl"
 	output: 
 		temp("{subject}/annotation/AnnotationInput.sift.out")
 	version: config["SIFT"]
@@ -1102,8 +1102,7 @@ rule SIFT:
 rule PPH2:
 	input:
 		pph="{subject}/annotation/AnnotationInput.pph",
-		convertor  = NGS_PIPELINE + "/scripts/" + config["PPH2Parse"],
-		block      = NGS_PIPELINE + "/scripts/" + config["block"]
+		convertor  = NGS_PIPELINE + "/scripts/ParsePPH2.pl"
 	output: "{subject}/annotation/AnnotationInput.pph2.out"
 	version: config["polyphen2"]
 	params:
@@ -1129,10 +1128,10 @@ rule CombineAnnotation:
 	input:
 		anno="{subject}/annotation/AnnotationInput.docm", 
 		sift="{subject}/annotation/AnnotationInput.sift.out", 
-		convertor  = NGS_PIPELINE + "/scripts/" + config["CombineAnno"],
-		geneanno   = NGS_PIPELINE + "/scripts/" + config["GeneAnno"],
-		filter     = NGS_PIPELINE + "/scripts/" + config["filterVars"],
-		coding     = NGS_PIPELINE + "/scripts/" + config["proteincoding"],
+		convertor  = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
+		geneanno   = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
+		filter     = NGS_PIPELINE + "/scripts/filterVariants.pl",
+		coding     = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
 		blacklisted      = config["annovar_data"]+ "hg19_blacklistedSites.txt"
 	output: "{subject}/annotation/{subject}.Annotations.coding.rare.txt"
 	version: "1.0"
@@ -1172,7 +1171,7 @@ rule AttachAnnotation:
 	input:
 		txt="{subject}/{base1}/calls/{base}.snpEff.txt",
 		ref="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
-		convertor  = NGS_PIPELINE + "/scripts/" + config["addBack"]
+		convertor  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl"
 	output:
 		txt="{subject}/{base1}/calls/{base}.annotated.txt"
 	version: "1.0"
@@ -1191,13 +1190,12 @@ rule Expressed:
 	input: 
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
 		Mutation="{subject}/{sample}/calls/{base}.annotated.txt",
-		convertor = NGS_PIPELINE + "/scripts/" + config["mpileup"]
+		convertor = NGS_PIPELINE + "/scripts/mpileup.pl"
 	output: "{subject}/{sample}/calls/{base}.annotated.expressed.txt"
 	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
-		batch     = config["job_expressed"],
-		convertor = config["mpileup"]
+		batch     = config["job_expressed"]
 	shell: """
 	#######################
 	module load samtools/{version}
@@ -1210,7 +1208,7 @@ rule Expressed:
 rule DBinput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
-		convertor=NGS_PIPELINE + "/scripts/" + config["DBinput"]
+		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl"
 	output: "{subject}/{subject}/db/{subject}.{group}"
 	params:
 		rulename  = "makeDBinput"
@@ -1229,7 +1227,7 @@ rule Actionable_Somatic:
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
-		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
+		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 	output:
 		somatic="{subject}/{ACT_DIR}/{subject}.somatic.actionable.txt",
 	params:
@@ -1248,7 +1246,7 @@ rule Actionable_Germline:
 		germline="{subject}/{subject}/db/{subject}.germline",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
-		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
+		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
@@ -1280,7 +1278,7 @@ rule Actionable_RNAseq:
 		rnaseq="{subject}/{subject}/db/{subject}.rnaseq",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
-		annotate  = NGS_PIPELINE + "/scripts/" + config["addBack"],
+		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",

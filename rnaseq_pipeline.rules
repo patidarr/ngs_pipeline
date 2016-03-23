@@ -156,7 +156,7 @@ rule cufflinks:
 	input:
 		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
-		convertor =NGS_PIPELINE + "/scripts/" +config['transformlog2_FPKM'],
+		convertor =NGS_PIPELINE + "/scripts/transformlog2_FPKM.py",
 		ref=lambda wildcards: config['GTF'][wildcards.gtf]
 	output:
 		"{base}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking_log2",
@@ -180,7 +180,7 @@ rule exon_exp:
 	input:
 		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
-		convertor =NGS_PIPELINE + "/scripts/" +config["exon_exp"],
+		convertor =NGS_PIPELINE + "/scripts/exon_exp.sh",
 		ucsc=config["exon_Bed_UCSC"],
 		ens=config["exon_Bed_ENS"],
 	output:
