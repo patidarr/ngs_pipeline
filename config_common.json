@@ -1,5 +1,6 @@
 {
 	"group"			: "khanlab",
+	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "1.2",
 	"samtools_old"		: "0.1.19",

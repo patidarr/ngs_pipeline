@@ -331,7 +331,8 @@ rule SampleGT:
 	version: config["R"]
 	params:
 		rulename = "SampleGT",
-		batch    = config["job_covplot"]
+		batch    = config["job_covplot"],
+		mail     = config["mail"]
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/qc/GT
@@ -354,7 +355,7 @@ rule SampleGT:
 	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" patidarr@mail.nih.gov -c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -s 'Genotyping Result on {wildcards.subject}'
+	sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" `whoami`@mail.nih.gov {params.mail} -s 'Genotyping Result on {wildcards.subject}'
 	#######################
 	"""
 ############
@@ -475,7 +476,8 @@ rule CN_LRR:
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
 	#mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%.2f\\n", sum/NR)}}'`
 	median=`cut -f7 {output.hq}|grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
-	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
+	
+#	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
 	min=`echo "${{median}}-(2*${{stdDev}})"|bc`
 	max=`echo "${{median}}+(2*${{stdDev}})"|bc`
 
