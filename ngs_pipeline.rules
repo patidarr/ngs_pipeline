@@ -464,22 +464,23 @@ rule CN_LRR:
 	params:
 		rulename = "LRR",
 		batch    = config["job_default"],
+		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
 	shell: """
 	#######################
+	module load R
+	module load bedtools/2.25.0
+
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}	
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 	
-	module load bedtools/2.25.0
 	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
 	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
 
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	#mean=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1}} END {{printf("%.2f\\n", sum/NR)}}'`
-	median=`cut -f7 {output.hq}|grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
-	
-#	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
-	min=`echo "${{median}}-(2*${{stdDev}})"|bc`
-	max=`echo "${{median}}+(2*${{stdDev}})"|bc`
+	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file -`
+	MAD=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat MAD --file -'`
+	min=`echo "${{median}}-(2*${{MAD}})"|bc`
+	max=`echo "${{median}}+(2*${{MAD}})"|bc`
 
 	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
 	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.v1.txt
@@ -513,19 +514,21 @@ rule CN_LRR1:
 	params:
 		rulename = "LRR",
 		batch    = config["job_default"],
+		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
 	shell: """
 	#######################
+	module load R
+	module load bedtools/2.25.0
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 	
-	module load bedtools/2.25.0
 	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
 	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
 
 	# Created the first file
 
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	median=`cut -f7 {output.hq}|grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
+	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file -`
 	
 	corr_factor=`echo "0 - ${{median}}"|bc`
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}.corrected
@@ -534,11 +537,11 @@ rule CN_LRR1:
 	# Created corrected file
 	awk '{{if($4>=30) print $0}}' {output.out}.corrected >{output.hq}
 
-	median=`cut -f7 {output.hq}| grep -v LRR |sort -n |awk '{{ count[NR] = $1; }} END {{ if (NR % 2) {{ printf ("%.2f\\n", count[(NR + 1) / 2]); }} else {{ printf ("%.2f\\n", (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0); }}}}'`
+	median=`cut -f7 {output.hq}| grep -v LRR |sort -n |{params.tool} --stat median --file -`
 	
-	stdDev=`cut -f7 {output.hq}|grep -v LRR |awk '{{sum+=$1; sumsq+=$1*$1}} END {{print sqrt(sumsq/NR - (sum/NR)**2)}}'`
-	min=`echo "${{median}}-(2.5*${{stdDev}})"|bc`
-	max=`echo "${{median}}+(2.5*${{stdDev}})"|bc`
+	MAD=`cut -f7 {output.hq}|grep -v LRR |{params.tool} --stat MAD --file -`
+	min=`echo "${{median}}-(2.5*${{MAD}})"|bc`
+	max=`echo "${{median}}+(2.5*${{MAD}})"|bc`
 
 	perl {input.filter} filter {output.out}.corrected ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
 	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.v2.txt
