@@ -1,6 +1,6 @@
 {
 	"group"			: "khanlab",
-	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov",
+	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "1.2",
 	"samtools_old"		: "0.1.19",
@@ -28,7 +28,7 @@
 	"novocraft"		: "3.04.02",
 	"tophat"		: "2.0.13",
 	"bowtie" 		: "1.1.1",
-	"cufflinks"		: "2.2.1",
+	"cufflinks"		: "2.2.1-dev",
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",

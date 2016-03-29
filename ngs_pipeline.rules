@@ -295,7 +295,7 @@ rule Novoalign:
 # Using Older version of samtools for this purpose
 rule Genotyping:
 	input:
-		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
+		bam="{base}/{sample}/{sample}.{aligner}.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
 		vcf2genotype=NGS_PIPELINE + "/scripts/vcf2genotype.pl",
@@ -477,8 +477,8 @@ rule CN_LRR:
 	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
 
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file -`
-	MAD=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat MAD --file -'`
+	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file - `
+	MAD=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat MAD --file - `
 	min=`echo "${{median}}-(2*${{MAD}})"|bc`
 	max=`echo "${{median}}+(2*${{MAD}})"|bc`
 
@@ -528,7 +528,7 @@ rule CN_LRR1:
 	# Created the first file
 
 	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file -`
+	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file - `
 	
 	corr_factor=`echo "0 - ${{median}}"|bc`
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}.corrected
@@ -537,9 +537,9 @@ rule CN_LRR1:
 	# Created corrected file
 	awk '{{if($4>=30) print $0}}' {output.out}.corrected >{output.hq}
 
-	median=`cut -f7 {output.hq}| grep -v LRR |sort -n |{params.tool} --stat median --file -`
+	median=`cut -f7 {output.hq}| grep -v LRR |sort -n |{params.tool} --stat median --file - `
 	
-	MAD=`cut -f7 {output.hq}|grep -v LRR |{params.tool} --stat MAD --file -`
+	MAD=`cut -f7 {output.hq}|grep -v LRR |{params.tool} --stat MAD --file - `
 	min=`echo "${{median}}-(2.5*${{MAD}})"|bc`
 	max=`echo "${{median}}+(2.5*${{MAD}})"|bc`
 
@@ -1257,8 +1257,9 @@ rule Actionable_Germline:
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
 		jsw    = config["annovar_data"]+"geneLists/CancerGenes_JSW.txt",
 		clt2   = config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt",
-		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt"
-
+		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt",
+		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
+		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		germline="{subject}/{ACT_DIR}/{subject}.germline.actionable.txt",
 	params:
@@ -1271,7 +1272,10 @@ rule Actionable_Germline:
 		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
 	else
 		touch /spin1/scratch/temp
-		perl {input.convertor} germline /spin1/scratch/temp                                                    {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
+		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}.gl
+		perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.germline} {input.annotation} >{output.germline}.som
+		perl {input.combine} {output.germline}.gl {output.germline}.som  >{output.germline}
+		rm -rf {output.germline}.gl {output.germline}.som
 	fi
 	#######################
 	"""
@@ -1289,7 +1293,9 @@ rule Actionable_RNAseq:
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
 		jsw    = config["annovar_data"]+"geneLists/CancerGenes_JSW.txt",
 		clt2   = config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt",
-		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt"
+		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt",
+		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
+		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		rnaseq="{subject}/{ACT_DIR}/{subject}.rnaseq.actionable.txt",
 	params:
@@ -1298,7 +1304,10 @@ rule Actionable_RNAseq:
 	shell: """
 	#######################
 	touch /spin1/scratch/temp
-	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.rnaseq}
+	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.rnaseq}.gl
+	perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.rnaseq} {input.annotation} >{output.rnaseq}.som
+	perl {input.combine} {output.rnaseq}.gl {output.rnaseq}.som  >{output.rnaseq}
+	rm -rf {output.rnaseq}.gl {output.rnaseq}.som
 	#######################
 	"""
 ############

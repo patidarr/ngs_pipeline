@@ -62,10 +62,9 @@ for subject  in config['RNASeq'].keys():
 rule RNASeq:
 	input:
 		RNASEQ_BAM,
-		RNASEQ_FUSION,
 		EXPRESSION,
 		RNA_CALLS,
-		expand("{subject}/"+ACT_DIR+"/{subject}.fusion.actionable.txt", subject=config['RNASeq']),
+		expand("{subject}"+ACT_DIR+"{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
@@ -376,12 +375,16 @@ rule GATK_RNASeq:
 	#######################
 	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -fixMisencodedQuals
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
 	
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -fixMisencodedQuals
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals
+
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam 
+
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
+
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
+
 	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
 	######################
 	"""
@@ -443,17 +446,12 @@ rule sub_fusion:
 	output:
 		"{subject}/{sample}/fusion/{sample}.actionable.fusion.txt"
 	params:
-		rulename = "Actionable_F",
+		rulename = "Sub_F",
 		batch    = config["job_default"]
 	shell: """
 	#######################
-	if [ -e {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt ]
-	then
-		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/{ACT_DIR}/ |sort >{output}
-	else
-		touch /spin1/scratch/temp
-		perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {wildcards.subject}/{wildcards.sample}/fusion/fusion-catcher.txt {wildcards.subject}/{ACT_DIR}/ |sort >{output}
-	fi
+	mkdir -p {wildcards.subject}/Actionable
+	perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} {wildcards.subject}/{ACT_DIR}/ |sort >{output}
 	#######################
 	"""
 ############
