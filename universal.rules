@@ -1,0 +1,21 @@
+############
+##	Tiled data file(.tdf)
+############
+rule BAM2TDF:
+	input:
+		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
+		bam_bai="{base}/{sample}/{sample}.{aligner}.final.bam.bai"
+	output:
+		"{base}/{sample}/{sample}.{aligner}.final.tdf"
+	version: config['igvtools']
+	params:
+		rulename        = "bamtdf",
+		ref             = config["reference"],
+		batch           = config['job_igvtools']
+	shell:  """
+	#######################
+	module load igvtools/{version}
+
+	igvtools count {input.bam} {output} {params.ref}
+	#######################
+	"""
