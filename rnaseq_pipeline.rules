@@ -43,7 +43,9 @@ for subject  in config['RNASeq'].keys():
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUB_HOT[subject] = []
 		SUB_LOH[subject] = []
@@ -55,7 +57,9 @@ for subject  in config['RNASeq'].keys():
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############
@@ -92,8 +96,8 @@ rule tophat:
 	shell: """
 	#######################
 	module load tophat/{version}
-	tophat -p ${{SLURM_CPUS_ON_NODE}} -o /lscratch/${{SLURM_JOBID}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
-	mv -f /lscratch/${{SLURM_JOBID}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
+	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
+	mv -f ${{LOCAL}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 	#######################
 	"""
@@ -141,7 +145,7 @@ rule tophat_fusion:
 	cd {wildcards.base}/{wildcards.sample}/
 	rm -f blast ensGene.txt ensGtp.txt mcl refGene.txt
 	ln -s {params.tp_ref}/* .
-	tophat-fusion-post -p ${{SLURM_CPUS_ON_NODE}} --num-fusion-pairs 1 {params.ref}
+	tophat-fusion-post -p ${{THREADS}} --num-fusion-pairs 1 {params.ref}
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
 	sed -i  '1s/^/Sample\\tGene_left\\tChr_left\\tCoordinate_left\\tGene_right\\tChr_right\\tCoordinate_right\\t#SpanningReads\\t#SpanningMatePairs\\t#SpanningMateEndOfPair\\tScore\\n/' tophatfusion_out/result.txt
 	ln -s ../tophatfusion_out/result.html fusion/tophat-fusion.html
@@ -167,7 +171,7 @@ rule cufflinks:
 	shell: """
 	#######################
 	module load cufflinks/{version}
-	cufflinks -p ${{SLURM_CPUS_ON_NODE}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
+	cufflinks -p ${{THREADS}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
 	/usr/bin/python {input.convertor} genes {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking_log2
 	/usr/bin/python {input.convertor} isoforms {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2 
 	#######################
@@ -194,22 +198,22 @@ rule exon_exp:
 	module load samtools/{version}
 	totalReads=`samtools flagstat {input.bam} |head -1 | sed 's/\s/\\t/g' | cut -f1`
 
-        split -d -l 12000 {input.ucsc} /lscratch/${{SLURM_JOBID}}/ucsc
-        for file in /lscratch/${{SLURM_JOBID}}/ucsc*
+        split -d -l 12000 {input.ucsc} ${{LOCAL}}/ucsc
+        for file in ${{LOCAL}}/ucsc*
         do
 		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
         done
         wait;
-        cat /lscratch/${{SLURM_JOBID}}/ucsc*.out >{output.ucsc}
-	rm -rf /lscratch/${{SLURM_JOBID}}/*	
+        cat ${{LOCAL}}/ucsc*.out >{output.ucsc}
+	rm -rf ${{LOCAL}}/*	
 
-	split -d -l 15000 {input.ens} /lscratch/${{SLURM_JOBID}}/ens
-	for file in /lscratch/${{SLURM_JOBID}}/ens*
+	split -d -l 15000 {input.ens} ${{LOCAL}}/ens
+	for file in ${{LOCAL}}/ens*
 	do
 		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
 	done 
 	wait
-	cat /lscratch/${{SLURM_JOBID}}/ens*.out >{output.ens}	
+	cat ${{LOCAL}}/ens*.out >{output.ens}	
 	#######################
         """
 ############
@@ -228,8 +232,8 @@ rule fusioncatcher:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -p ${{SLURM_CPUS_ON_NODE}} -i {input.R1},{input.R2} -o /lscratch/${{SLURM_JOBID}}/
-	cp /lscratch/${{SLURM_JOBID}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
+	fusioncatcher -p ${{THREADS}} -i {input.R1},{input.R2} -o ${{LOCAL}}/
+	cp ${{LOCAL}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""
 ############
@@ -262,7 +266,7 @@ rule deFuse:
 	defuse.pl -c {input.config} \
 		-1 {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq\
 		-2 {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq\
-		-p ${{SLURM_CPUS_ON_NODE}} \
+		-p ${{THREADS}} \
 		-n {wildcards.sample}\
 		-o {wildcards.base}/{wildcards.sample}/fusion/temp\
 		-s direct 
@@ -273,7 +277,7 @@ rule deFuse:
 	do 
 		echo "get_reads.pl -c {input.config} -o {wildcards.base}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt" 
 	done >{wildcards.base}/{wildcards.sample}/fusion/cmd.swarm
-	cat {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm | parallel -j ${{SLURM_CPUS_ON_NODE}} --no-notice
+	cat {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm | parallel -j ${{THREADS}} --no-notice
 	touch {wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/defuse.done
 	rm -rf {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq 
 	rm -rf {wildcards.base}/{wildcards.sample}/fusion/temp {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm
@@ -301,14 +305,14 @@ rule STAR:
 	shell: """
 	#######################
 	module load STAR/{version}
-	cd /lscratch/${{SLURM_JOBID}}/
+	cd ${{LOCAL}}/
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
 		--genomeDir {params.star_ref} \
 		--readFilesIn {input.R1} {input.R2} \
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample} \
-		--runThreadN ${{SLURM_CPUS_ON_NODE}} \
+		--runThreadN ${{THREADS}} \
 		--outFilterMismatchNmax 2
 	echo "Finished Step 1"
 
@@ -325,13 +329,13 @@ rule STAR:
 		--genomeFastaFiles {input.ref}\
 		--sjdbFileChrStartEnd GenomeForPass2/{wildcards.sample}.out.tab.Pass1.sjdb\
 		--sjdbOverhang 100\
-		--runThreadN ${{SLURM_CPUS_ON_NODE}}
+		--runThreadN ${{THREADS}}
 	echo "Finished Step 3"
 
 	# run 2nd pass with the new genome
 	STAR --outTmpDir STEP1\
 		--genomeDir GenomeForPass2\
-		--runThreadN ${{SLURM_CPUS_ON_NODE}}\
+		--runThreadN ${{THREADS}}\
 		--outSAMattributes All\
 		--genomeLoad LoadAndKeep\
 		--readFilesIn {input.R1} {input.R2}\
@@ -339,9 +343,8 @@ rule STAR:
 		--outFileNamePrefix {wildcards.sample}_pass2
 	echo "Finished Step 4"
 	
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load picard/{params.picard}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $PICARDJARPATH/AddOrReplaceReadGroups.jar\
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARDJARPATH/AddOrReplaceReadGroups.jar\
 	VALIDATION_STRINGENCY=SILENT\
 	INPUT={wildcards.sample}_pass2Aligned.out.sam\
 	OUTPUT={params.home}/{wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.bam\
@@ -373,17 +376,16 @@ rule GATK_RNASeq:
 		batch     = config["job_gatk"]
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o ${{LOCAL}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
 	
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam -o ${{LOCAL}}/{wildcards.sample}.realignment.intervals
 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.trim.bam --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam 
 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 
 	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
 	######################
@@ -405,10 +407,9 @@ rule HapCall_RNASeq:
 		batch    = config["job_gatk"]
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf --dbsnp {input.dbsnp} -dontUseSoftClippedBases -stand_call_conf 30 -stand_emit_conf 30
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T VariantFiltration -R {input.ref} -V /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.vcf -window 35 -cluster 3 --filterExpression "FS > 30.0 || QD < 2" -filterName "RNASeqFilters_FS_QD" -o {output.vcf}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -o ${{LOCAL}}/{wildcards.sample}.vcf --dbsnp {input.dbsnp} -dontUseSoftClippedBases -stand_call_conf 30 -stand_emit_conf 30
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T VariantFiltration -R {input.ref} -V ${{LOCAL}}/{wildcards.sample}.vcf -window 35 -cluster 3 --filterExpression "FS > 30.0 || QD < 2" -filterName "RNASeqFilters_FS_QD" -o {output.vcf}
 	#######################
 	"""
 ############

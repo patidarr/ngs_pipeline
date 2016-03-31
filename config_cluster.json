@@ -36,5 +36,6 @@
 	"job_platypus"	 : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=32 --gres=lscratch:20",
 	"job_freebayes"  : "--partition=ccr --time=10:00:00   --mem=50G  --cpus-per-task=32",
 	"job_vcf2txt"	 : "--partition=ccr --time=01:00:00   --mem=5G   --cpus-per-task=2",
-	"job_annovar"    : "--partition=ccr --time=2-05:00:00 --mem=10G  --cpus-per-task=5"
+	"job_annovar"    : "--partition=ccr --time=2-05:00:00 --mem=10G  --cpus-per-task=5",
+	"job_igvtools"   : "--partition=ccr --time=2-05:00:00 --mem=10G  --cpus-per-task=5"
 }

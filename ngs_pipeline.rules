@@ -10,11 +10,36 @@ try:
 	WORK_DIR=os.environ['WORK_DIR']
 	DATA_DIR=os.environ['DATA_DIR']
 	ACT_DIR=os.environ['ACT_DIR']
+	HOST=os.environ['HOST']
 except KeyError:
 	NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
 	ACT_DIR="/Actionable/"
+	HOST="hostname"
 	pass
-shell.prefix("set -eo pipefail; ")
+#host = "bio"
+#host = "login01"
+
+
+shell.prefix("""
+set -e -o pipefail
+if [ {HOST} == 'biowulf.nih.gov' ]
+	then
+		MEM_MB=$((SLURM_MEM_PER_CPU * SLURM_CPUS_ON_NODE))
+                MEM_GB=`echo "${{MEM_MB}} / 1024 "|bc`
+		mkdir -p /scratch/${{SLURM_JOBID}}/someTempDir
+		LOCAL="/scratch/${{SLURM_JOBID}}"
+		THREADS=${{SLURM_CPUS_ON_NODE}}
+elif [ {HOST} == 'login01' ]
+	then
+		MEM_GB=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
+		mkdir -p /projects/scratch/${{PBS_JOBID}}/
+		LOCAL="/projects/scratch/${{PBS_JOBID}}"
+		THREADS=${{PBS_NUM_PPN}}
+fi
+module purge
+
+""")
+
 configfile: NGS_PIPELINE +"/config_common.json"
 configfile: NGS_PIPELINE +"/config_cluster.json"
 ###########################################################################
@@ -57,6 +82,9 @@ for subject in config['subject'].keys():
 	SUB_GT[subject]  = ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject] += ["{subject}/{sample}/{sample}.bwa.final.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject] += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject] += ["{subject}/{sample}/{sample}.novo.final.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
 ###########################################################################
@@ -170,7 +198,7 @@ localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Ex
 #                               RNASeq Rules                              #
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
-#include: NGS_PIPELINE +"/scripts/igv_snapshot.rules"
+include: NGS_PIPELINE +"/universal.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -255,7 +283,7 @@ rule BWA:
 	module load bwa/{version}
 	module load samtools/{params.samtools}
 	bwa mem -M \
-	-t ${{SLURM_CPUS_ON_NODE}}\
+	-t ${{THREADS}}\
 	-R '@RG\tID:{wildcards.sample}\tSM:{wildcards.sample}\tLB:{wildcards.sample}\tPL:{params.platform}' \
 	{input.ref} {input.R1} {input.R2} | samtools view -Sbh - \
 	| samtools sort -m 30000000000 - {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa
@@ -285,7 +313,7 @@ rule Novoalign:
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
 	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
-#	novoalign -c ${{SLURM_CPUS_ON_NODE}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
+#	novoalign -c ${{THREADS}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
 	samtools index {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
 	"""
@@ -332,7 +360,8 @@ rule SampleGT:
 	params:
 		rulename = "SampleGT",
 		batch    = config["job_covplot"],
-		mail     = config["mail"]
+		mail     = config["mail"],
+		host	 = config["host"]
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/qc/GT
@@ -355,7 +384,7 @@ rule SampleGT:
 	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" `whoami`@mail.nih.gov {params.mail} -s 'Genotyping Result on {wildcards.subject}'
+	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
 	#######################
 	"""
 ############
@@ -365,7 +394,7 @@ rule BamQC:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
 		bai="{base}/{sample}/{sample}.bwa.final.bam.bai",
-		interval= lambda wildcards: config['sample_captures'][wildcards.sample].replace('.bed', '.gff')
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace('.bed', '.gff'),
 	output:
 		"{base}/{sample}/qc/BamQC/qualimapReport.html"
 	version: config["qualimap"]
@@ -375,9 +404,8 @@ rule BamQC:
 		outdir	 ="{base}/{sample}/qc/BamQC",
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load qualimap/{version}
-	qualimap bamqc -c -bam {input.bam} -outdir {params.outdir} -gff {input.interval} -nt ${{SLURM_CPUS_ON_NODE}} --java-mem-size=${{MEM}}G 
+	qualimap bamqc -c -bam {input.bam} -outdir {params.outdir} -gff {input.interval} -nt ${{THREADS}} --java-mem-size=${{MEM}}G 
 	#######################
 	"""
 ############
@@ -422,7 +450,7 @@ rule flagstat:
 rule copyNumber:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
 		flagstat="{base}/{sample}/qc/{sample}.bwa.flagstat.txt",
 		tool=NGS_PIPELINE+ "/scripts/copyNumber.sh"
 	output:
@@ -436,13 +464,13 @@ rule copyNumber:
 	module load samtools/{version}
 	TotalReads=`samtools view -bh -L {input.interval} {input.bam} |samtools flagstat - |head -1|sed -e 's/\s/\\t/g' |cut -f 1`
 	#TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
-	split -d -l 12000 {input.interval} /lscratch/${{SLURM_JOBID}}/input
-	for file in /lscratch/${{SLURM_JOBID}}/input*
+	split -d -l 12000 {input.interval} ${{LOCAL}}/input
+	for file in ${{LOCAL}}/input*
 	do
 		sh {input.tool} ${{TotalReads}} ${{file}} {input.bam} ${{file}}.out &
 	done
 	wait;
-	cat /lscratch/${{SLURM_JOBID}}/input*.out >{output}
+	cat ${{LOCAL}}/input*.out >{output}
 	#######################
 	"""
 ############
@@ -469,7 +497,7 @@ rule CN_LRR:
 	#######################
 	module load R
 	module load bedtools/2.25.0
-
+	mkdir -p {wildcards.subject}/Actionable/
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}	
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 	
@@ -519,6 +547,7 @@ rule CN_LRR1:
 	#######################
 	module load R
 	module load bedtools/2.25.0
+	mkdir -p {wildcards.subject}/Actionable/
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 	
@@ -583,7 +612,7 @@ rule Coverage:
 	input:
 		bam="{subject}/{sample}/{sample}.bwa.final.bam",
 		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
-		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
 	output:
 		"{subject}/{sample}/qc/{sample}.bwa.coverage.txt"
 	version: config["bedtools"]
@@ -617,6 +646,9 @@ rule CoveragePlot:
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
 	#######################
 	"""
+############
+# IGV Session file
+############
 rule IGV_Session:
 	input: bams=lambda wildcards: SUB_IGV[wildcards.subject]
 	output: "{subject}/igv/session_{subject}.xml"
@@ -698,9 +730,8 @@ rule Picard_MarkDup:
 		samtools  = config["samtools"]    
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load picard/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $PICARDJARPATH/MarkDuplicates.jar AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARDJARPATH/MarkDuplicates.jar AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT
 	module load samtools/{params.samtools}
 	samtools index {output.bam}
 	######################
@@ -744,12 +775,11 @@ rule GATK:
 		batch     = config["job_gatk"]
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.realignment.intervals -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.recalibration.matrix.txt 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} -o ${{LOCAL}}/{wildcards.sample}.realignment.intervals 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt 
 	mv -f {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
 	######################
 	"""
@@ -761,7 +791,7 @@ rule Bam2MPG:
 		bam="{subject}/{sample}/{sample}.novo.final.bam",
 		bai="{subject}/{sample}/{sample}.novo.final.bam.bai",
 		ref=config["reference"],
-		interval= lambda wildcards: config['sample_captures'][wildcards.sample],
+		interval=config["coding_bed"]
 	output:
 		snps="{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
 	version: config["bam2mpg"]
@@ -781,26 +811,26 @@ rule Bam2MPG:
 	module load vcftools/{params.vcftools}
 	for CHR in `seq 1 22` X Y;
 	do
-	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam} &
+	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam} &
 	done
 	wait
 
 	for CHR in `seq 1 22` X Y
 	do
-		cat /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >/lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
-		mv -f /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
-		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf
-		cat /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort >/lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
-		mv -f /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
-		bgzip /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf
-		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
-		tabix -p vcf /lscratch/${{SLURM_JOBID}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
+		cat ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
+		mv -f ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		bgzip ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		cat ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort >${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
+		mv -f ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf
+		bgzip ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf
+		tabix -p vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
+		tabix -p vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
 	done
 	echo "Combine chr level vcf files"
-	vcf-concat /lscratch/${{SLURM_JOBID}}/chr*{wildcards.sample}.*.vcf.gz >/lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf
+	vcf-concat ${{LOCAL}}/chr*{wildcards.sample}.*.vcf.gz >${{LOCAL}}/{wildcards.sample}.snps.vcf
 	echo "Restrict to Bed file"
 
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out {wildcards.sample} --recode --keep-INFO-all
+	vcftools --vcf ${{LOCAL}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out {wildcards.sample} --recode --keep-INFO-all
 
 	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf |vcf-sort >{wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
 
@@ -841,7 +871,7 @@ rule MuTect:
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		cosmic=config["cosmic"],
-		interval=lambda wildcards: pairedCapture[wildcards.Tumor]
+		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor][0]],
 	output:
 		vcf="{subject}/{Tumor}/calls/{Tumor}.MuTect.raw.vcf",
 		call_stats="{subject}/{Tumor}/qc/{Tumor}.mutect.call_stats.txt",
@@ -854,17 +884,16 @@ rule MuTect:
 		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4"
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
-	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
+	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
 	module load muTect/{version}
 	module load R
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $MUTECTJARPATH -T MuTect \
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $MUTECTJARPATH -T MuTect \
 		--reference_sequence {input.ref} \
 		--cosmic {input.cosmic} \
 		--dbsnp {input.dbsnp} \
 		--input_file:normal {input[2]} \
 		--input_file:tumor {input[0]} \
-		--intervals  /lscratch/${{SLURM_JOBID}}/target_intervals.bed \
+		--intervals  ${{LOCAL}}/target_intervals.bed \
 		--coverage_file {output.coverage} \
 		--out {output.call_stats} \
 		--vcf {output.vcf}.vcf \
@@ -882,7 +911,7 @@ rule Strelka:
 		lambda wildcards: somaticPairs[wildcards.Tumor],
 		ref=config["reference"],
 		config=config["strelka_config"],
-		interval=lambda wildcards: pairedCapture[wildcards.Tumor]
+		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor][0]],
 	output:
 		snps="{subject}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
 		indels="{subject}/{Tumor}/calls/{Tumor}.strelka.indels.raw.vcf"
@@ -893,15 +922,15 @@ rule Strelka:
 		vcftools = config["vcftools"]
 	shell: """
 	#######################
-	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
+	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
 	module load strelka/{version}
 	configureStrelkaWorkflow.pl --normal={input[2]} --tumor={input[0]}\
-	--ref={input.ref} --config={input.config} --output-dir=/lscratch/${{SLURM_JOBID}}/strelka 
-	make -j ${{SLURM_CPUS_PER_TASK}} -f /lscratch/${{SLURM_JOBID}}/strelka/Makefile 
+	--ref={input.ref} --config={input.config} --output-dir=${{LOCAL}}/strelka 
+	make -j ${{SLURM_CPUS_PER_TASK}} -f ${{LOCAL}}/strelka/Makefile 
 	module load vcftools/{params.vcftools}
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/passed.somatic.snvs.vcf --bed /lscratch/${{SLURM_JOBID}}/target_intervals.bed --out {output.snps} --recode --keep-INFO-all
+	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.snvs.vcf --bed ${{LOCAL}}/target_intervals.bed --out {output.snps} --recode --keep-INFO-all
 	mv -f {output.snps}.recode.vcf {output.snps}
-	vcftools --vcf /lscratch/${{SLURM_JOBID}}/strelka/results/passed.somatic.indels.vcf --bed /lscratch/${{SLURM_JOBID}}/target_intervals.bed --out {output.indels} --recode --keep-INFO-all
+	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.indels.vcf --bed ${{LOCAL}}/target_intervals.bed --out {output.indels} --recode --keep-INFO-all
 	mv -f {output.indels}.recode.vcf {output.indels}
 	NORMAL=`basename {input[2]} .bwa.final.bam`
 	sed -i "s/FORMAT\\tNORMAL\\tTUMOR/FORMAT\\t${{NORMAL}}\\t{wildcards.Tumor}/g" {output.snps}
@@ -917,7 +946,7 @@ rule Sub_HapCall:
 		bams=lambda wildcards: SUB_BAMS[wildcards.subject],
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
-		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
+		interval= config["coding_bed"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.hapcaller.raw.vcf"
 	version: config["GATK"]
@@ -928,10 +957,9 @@ rule Sub_HapCall:
 		bamFiles = " ".join('-I ' + bam for bam in input.bams)
 		shell("""
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load GATK/{version}
-	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > /lscratch/${{SLURM_JOBID}}/target_intervals.bed
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} {bamFiles} -L /lscratch/${{SLURM_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} {bamFiles} -L ${{LOCAL}}/target_intervals.bed -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30
 	#######################
 	""")
 ############
@@ -942,7 +970,7 @@ rule Sub_Platypus:
 		bams=lambda wildcards: SUB_BAMS[wildcards.subject],
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
-		interval= lambda wildcards: config['sample_captures'][wildcards.subject]
+		interval=config["coding_bed"]
 	output:
 		vcf="{subject}/{subject}/calls/{subject}.platypus.raw.vcf"
 	version: config["platypus"]
@@ -954,7 +982,7 @@ rule Sub_Platypus:
 	#######################
 	module load platypus/{version}
 	LIST=`echo {input.bams}|sed -e 's/ /,/g'`
-	platypus callVariants --nCPU=${{SLURM_CPUS_ON_NODE}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref}  --logFileName={log}
+	platypus callVariants --nCPU=${{THREADS}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref}  --logFileName={log}
 	sed -i 's/.bwa.final//g' {output.vcf}
 	#######################
 	"""
@@ -966,7 +994,7 @@ rule  FreeBayes:
 		bam="{subject}/{sample}/{sample}.bwa.final.bam",
 		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
-		interval= lambda wildcards: config['sample_captures'][wildcards.sample]
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
 	output:
 		vcf="{subject}/{sample}/calls/{sample}.freebayes.vcf"
 	version: config["freebayes"]
@@ -1001,9 +1029,8 @@ rule snpEff:
 		annovar       =config["annovar"]
 	shell: """
 	#######################
-	MEM=`echo "{params.batch}" |perl -n -e'/--mem=(\d+)/ && print \$1'`
 	module load snpEff/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=/lscratch/${{SLURM_JOBID}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff}
 	#######################
 	"""
 ############

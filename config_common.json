@@ -1,5 +1,6 @@
 {
 	"group"			: "khanlab",
+	"host"			: "biowulf.nih.gov",
 	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "1.2",
@@ -28,6 +29,7 @@
 	"novocraft"		: "3.04.02",
 	"tophat"		: "2.0.13",
 	"bowtie" 		: "1.1.1",
+	"igvtools"		: "2.3.31",
 	"cufflinks"		: "2.2.1-dev",
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
@@ -37,8 +39,14 @@
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/khanlab/ref/bwa/ucsc.hg19.fasta",
 	"reference"		: "/data/khanlab/ref/GATK/hg19/ucsc.hg19.fasta",
-	"exone_capture"		: "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_capture_trimed.hg19.bed",
-	"rms_capture"		: "/data/khanlab/ref/GATK/hg19/RMS_Amplicon.hg19.bed",
+	"target_intervals"	:{
+		"seqcap"	: "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_capture_trimed.hg19.bed",
+		"clin.ex.v1"	: "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+		"clin.snv.v1"	: "/data/Clinomics/Ref/serpentine_resources/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+		"clin.cnv.v2"	: "/data/Clinomics/Ref/serpentine_resources/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
+		"clin.snv.v2"	: "/data/Clinomics/Ref/serpentine_resources/design/clin_snv_v2_0783981.target.hg19.merged.bed",
+		"rms_capture"	: "/data/khanlab/ref/GATK/hg19/RMS_Amplicon.hg19.bed"
+	},
 	"1000G_phase1"		: "/data/khanlab/ref/GATK/hg19/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/khanlab/ref/GATK/hg19/Mills_and_1000G_gold_standard.indels.hg19.vcf",
 	"dbsnp"			: "/data/khanlab/ref/GATK/hg19/dbsnp_138.hg19.vcf",
@@ -59,6 +67,7 @@
 	"STAR_ref"		: "/data/khanlab/ref/GATK/hg19/STAR_hg19_index",
 	"exon_Bed_UCSC"		: "/data/khanlab/ref/GATK/hg19/hg19_UCSC.bed",
 	"exon_Bed_ENS"		: "/data/khanlab/ref/GATK/hg19/hg19_ENSEMBL.bed",
+	"coding_bed"		: "/data/khanlab/ref/GATK/hg19/SeqCap_EZ_Exome_v3_primary.bed",
 	"gene_coord"		: "/data/khanlab/ref/GATK/hg19/gene_coordinates.txt",
 	"GTF"			: {
 				"ENS" : "/data/khanlab/ref/GATK/hg19/Homo_sapiens.GRCh37.71.gtf",

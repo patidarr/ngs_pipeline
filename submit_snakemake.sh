@@ -8,6 +8,8 @@
 #
 #
 # Make sure log directory exists or change the output file location on line 4.
+HOST="biowulf.nih.gov"
+
 #
 #
 #NOW=$(date +"%H%M%S_%m%d%Y")
@@ -15,7 +17,7 @@ NOW=$(date +"%Y%m%d_%H")
 module use /data/khanlab/apps/Modules
 module load python/3.4.3
 export NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
-export WORK_DIR="/data/khanlab/projects/patidar/Snakemake"
+export WORK_DIR="/data/khanlab/projects/patidar/Snakemake/test"
 export DATA_DIR="/data/khanlab/projects/DATA"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
 SAM_CONFIG=$WORK_DIR/samplesheet.json
