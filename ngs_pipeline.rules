@@ -6,19 +6,21 @@ from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 # Snakemake Base location
 
-try:
-	NGS_PIPELINE=os.environ['NGS_PIPELINE']
-	WORK_DIR=os.environ['WORK_DIR']
-	DATA_DIR=os.environ['DATA_DIR']
-	ACT_DIR=os.environ['ACT_DIR']
-except KeyError:
-	NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
-	ACT_DIR="/Actionable/"
-	pass
-configfile: NGS_PIPELINE +"/config_common.json"
-configfile: NGS_PIPELINE +"/config_cluster.json"
+NGS_PIPELINE=os.environ['NGS_PIPELINE']
+WORK_DIR=os.environ['WORK_DIR']
+DATA_DIR=os.environ['DATA_DIR']
+ACT_DIR=os.environ['ACT_DIR']
+HOST=os.environ['HOST']
 
-HOST = config['host']
+if HOST == 'biowulf.nih.gov':
+	configfile: NGS_PIPELINE +"/config/config_common_biowulf.json"
+	configfile: NGS_PIPELINE +"/config/config_cluster.json"
+elif HOST == 'login01':
+	configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
+	configfile: NGS_PIPELINE +"/config/config_cluster.json"
+
+config['host'] = HOST
+#HOST = config['host']
 ###########################################################################
 #
 #		This initializes all the variables we need for the jobs. 
@@ -321,7 +323,13 @@ rule Novoalign:
 	#######################
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
-	mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
+
+	if [ {HOST} == 'biowulf.nih.gov']; then
+		mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
+	elif [ $HOST == 'login01' ]; then
+		`cat /cm/local/apps/torque/var/spool/aux/${{PBS_JOBID}} | sort | uniq > ${{LOCAL}}/hosts.txt`	
+		mpiexec -f ${{LOCAL}}/hosts.txt -np 3 novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
+	fi
 #	novoalign -c ${{THREADS}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
 	samtools index {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo.bam 
 	#######################
