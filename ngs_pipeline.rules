@@ -5,43 +5,46 @@ import json
 from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 # Snakemake Base location
+
 try:
 	NGS_PIPELINE=os.environ['NGS_PIPELINE']
 	WORK_DIR=os.environ['WORK_DIR']
 	DATA_DIR=os.environ['DATA_DIR']
 	ACT_DIR=os.environ['ACT_DIR']
-	HOST=os.environ['HOST']
 except KeyError:
 	NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
 	ACT_DIR="/Actionable/"
-	HOST="hostname"
 	pass
-#host = "bio"
-#host = "login01"
+configfile: NGS_PIPELINE +"/config_common.json"
+configfile: NGS_PIPELINE +"/config_cluster.json"
 
-
+HOST = config['host']
+###########################################################################
+#
+#		This initializes all the variables we need for the jobs. 
+#		It also removes the host specific contraints like scratch 
+#		area on the node.
+#		module purge is needed to remove all the loaded modules and
+#			inside the rule load what is necessary.
+###########################################################################
 shell.prefix("""
 set -e -o pipefail
 if [ {HOST} == 'biowulf.nih.gov' ]
 	then
-		MEM_MB=$((SLURM_MEM_PER_CPU * SLURM_CPUS_ON_NODE))
-                MEM_GB=`echo "${{MEM_MB}} / 1024 "|bc`
-		mkdir -p /scratch/${{SLURM_JOBID}}/someTempDir
-		LOCAL="/scratch/${{SLURM_JOBID}}"
+		MEM_GB=`echo "${{SLURM_MEM_PER_NODE}} / 1024 "|bc`
+		LOCAL="/lscratch/${{SLURM_JOBID}}/"
 		THREADS=${{SLURM_CPUS_ON_NODE}}
 elif [ {HOST} == 'login01' ]
 	then
 		MEM_GB=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
 		mkdir -p /projects/scratch/${{PBS_JOBID}}/
-		LOCAL="/projects/scratch/${{PBS_JOBID}}"
+		LOCAL="/projects/scratch/${{PBS_JOBID}}/"
 		THREADS=${{PBS_NUM_PPN}}
 fi
 module purge
 
 """)
 
-configfile: NGS_PIPELINE +"/config_common.json"
-configfile: NGS_PIPELINE +"/config_cluster.json"
 ###########################################################################
 #
 #			Conversion
@@ -96,7 +99,7 @@ for subject  in config['RNASeq'].keys():
 ###########################################################################
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_BAMS   += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+#ALL_BAMS   += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
@@ -208,22 +211,23 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 rule Khanlab_Pipeline:
 	input: 
-		SUB_IGV.values(),
-		COPY_NUMBER,
-		ALL_VCFs,
-		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
-		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
-		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
-		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
-		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
-		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
-		"rnaseqDone",
-		"QC_AllSamples.txt",
-		ALL_QC, ALL_FASTQC, 
-       		ALL_BAMS,
-		varFiles,
-		DBFiles,
-		ActionableFiles
+#		SUB_IGV.values(),
+#		COPY_NUMBER,
+#		ALL_VCFs,
+#		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
+#		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
+#		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
+#		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
+#		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
+#		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
+#		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
+#		"rnaseqDone",
+#		"QC_AllSamples.txt",
+#		ALL_QC, ALL_FASTQC, 
+		ALL_BAMS,
+#		varFiles,
+#		DBFiles,
+#		ActionableFiles
 	version: "1.0"
 	params: 
 		rulename = "Final",
@@ -264,6 +268,9 @@ rule fastqc:
 ############
 #       BWA
 ############
+#        echo "${{MEM_GB}}" > {wildcards.base}.txt
+#        echo "${{LOCAL}}"  >> {wildcards.base}.txt
+#        echo "${{THREADS}" >> {wildcards.base}.txt
 rule BWA:
 	input: 
 		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz", 
@@ -280,6 +287,9 @@ rule BWA:
 		batch     = config["job_bwa"]
 	shell: """
 	#######################
+	echo ${{THREADS}}
+	echo ${{LOCAL}}
+	echo ${{MEM_GB}}
 	module load bwa/{version}
 	module load samtools/{params.samtools}
 	bwa mem -M \
