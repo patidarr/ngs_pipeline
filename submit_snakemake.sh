@@ -12,7 +12,7 @@ NOW=$(date +"%Y%m%d_%H")
 module use /data/khanlab/apps/Modules
 module load python/3.4.3
 module load snakemake
-if [ `hostname` == 'biowulf.nih.gov' ]; then
+if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	export NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
 	export WORK_DIR="/data/khanlab/projects/patidar/Snakemake/test"
 	export DATA_DIR="/data/khanlab/projects/DATA"
@@ -26,7 +26,7 @@ elif [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	export ACT_DIR="/Actionable/"
 	export HOST="login01"
 else 
-	echo "`hostname` is not recognized\n"
+	echo "Host `hostname` is not recognized\n"
 	exit;
 fi
 
@@ -48,7 +48,7 @@ fi
 
 
 
-cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname '{params.rulename}.{jobid}' --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${NOW}.stats"
+cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${NOW}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
 	snakemake $cmd --cluster "sbatch --mail-type=FAIL -o log/{params.rulename}.%j.o {params.batch}" >& ngs_pipeline_${NOW}.log
