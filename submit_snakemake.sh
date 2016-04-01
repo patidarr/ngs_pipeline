@@ -1,7 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name="KhanLab"
 #SBATCH --mail-type=FAIL
-#SBATCH --output=log/snakemake.%j.o
 #SBATCH --partition="unlimited"
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=1g
@@ -24,6 +23,14 @@ if [ `cat $SAM_CONFIG |/usr/bin/json_verify -c` -ne "JSON is valid" ]; then
 fi
 
 cd $WORK_DIR
+if [ ! -d log ]; then
+    mkdir log
+fi
+
+if [ ! -d annovar ]; then 
+	mkdir annovar
+	touch annovar/AnnotationInput.final.txt
+fi
 
 snakemake\
 	--directory $WORK_DIR \
