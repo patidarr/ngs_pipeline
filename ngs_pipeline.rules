@@ -44,7 +44,6 @@ fi
 module purge
 
 """)
-
 ###########################################################################
 #
 #			Conversion
@@ -211,23 +210,23 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 rule Khanlab_Pipeline:
 	input: 
-#		SUB_IGV.values(),
-#		COPY_NUMBER,
-#		ALL_VCFs,
-#		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
-#		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
-#		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
-#		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
-#		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
-#		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
-#		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
-#		"rnaseqDone",
-#		"QC_AllSamples.txt",
-#		ALL_QC, ALL_FASTQC, 
+		SUB_IGV.values(),
+		COPY_NUMBER,
+		ALL_VCFs,
+		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
+		expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=SUBS),
+		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
+		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
+		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
+		"rnaseqDone",
+		"QC_AllSamples.txt",
+		ALL_QC, ALL_FASTQC, 
 		ALL_BAMS,
-#		varFiles,
-#		DBFiles,
-#		ActionableFiles
+		varFiles,
+		DBFiles,
+		ActionableFiles
 	version: "1.0"
 	params: 
 		rulename = "Final",
@@ -257,7 +256,7 @@ rule fastqc:
 	version: config["fastqc"]
 	params:
 		rulename  = "fastqc",
-		batch     = config["job_fastqc"]
+		batch     = config[config['host']]["job_fastqc"]
 	shell: """
 	#######################
 	module load fastqc/{version}
@@ -284,7 +283,7 @@ rule BWA:
 		rulename  = "bwa",
 		platform  = config["platform"],
 		samtools  = config["samtools"], 
-		batch     = config["job_bwa"]
+		batch     = config[config['host']]["job_bwa"]
 	shell: """
 	#######################
 	echo ${{THREADS}}
@@ -315,7 +314,7 @@ rule Novoalign:
 	resources: novoalign=1
 	params:
 		rulename  = "novoalign",
-		batch     = config["job_novoalign"],
+		batch     = config[config['host']]["job_novoalign"],
 		samtools  = config["samtools"],
 		platform  = config["platform"]
 	shell: """
@@ -345,7 +344,7 @@ rule Genotyping:
 	version: config["samtools_old"]
 	params:
 		rulename  = "genotype",
-		batch     = config["job_genotype"],
+		batch     = config[config['host']]["job_genotype"],
 		dest	  = config["genotypeDest"]
 	shell: """
 	#######################
@@ -369,7 +368,7 @@ rule SampleGT:
 	version: config["R"]
 	params:
 		rulename = "SampleGT",
-		batch    = config["job_covplot"],
+		batch    = config[config['host']]["job_covplot"],
 		mail     = config["mail"],
 		host	 = config["host"]
 	shell: """
@@ -410,7 +409,7 @@ rule BamQC:
 	version: config["qualimap"]
 	params: 
 		rulename = "bamqc",
-		batch	 = config["job_qualimap"],
+		batch	 = config[config['host']]["job_qualimap"],
 		outdir	 ="{base}/{sample}/qc/BamQC",
 	shell: """
 	#######################
@@ -431,7 +430,7 @@ rule QC_Sum:
 	version: "v1.1"
 	params:
 		rulename = "qc_sum",
-		batch    = config['job_default']
+		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
 	perl {input.convertor} `pwd` >{output} 
@@ -446,7 +445,7 @@ rule flagstat:
 	version: config["samtools"]
 	params:
 		rulename  = "flagstat",
-		batch     = config["job_flagstat"]
+		batch     = config[config['host']]["job_flagstat"]
 	shell: """
 	#######################
 	module load samtools/{version}
@@ -468,7 +467,7 @@ rule copyNumber:
 	version: config["samtools"]
 	params:
 		rulename  = "CN",
-		batch     = config["job_copynumber"]
+		batch     = config[config['host']]["job_copynumber"]
 	shell: """
 	#######################
 	module load samtools/{version}
@@ -501,7 +500,7 @@ rule CN_LRR:
 		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v1.filtered.txt"	
 	params:
 		rulename = "LRR",
-		batch    = config["job_default"],
+		batch    = config[config['host']]["job_default"],
 		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
 	shell: """
 	#######################
@@ -551,7 +550,7 @@ rule CN_LRR1:
 		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v2.filtered.txt"
 	params:
 		rulename = "LRR",
-		batch    = config["job_default"],
+		batch    = config[config['host']]["job_default"],
 		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
 	shell: """
 	#######################
@@ -606,7 +605,7 @@ rule HotSpotCoverage:
 	version: config["bedtools"]
 	params:
 		rulename  = "HotSpotCov",
-		batch     = config["job_hotspot"],
+		batch     = config[config['host']]["job_hotspot"],
 		samtools  = config["samtools"]
 	shell: """
 	#######################
@@ -628,7 +627,7 @@ rule Coverage:
 	version: config["bedtools"]
 	params:
 		rulename = "coverage",
-		batch    = config["job_bedtools"]
+		batch    = config[config['host']]["job_bedtools"]
 	shell: """
 	#######################
 	module load bedtools/{version}
@@ -646,7 +645,7 @@ rule CoveragePlot:
 	version: config["R"]
 	params:
 		rulename = "covplot",
-		batch    = config["job_covplot"]
+		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
 		
@@ -693,7 +692,7 @@ rule Circos:
 	version: config["R"]
 	params:
 		rulename = "Circos",
-		batch    = config["job_covplot"]
+		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
 	cp -f {input.lohFiles} {wildcards.subject}/qc/
@@ -713,7 +712,7 @@ rule BoxPlot_Hotspot:
 	version: config["R"]
 	params:
 		rulename = "Boxplot",
-		batch    = config["job_covplot"]
+		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
 	cp -f {input.covFiles} {wildcards.subject}/qc/
@@ -736,7 +735,7 @@ rule Picard_MarkDup:
 	version: config["picard"]
 	params:
 		rulename  = "mark_dup",
-		batch     = config["job_markdup"],
+		batch     = config[config['host']]["job_markdup"],
 		samtools  = config["samtools"]    
 	shell: """
 	#######################
@@ -758,7 +757,7 @@ rule copyNovoBam:
 		bai="{base}/{sample}/{sample}.novo.final.bam.bai",
 	params:
 		rulename = "copy",
-		batch    = config['job_default']
+		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
 	
@@ -782,7 +781,7 @@ rule GATK:
 	version: config["GATK"]
 	params:
 		rulename  = "gatk",
-		batch     = config["job_gatk"]
+		batch     = config[config['host']]["job_gatk"]
 	shell: """
 	#######################
 	module load GATK/{version}
@@ -807,7 +806,7 @@ rule Bam2MPG:
 	version: config["bam2mpg"]
 	params:
 		rulename  = "bam2mpg",
-		batch     = config["job_bam2mpg"],
+		batch     = config[config['host']]["job_bam2mpg"],
 		samtools  = config["samtools"],
 		vcftools  = config["vcftools"]
 	shell: """
@@ -861,7 +860,7 @@ rule Sub_MPG:
 	version: config["vcftools"]
 	params:
 		rulename = "mergevcf",
-		batch    = config["job_default"],
+		batch    = config[config['host']]["job_default"],
 		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R"
 	shell: """
 	#######################
@@ -889,7 +888,7 @@ rule MuTect:
 	version: config["MuTect"]
 	params:
 		rulename = "MuTect",
-		batch    = config["job_mutect"],
+		batch    = config[config['host']]["job_mutect"],
 		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R",
 		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4"
 	shell: """
@@ -928,7 +927,7 @@ rule Strelka:
 	version: config["strelka"]
 	params:
 		rulename = "Strelka",
-		batch    = config["job_strelka"],
+		batch    = config[config['host']]["job_strelka"],
 		vcftools = config["vcftools"]
 	shell: """
 	#######################
@@ -962,7 +961,7 @@ rule Sub_HapCall:
 	version: config["GATK"]
 	params:
 		rulename = "HC",
-		batch    = config["job_gatk"]
+		batch    = config[config['host']]["job_gatk"]
 	run:
 		bamFiles = " ".join('-I ' + bam for bam in input.bams)
 		shell("""
@@ -987,7 +986,7 @@ rule Sub_Platypus:
 	log: "log/platypus.{subject}"
 	params:
 		rulename = "PLAT",
-		batch    = config["job_platypus"]
+		batch    = config[config['host']]["job_platypus"]
 	shell: """
 	#######################
 	module load platypus/{version}
@@ -1010,7 +1009,7 @@ rule  FreeBayes:
 	version: config["freebayes"]
 	params:
 		rulename = "freebayes",
-		batch    = config["job_freebayes"],
+		batch    = config[config['host']]["job_freebayes"],
 		vcftools = config["vcftools"]
 	shell: """
 	#######################
@@ -1034,7 +1033,7 @@ rule snpEff:
 	version: config["snpEff"]
 	params:
 		rulename      ="snpEff",
-		batch	      =config["job_snpeff"],
+		batch	      =config[config['host']]["job_snpeff"],
 		snpEff_genome =config["snpEff_genome"],
 		annovar       =config["annovar"]
 	shell: """
@@ -1054,7 +1053,7 @@ rule vcf2txt:
 		txt="{subject}/calls/{base}.snpEff.txt"
 	params:
 		rulename      ="snpEff",
-		batch         =config["job_default"],
+		batch         =config[config['host']]["job_default"],
 		annovar       =config["annovar"]
 	shell: """
 	#######################
@@ -1076,7 +1075,7 @@ rule FormatInput:
 	version: config["annovar"]
 	params:
 		rulename   = "FormatInput",
-		batch      = config["job_default"],
+		batch      = config[config['host']]["job_default"],
 		fAEV       = NGS_PIPELINE + "/scripts/findAlreadyExistingVariants.pl"
 	shell: """
 	#######################
@@ -1100,7 +1099,7 @@ rule Annotation:
 	version: config["annovar"]
 	params:
 		rulename   = "Annotation",
-		batch      = config["job_annovar"],
+		batch      = config[config['host']]["job_annovar"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
 	shell: """
@@ -1121,7 +1120,7 @@ rule SIFT:
 	version: config["SIFT"]
 	params:
 		rulename   = "SIFT",
-		batch      = config["job_SIFT"],
+		batch      = config[config['host']]["job_SIFT"],
 		build      = config["SIFTbuild"]
 	shell: """
 	#######################
@@ -1149,7 +1148,7 @@ rule PPH2:
 	version: config["polyphen2"]
 	params:
 		rulename   = "PPH2",
-		batch      = config["job_PPH2"],
+		batch      = config[config['host']]["job_PPH2"],
 	shell: """
 	#######################
 	module load polyphen2/{version}
@@ -1179,7 +1178,7 @@ rule CombineAnnotation:
 	version: "1.0"
 	params:
 		rulename   = "combine",
-		batch	   = config["job_Combine"],
+		batch	   = config[config['host']]["job_Combine"],
 		dataDir    = config["annovar_data"]
 	shell: """
 	#######################
@@ -1219,7 +1218,7 @@ rule AttachAnnotation:
 	version: "1.0"
 	params:
 		rulename   = "add",
-		batch      = config["job_addbackann"],
+		batch      = config[config['host']]["job_addbackann"],
 	shell: """
 	#######################
 	perl {input.convertor} {input.ref}  {input.txt} >{output.txt}
@@ -1237,7 +1236,7 @@ rule Expressed:
 	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
-		batch     = config["job_expressed"]
+		batch     = config[config['host']]["job_expressed"]
 	shell: """
 	#######################
 	module load samtools/{version}
@@ -1274,7 +1273,7 @@ rule Actionable_Somatic:
 		somatic="{subject}/{ACT_DIR}/{subject}.somatic.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
-		batch    = config['job_default']
+		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
 	perl {input.convertor} somatic  {input.refFile} {input.cgc} {input.somatic} {input.annotation} >{output.somatic}
@@ -1301,7 +1300,7 @@ rule Actionable_Germline:
 		germline="{subject}/{ACT_DIR}/{subject}.germline.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
-		batch    = config['job_default']
+		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
 	if [ -e {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
@@ -1337,7 +1336,7 @@ rule Actionable_RNAseq:
 		rnaseq="{subject}/{ACT_DIR}/{subject}.rnaseq.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
-		batch    = config['job_default']
+		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
 	touch /spin1/scratch/temp

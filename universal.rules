@@ -11,7 +11,7 @@ rule BAM2TDF:
 	params:
 		rulename        = "bamtdf",
 		ref             = config["reference"],
-		batch           = config['job_igvtools']
+		batch           = config[config['host']]['job_igvtools']
 	shell:  """
 	#######################
 	module load igvtools/{version}

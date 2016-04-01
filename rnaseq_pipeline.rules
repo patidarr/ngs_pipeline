@@ -91,7 +91,7 @@ rule tophat:
 	version: config["tophat"]
 	params:
 		rulename  = "tophat",
-		batch     = config["job_tophat"],
+		batch     = config[config['host']]["job_tophat"],
 		ref=config['Bowtie2Index']
 	shell: """
 	#######################
@@ -133,7 +133,7 @@ rule tophat_fusion:
 	version: config["tophat"]
 	params:
 		rulename = "tp",
-		batch    =config['job_tophatPost'],
+		batch    =config[config['host']]['job_tophatPost'],
 		ref      =config['BowtieIndex'],
 		bowtie   =config['bowtie'],
 		tp_ref   =config['tophat_post_ref']
@@ -167,7 +167,7 @@ rule cufflinks:
 	version: config['cufflinks']
 	params:
 		rulename   = "cuff",
-		batch      =config['job_cufflinks']
+		batch      =config[config['host']]['job_cufflinks']
 	shell: """
 	#######################
 	module load cufflinks/{version}
@@ -192,7 +192,7 @@ rule exon_exp:
 	version: config['samtools']
 	params:
 		rulename   = "exonExp",
-		batch      =config['job_exonExp']
+		batch      =config[config['host']]['job_exonExp']
 	shell: """
 	#######################
 	module load samtools/{version}
@@ -228,7 +228,7 @@ rule fusioncatcher:
 	version: config['fusioncatcher']
 	params:
 		rulename = "fc",
-		batch    = config['job_fusioncatch']
+		batch    = config[config['host']]['job_fusioncatch']
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
@@ -251,7 +251,7 @@ rule deFuse:
 	version: config["defuse"]
 	params:
 		rulename = "deFuse",
-		batch    = config["job_deFuse"]
+		batch    = config[config['host']]["job_deFuse"]
 	shell: """
 	#######################
 	module load defuse/{version}
@@ -297,7 +297,7 @@ rule STAR:
 	version: config["STAR"]
 	params:
 		rulename  = "STAR",
-		batch     = config['job_STAR'],
+		batch     = config[config['host']]['job_STAR'],
 		star_ref  = config['STAR_ref'],
 		awk       = NGS_PIPELINE + "/scripts/SJDB.awk",
 		home      = WORK_DIR,
@@ -373,7 +373,7 @@ rule GATK_RNASeq:
 	version: config["GATK"]
 	params:
 		rulename  = "gatk",
-		batch     = config["job_gatk"]
+		batch     = config[config['host']]["job_gatk"]
 	shell: """
 	#######################
 	module load GATK/{version}
@@ -404,7 +404,7 @@ rule HapCall_RNASeq:
 	version: config["GATK"]
 	params:
 		rulename = "HC",
-		batch    = config["job_gatk"]
+		batch    = config[config['host']]["job_gatk"]
 	shell: """
 	#######################
 	module load GATK/{version}
@@ -425,7 +425,7 @@ rule coverage:
 	version: config["bedtools"]
 	params:
 		rulename = "coverage",
-		batch    = config["job_bedtools"]
+		batch    = config[config['host']]["job_bedtools"]
 	shell: """
 	#######################
 	module load bedtools/{version}
@@ -448,7 +448,7 @@ rule sub_fusion:
 		"{subject}/{sample}/fusion/{sample}.actionable.fusion.txt"
 	params:
 		rulename = "Sub_F",
-		batch    = config["job_default"]
+		batch    = config[config['host']]["job_default"]
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/Actionable
@@ -465,7 +465,7 @@ rule Actionable_fusion:
 		"{subject}/{ACT_DIR}/{subject}.fusion.actionable.txt"
 	params:
 		rulename = "Actionable_F",
-		batch    = config["job_default"]
+		batch    = config[config['host']]["job_default"]
 	shell: """
 	#######################
 	cat {input.fusion} |sort |uniq >{output}
