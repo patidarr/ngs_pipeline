@@ -1307,11 +1307,11 @@ rule Actionable_Germline:
 	then 
 		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
 	else
-		touch /spin1/scratch/temp
-		perl {input.convertor} germline /spin1/scratch/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}.gl
+		touch {input.germline}.dummy
+		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}.gl
 		perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.germline} {input.annotation} >{output.germline}.som
 		perl {input.combine} {output.germline}.gl {output.germline}.som  >{output.germline}
-		rm -rf {output.germline}.gl {output.germline}.som
+		rm -rf {output.germline}.gl {output.germline}.som {input.germline}.dummy
 	fi
 	#######################
 	"""
@@ -1339,11 +1339,11 @@ rule Actionable_RNAseq:
 		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
-	touch /spin1/scratch/temp
-	perl {input.convertor} rnaseq /spin1/scratch/temp {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.rnaseq}.gl
+	touch {input.rnaseq}.dummy
+	perl {input.convertor} rnaseq {input.rnaseq}.dummy {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.rnaseq}.gl
 	perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.rnaseq} {input.annotation} >{output.rnaseq}.som
 	perl {input.combine} {output.rnaseq}.gl {output.rnaseq}.som  >{output.rnaseq}
-	rm -rf {output.rnaseq}.gl {output.rnaseq}.som
+	rm -rf {output.rnaseq}.gl {output.rnaseq}.som {input.rnaseq}.dummy
 	#######################
 	"""
 ############
