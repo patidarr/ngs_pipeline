@@ -33,12 +33,12 @@ shell.prefix("""
 set -e -o pipefail
 if [ {HOST} == 'biowulf.nih.gov' ]
 	then
-		MEM_GB=`echo "${{SLURM_MEM_PER_NODE}} / 1024 "|bc`
+		MEM=`echo "${{SLURM_MEM_PER_NODE}} / 1024 "|bc`
 		LOCAL="/lscratch/${{SLURM_JOBID}}/"
 		THREADS=${{SLURM_CPUS_ON_NODE}}
 elif [ {HOST} == 'login01' ]
 	then
-		MEM_GB=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
+		MEM=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
 		mkdir -p /projects/scratch/${{PBS_JOBID}}/
 		LOCAL="/projects/scratch/${{PBS_JOBID}}/"
 		THREADS=${{PBS_NUM_PPN}}
@@ -100,7 +100,7 @@ for subject  in config['RNASeq'].keys():
 ###########################################################################
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-#ALL_BAMS   += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_BAMS   += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
@@ -262,14 +262,14 @@ rule fastqc:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	fastqc --extract -t 6 -o {wildcards.base}/{wildcards.sample}/qc/fastqc/ -d /scratch {input[R1]} 
-	fastqc --extract -t 6 -o {wildcards.base}/{wildcards.sample}/qc/fastqc/ -d /scratch {input[R2]} 
+	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} {input.R1}
+	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} {input.R2} 
 	#######################
 	"""
 ############
 #       BWA
 ############
-#        echo "${{MEM_GB}}" > {wildcards.base}.txt
+#        echo "${{MEM}}" > {wildcards.base}.txt
 #        echo "${{LOCAL}}"  >> {wildcards.base}.txt
 #        echo "${{THREADS}" >> {wildcards.base}.txt
 rule BWA:
@@ -290,12 +290,12 @@ rule BWA:
 	#######################
 	echo ${{THREADS}}
 	echo ${{LOCAL}}
-	echo ${{MEM_GB}}
+	echo ${{MEM}}
 	module load bwa/{version}
 	module load samtools/{params.samtools}
 	bwa mem -M \
 	-t ${{THREADS}}\
-	-R '@RG\tID:{wildcards.sample}\tSM:{wildcards.sample}\tLB:{wildcards.sample}\tPL:{params.platform}' \
+	-R '@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}' \
 	{input.ref} {input.R1} {input.R2} | samtools view -Sbh - \
 	| samtools sort -m 30000000000 - {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa
 	samtools index {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.bam
@@ -324,9 +324,11 @@ rule Novoalign:
 	module load samtools/{params.samtools}
 	module load novocraft/{version}
 
-	if [ {HOST} == 'biowulf.nih.gov']; then
+	if [ {HOST} == 'biowulf.nih.gov' ]; then
+		echo "Running on {HOST}"
 		mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
-	elif [ $HOST == 'login01' ]; then
+	elif [ {HOST} == 'login01' ]; then
+		echo "Running on {HOST}"
 		`cat /cm/local/apps/torque/var/spool/aux/${{PBS_JOBID}} | sort | uniq > ${{LOCAL}}/hosts.txt`	
 		mpiexec -f ${{LOCAL}}/hosts.txt -np 3 novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R1} {input.R2} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo 
 	fi
@@ -353,13 +355,18 @@ rule Genotyping:
 	params:
 		rulename  = "genotype",
 		batch     = config[config['host']]["job_genotype"],
-		dest	  = config["genotypeDest"]
+		dest	  = config["genotypeDest"],
+		host	  = config["host"]
 	shell: """
 	#######################
 	module load samtools/{version}
 	samtools mpileup -u -C50 -f {input.ref} -l {input.interval} {input.bam} | bcftools view -gc - >{output.vcf} 
 	perl {input.vcf2genotype} {output.vcf} >{output.gt} 
-	cp -f {output.gt} {params.dest}/{wildcards.sample}.gt 
+	if [ {HOST} == 'biowulf.nih.gov' ]; then
+		cp -f {output.gt} {params.dest}/{wildcards.sample}.gt 
+	elif [ {HOST} == 'login01' ]; then
+		ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}/{wildcards.sample}.gt"
+	fi
 	perl {input.vcf2loh} {output.vcf} >{output.loh} 
 	#######################
 	"""
@@ -401,7 +408,7 @@ rule SampleGT:
 	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
+	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --head {WORK_DIR}/{wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
 	#######################
 	"""
 ############
@@ -1066,7 +1073,7 @@ rule vcf2txt:
 	shell: """
 	#######################
 	module load annovar/{params.annovar}
-	perl {input.vcf2txt} {input.eff} /spin1/scratch/ >{output.txt}
+	perl {input.vcf2txt} {input.eff} ${{LOCAL}} >{output.txt}
 	#######################
 	"""
 
