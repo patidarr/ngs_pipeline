@@ -8,10 +8,10 @@ The easiest way to get this pipeline is to clone the repository.
 git clone https://github.com/patidarr/ngs_pipeline.git
 ```
 ## Requirements
-[mutt]: http://www.mutt.org/
-[gnu parallel]: http://www.gnu.org/software/parallel/
-SLURM or PBS for resource management
-Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)
+[mutt]: http://www.mutt.org/  
+[gnu parallel]: http://www.gnu.org/software/parallel/  
+SLURM or PBS for resource management  
+Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)  
 
 ## Conventions
 
