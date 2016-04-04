@@ -1,5 +1,5 @@
 ## Introduction
-This is the implimentation of KhanLab NGS Pipeline using Snakemake.
+This is the implimentation of [KhanLab](https://ccr.cancer.gov/Genetics-Branch/javed-khan) NGS Pipeline using Snakemake.
 ## Installation
 
 The easiest way to get this pipeline is to clone the repository.
