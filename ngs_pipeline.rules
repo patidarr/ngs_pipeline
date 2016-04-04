@@ -105,6 +105,10 @@ ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES] 
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/qc/{sample}.depth_per_base".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/qc/{sample}.failExons".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/qc/{sample}.failGenes".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/qc/{sample}.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.coveragePlot.png", subject=PATIENTS)
@@ -202,6 +206,9 @@ localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Ex
 #                               RNASeq Rules                              #
 ###########################################################################
 include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+include: NGS_PIPELINE +"/ruleBook/readDepth.rules"
+include: NGS_PIPELINE +"/ruleBook/failedExon.rules"
+include: NGS_PIPELINE +"/ruleBook/hsMetrix.rules"
 include: NGS_PIPELINE +"/universal.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():

@@ -42,7 +42,7 @@
         "Bowtie2Index"          : "/data/Clinomics/Ref/khanlab/Index/Bowtie2Index/genome",
         "BowtieIndex"           : "/data/Clinomics/Ref/khanlab/Index/BowtieIndex/genome",
         "Novo_index"            : "/data/Clinomics/Ref/khanlab/Index/novoalign/chr_all_hg19.nbx",
-	"STAR_ref"              : "/data/Clinomics/Ref/khanlab/Index/STAR_hg19_index",	
+	"STAR_ref"              : "/data/Clinomics/Ref/khanlab/Index/STAR_hg19_index",
 	"reference"		: "/data/Clinomics/Ref/khanlab/ucsc.hg19.fasta",
 	"target_intervals"	:{
 		"seqcap"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.hg19.bed",
@@ -51,6 +51,28 @@
 		"clin.cnv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
 		"clin.snv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
 		"rms_capture"	: "/data/Clinomics/Ref/khanlab/design/RMS_Amplicon.hg19.bed"
+	},
+	"failed_exon_params": {
+		"seqcap":{
+			"Normal":"20",
+			"Tumor":"20"
+		},
+		"clin.ex.v1": {
+			"Normal":"20",
+			"Tumor":"20"
+		},
+		"clin.snv.v1":{
+			"Normal":"20",
+			"Tumor":"50"
+		},
+		"clin.cnv.v2":{
+			"Normal":"20",
+			"Tumor":"20"
+		},
+		"clin.snv.v2":{
+			"Normal":"20",
+			"Tumor":"50"
+		}
 	},
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",
@@ -62,7 +84,7 @@
 	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed",
 	"refSeq_bed"		: "/data/Clinomics/Ref/khanlab/refseq/modify_gtf_v2_sorted_RefSeq.bed",
 	"Note"			: "defuse is using data from fdb; should change it to make uniform structure",
-	"defuse_config"		: "/data/Clinomics/Ref/khanlab/defuse.config_hg19_ens69.txt",	
+	"defuse_config"		: "/data/Clinomics/Ref/khanlab/defuse.config_hg19_ens69.txt",
 	"tophat_post_ref"	: "/data/Clinomics/Ref/khanlab/Tophat_post",
 	"TCGA_fusion"		: "/data/Clinomics/Ref/khanlab/fusion/TCGA.fusion",
 	"omim_fusion" 		: "/data/Clinomics/Ref/khanlab/fusion/omim.fusions.txt",

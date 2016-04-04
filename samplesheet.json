@@ -10,6 +10,10 @@
       "Sample_NCI0274_B_P_HH53YBGXX"
     ]
   },
+"sample_Type": {
+    "Sample_NCI0274_B_P_HH53YBGXX": ["Normal"],
+    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": ["Tumor"]
+  },
   "sample_captures": {
     "Sample_NCI0274_B_P_HH53YBGXX": ["clin.snv.v1"],
     "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": ["clin.snv.v1"]

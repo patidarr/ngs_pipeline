@@ -39,10 +39,10 @@
 	"Actionable_fusion"	: "ActionableFusion.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/projects/Clinomics/Tools/ref/hg19/Index/bwa/ucsc.hg19.fasta",
-        "Bowtie2Index"          : "/projects/Clinomics/Tools/ref/hg19/Index/Bowtie2Index/genome",
-        "BowtieIndex"           : "/projects/Clinomics/Tools/ref/hg19/Index/BowtieIndex/genome",
-        "Novo_index"            : "/projects/Clinomics/Tools/ref/hg19/Index/novoalign/chr_all_hg19.nbx",
-	"STAR_ref"              : "/projects/Clinomics/Tools/ref/hg19/Index/STAR_hg19_index",	
+	"Bowtie2Index"          : "/projects/Clinomics/Tools/ref/hg19/Index/Bowtie2Index/genome",
+	"BowtieIndex"           : "/projects/Clinomics/Tools/ref/hg19/Index/BowtieIndex/genome",
+	"Novo_index"            : "/projects/Clinomics/Tools/ref/hg19/Index/novoalign/chr_all_hg19.nbx",
+	"STAR_ref"              : "/projects/Clinomics/Tools/ref/hg19/Index/STAR_hg19_index",
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
 	"target_intervals"	:{
 		"seqcap"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_v3_capture_trimed.hg19.bed",
@@ -51,6 +51,28 @@
 		"clin.cnv.v2"	: "/projects/Clinomics/Tools/ref/hg19/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
 		"clin.snv.v2"	: "/projects/Clinomics/Tools/ref/hg19/design/clin_snv_v2_0783981.target.hg19.merged.bed",
 		"rms_capture"	: "/projects/Clinomics/Tools/ref/hg19/design/RMS_Amplicon.hg19.bed"
+	},
+	"failed_exon_params": {
+		"seqcap":{
+			"Normal":"20",
+			"Tumor":"20"
+		},
+		"clin.ex.v1": {
+			"Normal":"20",
+			"Tumor":"20"
+		},
+		"clin.snv.v1":{
+			"Normal":"20",
+			"Tumor":"50"
+		},
+		"clin.cnv.v2":{
+			"Normal":"20",
+			"Tumor":"20"
+		},
+		"clin.snv.v2":{
+			"Normal":"20",
+			"Tumor":"50"
+		}
 	},
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/projects/Clinomics/Tools/ref/hg19/Mills_and_1000G_gold_standard.indels.hg19.vcf",
@@ -62,7 +84,7 @@
 	"hotspot_intervals"	: "/projects/Clinomics/ref/annovar/hg19_Hotspot.07.07.15.bed",
 	"refSeq_bed"		: "/projects/Clinomics/Tools/ref/hg19/refseq/modify_gtf_v2_sorted_RefSeq.bed",
 	"Note"			: "defuse is using data from fdb; should change it to make uniform structure",
-	"defuse_config"		: "/projects/Clinomics/Tools/ref/hg19/defuse.config_hg19_ens69.txt",	
+	"defuse_config"		: "/projects/Clinomics/Tools/ref/hg19/defuse.config_hg19_ens69.txt",
 	"tophat_post_ref"	: "/projects/Clinomics/Tools/ref/hg19/Tophat_post",
 	"TCGA_fusion"		: "/projects/Clinomics/Tools/ref/hg19/fusion/TCGA.fusion",
 	"omim_fusion" 		: "/projects/Clinomics/Tools/ref/hg19/fusion/omim.fusions.txt",
