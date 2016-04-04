@@ -109,6 +109,7 @@ ALL_QC	   += ["{subject}/qc/{sample}.depth_per_base".format(subject=SAMPLE_TO_SU
 ALL_QC	   += ["{subject}/qc/{sample}.failExons".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.failGenes".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/qc/{sample}.consolidated_QC".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.coveragePlot.png", subject=PATIENTS)
@@ -209,6 +210,7 @@ include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/ruleBook/readDepth.rules"
 include: NGS_PIPELINE +"/ruleBook/failedExon.rules"
 include: NGS_PIPELINE +"/ruleBook/hsMetrix.rules"
+include: NGS_PIPELINE +"/ruleBook/Consolidate.rules"
 include: NGS_PIPELINE +"/universal.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():

@@ -1,0 +1,20 @@
+rule consolidated_QC:
+	input:
+		bam="{base}/{sample}/{sample}.bwa.final.bam"
+	output: "{base}/qc/{sample}.consolidated_QC"
+	version:
+		config['samtools']
+	params:
+		rulename	= "consolidated_QC",
+		target_intervals= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		bedtools	= config['bedtools'],
+		tool		= NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
+		batch   	= config[config['host']]["job_default"],
+	shell:	"""
+	#######################
+	module load python/2.7.9
+	module load samtools/{version}
+	module load bedtools/{params.bedtools}
+	python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}}  > {output}
+	#######################
+	"""
