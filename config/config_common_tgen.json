@@ -45,12 +45,12 @@
 	"STAR_ref"              : "/projects/Clinomics/Tools/ref/hg19/Index/STAR_hg19_index",
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
 	"target_intervals"	:{
-		"seqcap"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_v3_capture_trimed.hg19.bed",
+		"seqcap"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
 		"clin.ex.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
 		"clin.snv.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
 		"clin.cnv.v2"	: "/projects/Clinomics/Tools/ref/hg19/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
 		"clin.snv.v2"	: "/projects/Clinomics/Tools/ref/hg19/design/clin_snv_v2_0783981.target.hg19.merged.bed",
-		"rms_capture"	: "/projects/Clinomics/Tools/ref/hg19/design/RMS_Amplicon.hg19.bed"
+		"rms_capture"	: "/projects/Clinomics/Tools/ref/hg19/design/RMS_Panel.target.hg19.merged.bed"
 	},
 	"failed_exon_params": {
 		"seqcap":{
@@ -91,7 +91,7 @@
 	"Mitelman"		: "/projects/Clinomics/Tools/ref/hg19/fusion/Mitelman/gene_pairs_list",
 	"exon_Bed_UCSC"		: "/projects/Clinomics/Tools/ref/hg19/hg19_UCSC.bed",
 	"exon_Bed_ENS"		: "/projects/Clinomics/Tools/ref/hg19/hg19_ENSEMBL.bed",
-	"coding_bed"		: "/projects/Clinomics/Tools/ref/hg19/SeqCap_EZ_Exome_v3_primary.bed",
+	"coding_bed"		: "/projects/Clinomics/Tools/ref/hg19/design/hg19_ExomeCaptureRegion.merged.bed",
 	"gene_coord"		: "/projects/Clinomics/Tools/ref/hg19/gene_coordinates.txt",
 	"GTF"			: {
 				"ENS" : "/projects/Clinomics/Tools/ref/hg19/Homo_sapiens.GRCh37.71.gtf",

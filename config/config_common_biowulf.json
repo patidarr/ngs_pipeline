@@ -45,12 +45,12 @@
 	"STAR_ref"              : "/data/Clinomics/Ref/khanlab/Index/STAR_hg19_index",
 	"reference"		: "/data/Clinomics/Ref/khanlab/ucsc.hg19.fasta",
 	"target_intervals"	:{
-		"seqcap"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.hg19.bed",
+		"seqcap"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
 		"clin.ex.v1"	: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
 		"clin.snv.v1"	: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
 		"clin.cnv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
 		"clin.snv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
-		"rms_capture"	: "/data/Clinomics/Ref/khanlab/design/RMS_Amplicon.hg19.bed"
+		"rms_capture"	: "/data/Clinomics/Ref/khanlab/design/RMS_Panel.target.hg19.merged.bed"
 	},
 	"failed_exon_params": {
 		"seqcap":{
@@ -91,7 +91,7 @@
 	"Mitelman"		: "/data/Clinomics/Ref/khanlab/fusion/Mitelman/gene_pairs_list",
 	"exon_Bed_UCSC"		: "/data/Clinomics/Ref/khanlab/hg19_UCSC.bed",
 	"exon_Bed_ENS"		: "/data/Clinomics/Ref/khanlab/hg19_ENSEMBL.bed",
-	"coding_bed"		: "/data/Clinomics/Ref/khanlab/SeqCap_EZ_Exome_v3_primary.bed",
+	"coding_bed"		: "/data/Clinomics/Ref/khanlab/design/hg19_ExomeCaptureRegion.merged.bed",
 	"gene_coord"		: "/data/Clinomics/Ref/khanlab/gene_coordinates.txt",
 	"GTF"			: {
 				"ENS" : "/data/Clinomics/Ref/khanlab/Homo_sapiens.GRCh37.71.gtf",
