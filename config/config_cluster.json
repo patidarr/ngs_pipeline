@@ -2,6 +2,7 @@
 	"biowulf.nih.gov":{
 		"job_default"    : "--partition=ccr --time=01:00:00 --mem=01G  --cpus-per-task=1  --gres=lscratch:01",
 		"job_snpeff"     : "--partition=ccr --time=04:00:00 --mem=10G  --cpus-per-task=32 --gres=lscratch:05",
+		"job_c_QC"       : "--partition=ccr --time=10:00:00 --mem=10G  --cpus-per-task=5  --gres=lscratch:05",
 		"job_copynumber" : "--partition=ccr --time=04:00:00 --mem=10G  --cpus-per-task=25 --gres=lscratch:10",
 		"job_exonExp"    : "--partition=ccr --time=24:00:00 --mem=2G   --cpus-per-task=2  --gres=lscratch:10",
 		"job_qualimap"   : "--partition=b1  --time=04:00:00 --mem=19G  --cpus-per-task=16 --gres=lscratch:40",
@@ -38,6 +39,7 @@
 	"login01":{
 		"job_default"    : "-l nodes=1:walltime=01:00:00,mem=1gb,ppn=1",
 		"job_snpeff"     : "-l nodes=1:walltime=04:00:00,mem=10gb,ppn=16",
+		"job_c_QC"       : "-l nodes=1:walltime=10:00:00,mem=10gb,ppn=16",
 		"job_copynumber" : "-l nodes=1:walltime=04:00:00,mem=10gb,ppn=16",
 		"job_exonExp"    : "-l nodes=1:walltime=24:00:00,mem=2gb,ppn=2",
 		"job_qualimap"   : "-l nodes=1:walltime=04:00:00,mem=19gb,ppn=16",

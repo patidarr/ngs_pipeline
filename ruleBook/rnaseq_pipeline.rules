@@ -43,9 +43,9 @@ for subject  in config['RNASeq'].keys():
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUB_HOT[subject] = []
 		SUB_LOH[subject] = []
@@ -57,9 +57,9 @@ for subject  in config['RNASeq'].keys():
 		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############

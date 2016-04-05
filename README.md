@@ -45,7 +45,7 @@ Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)
 ### Patient:
 - Genotyping On Patient. 
 	1000g sites are evaluated for every library and then compared (all vs all)
-	If two libraries come from a patient the match shuld be pretty good >80%
+	If two libraries come from a patient the match should be pretty good >80%
 - Still to develop:
 	If the match is below a certain threshold, break the pipeline for patient.
 
