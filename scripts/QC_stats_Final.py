@@ -189,7 +189,7 @@ def _ontarget(bam):
     return stats 
     
 
-print string.join(['sample', 
+print string.join(['Patient', 'sample', 'diagnosis',
                    'total_reads', 'mapped_reads',
                    'percent_mapped',
                    'ontarget_reads', 'percent_ontarget', 
@@ -234,7 +234,7 @@ for filename in [argv[1]]:
                                              float(stats2['unique_ontarget_reads'])) * 100
         stats2['percent_hq_unique_ontarget'] = "%2.2F" % stats2['percent_hq_unique_ontarget'] + '%'        
 
-        print string.join([sample,
+        print string.join([argv[4], argv[5], argv[6],
                            str(stats1['total_reads']),
                            str(stats1['mapped_reads']),
                            str(stats1['percent_mapped']),

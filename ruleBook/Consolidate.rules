@@ -10,11 +10,12 @@ rule consolidated_QC:
 		bedtools	= config['bedtools'],
 		tool		= NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
 		batch   	= config[config['host']]["job_default"],
+		diagnosis	= config['Diagnosis'][sample]
 	shell:	"""
 	#######################
 	module load python/2.7.9
 	module load samtools/{version}
 	module load bedtools/{params.bedtools}
-	python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}}  > {output}
+	python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}
 	#######################
 	"""
