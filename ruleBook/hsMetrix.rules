@@ -9,8 +9,8 @@ rule targetIntervals:
 		config['samtools']
 	params:
 		rulename = "targetIntervals",
-		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
-		probe_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace(".target.", ".design."),
+		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
+		probe_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace(".target.", ".design."),
 		batch	= config[config['host']]["job_default"],
 	shell:	"""
 	#######################

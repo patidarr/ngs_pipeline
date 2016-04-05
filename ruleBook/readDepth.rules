@@ -10,7 +10,7 @@ rule readDepth:
 	version: config['bedtools']
 	params:
 		rulename	= "readDepth",
-		target_intervals= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		target_intervals= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 		batch		= config[config['host']]["job_bedtools"]
 	shell: """
 	#######################	

@@ -427,7 +427,7 @@ rule BamQC:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
 		bai="{base}/{sample}/{sample}.bwa.final.bam.bai",
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace('.bed', '.gff'),
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace('.bed', '.gff'),
 	output:
 		"{base}/{sample}/qc/BamQC/qualimapReport.html"
 	version: config["qualimap"]
@@ -483,7 +483,7 @@ rule flagstat:
 rule copyNumber:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 		flagstat="{base}/{sample}/qc/{sample}.bwa.flagstat.txt",
 		tool=NGS_PIPELINE+ "/scripts/copyNumber.sh"
 	output:
@@ -645,7 +645,7 @@ rule Coverage:
 	input:
 		bam="{subject}/{sample}/{sample}.bwa.final.bam",
 		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 	output:
 		"{subject}/{sample}/qc/{sample}.bwa.coverage.txt"
 	version: config["bedtools"]
@@ -904,7 +904,7 @@ rule MuTect:
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		cosmic=config["cosmic"],
-		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor][0]],
+		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]],
 	output:
 		vcf="{subject}/{Tumor}/calls/{Tumor}.MuTect.raw.vcf",
 		call_stats="{subject}/{Tumor}/qc/{Tumor}.mutect.call_stats.txt",
@@ -944,7 +944,7 @@ rule Strelka:
 		lambda wildcards: somaticPairs[wildcards.Tumor],
 		ref=config["reference"],
 		config=config["strelka_config"],
-		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor][0]],
+		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]],
 	output:
 		snps="{subject}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
 		indels="{subject}/{Tumor}/calls/{Tumor}.strelka.indels.raw.vcf"
@@ -1027,7 +1027,7 @@ rule  FreeBayes:
 		bam="{subject}/{sample}/{sample}.bwa.final.bam",
 		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 	output:
 		vcf="{subject}/{sample}/calls/{sample}.freebayes.vcf"
 	version: config["freebayes"]

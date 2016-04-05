@@ -6,7 +6,7 @@ rule consolidated_QC:
 		config['samtools']
 	params:
 		rulename	= "consolidated_QC",
-		target_intervals= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		target_intervals= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 		bedtools	= config['bedtools'],
 		tool		= NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
 		batch   	= config[config['host']]["job_c_QC"],

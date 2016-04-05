@@ -6,7 +6,7 @@ rule  failedExons:
 		failed_gene_stats="{base}/qc/{sample}.failGenes"
 	params:
 		rulename	= "failedExons",
-		threshold	= lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample][0]][config['sample_Type'][wildcards.sample][0]],
+		threshold	= lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample]][config['sample_Type'][wildcards.sample]],
 		tool		= NGS_PIPELINE + "/scripts/failed_Exon_Final.pl",
 		batch		= config[config['host']]['job_default']
 	shell:	"""
