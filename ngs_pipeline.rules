@@ -206,12 +206,12 @@ localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Ex
 ###########################################################################
 #                               RNASeq Rules                              #
 ###########################################################################
-include: NGS_PIPELINE +"/rnaseq_pipeline.rules"
+include: NGS_PIPELINE +"/ruleBook/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/ruleBook/readDepth.rules"
 include: NGS_PIPELINE +"/ruleBook/failedExon.rules"
 include: NGS_PIPELINE +"/ruleBook/hsMetrix.rules"
 include: NGS_PIPELINE +"/ruleBook/Consolidate.rules"
-include: NGS_PIPELINE +"/universal.rules"
+include: NGS_PIPELINE +"/ruleBook/universal.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
