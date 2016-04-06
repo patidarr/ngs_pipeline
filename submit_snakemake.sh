@@ -56,7 +56,7 @@ if [ $HOST   == 'biowulf.nih.gov' ]; then
 	snakemake $cmd --cluster "sbatch --mail-type=FAIL -o log/{params.rulename}.%j.o {params.batch}" >& ngs_pipeline_${NOW}.log
 elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
-	snakemake $cmd --cluster "qsub  -V -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
+	snakemake $cmd --cluster "qsub  -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 fi
 
 
