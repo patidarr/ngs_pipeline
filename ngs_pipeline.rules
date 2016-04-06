@@ -31,6 +31,7 @@ config['host'] = HOST
 ###########################################################################
 shell.prefix("""
 set -e -o pipefail
+module purge
 if [ {HOST} == 'biowulf.nih.gov' ]
 	then
 		MEM=`echo "${{SLURM_MEM_PER_NODE}} / 1024 "|bc`
@@ -38,13 +39,14 @@ if [ {HOST} == 'biowulf.nih.gov' ]
 		THREADS=${{SLURM_CPUS_ON_NODE}}
 elif [ {HOST} == 'login01' ]
 	then
+		module load torque/4.2.2
+		module load gcc/4.8.1
+		module load Parallel/20120122
 		MEM=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
 		mkdir -p /projects/scratch/${{PBS_JOBID}}/
 		LOCAL="/projects/scratch/${{PBS_JOBID}}/"
 		THREADS=${{PBS_NUM_PPN}}
 fi
-module purge
-
 """)
 ###########################################################################
 #
