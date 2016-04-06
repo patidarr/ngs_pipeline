@@ -52,7 +52,7 @@ Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)
 Rulegraph
 
 
-![alt tag](rulegraph.png)
+![alt tag](Rulegraph.png)
 
 
 

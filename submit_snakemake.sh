@@ -1,11 +1,16 @@
 #!/bin/sh
 #PBS -l walltime=96:00:00
 #PBS -N ngs-pipeline
-#SBATCH --job-name="KhanLab"
-#SBATCH --mail-type=FAIL
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1g
-#SBATCH --gres=lscratch:01
+#
+# Author: Rajesh Patidar
+# 
+# Usually slurm can translate the PBS varibles so no need to initialize the following sbatch vars.
+#
+##SBATCH --job-name="KhanLab"
+##SBATCH --mail-type=FAIL
+##SBATCH --cpus-per-task=1
+##SBATCH --mem=1g
+##SBATCH --gres=lscratch:01
 #
 #NOW=$(date +"%H%M%S_%m%d%Y")
 NOW=$(date +"%Y%m%d_%H")
@@ -70,7 +75,7 @@ fi
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dag | dot -Tpng > dag.png
 
 #Rulegraph
-#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpng > rulegraph.png
+#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpng > Rulegraph.png
 
 # Mail Rulegraph and DAG to self#  echo DAG |mutt -s "DAG" -a dag.png -a rulegraph.png -- patidarr@mail.nih.gov
 #  echo DAG |mutt -s "DAG" -a dag.png -a rulegraph.png -- patidarr@mail.nih.gov
