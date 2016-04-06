@@ -1,4 +1,6 @@
 #!/bin/sh
+#PBS -l walltime=96:00:00
+#PBS -N ngs-pipeline
 #SBATCH --job-name="KhanLab"
 #SBATCH --mail-type=FAIL
 #SBATCH --cpus-per-task=1

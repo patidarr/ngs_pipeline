@@ -97,7 +97,7 @@ rule tophat:
 	#######################
 	module load tophat/{version}
 	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
-	mv -f ${{LOCAL}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
+	cp -rf ${{LOCAL}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 	#######################
 	"""
@@ -116,8 +116,8 @@ rule symlink_tophatBam:
 	shell: """
 	#######################
 	cd {wildcards.base}/{wildcards.sample}/
-	ln -s tophat_{wildcards.sample}/accepted_hits.bam {wildcards.sample}.tophat.final.bam
-	ln -s tophat_{wildcards.sample}/accepted_hits.bam.bai {wildcards.sample}.tophat.final.bam.bai	
+	ln -sf tophat_{wildcards.sample}/accepted_hits.bam {wildcards.sample}.tophat.final.bam
+	ln -sf tophat_{wildcards.sample}/accepted_hits.bam.bai {wildcards.sample}.tophat.final.bam.bai	
 	#######################
 	"""
 ############
@@ -148,8 +148,8 @@ rule tophat_fusion:
 	tophat-fusion-post -p ${{THREADS}} --num-fusion-pairs 1 {params.ref}
 	rm blast ensGene.txt ensGtp.txt mcl refGene.txt
 	sed -i  '1s/^/Sample\\tGene_left\\tChr_left\\tCoordinate_left\\tGene_right\\tChr_right\\tCoordinate_right\\t#SpanningReads\\t#SpanningMatePairs\\t#SpanningMateEndOfPair\\tScore\\n/' tophatfusion_out/result.txt
-	ln -s ../tophatfusion_out/result.html fusion/tophat-fusion.html
-	ln -s ../tophatfusion_out/result.txt  fusion/tophat-fusion.txt
+	ln -sf ../tophatfusion_out/result.html fusion/tophat-fusion.html
+	ln -sf ../tophatfusion_out/result.txt  fusion/tophat-fusion.txt
 	#######################
 	"""
 ############
@@ -340,11 +340,12 @@ rule STAR:
 		--genomeLoad LoadAndKeep\
 		--readFilesIn {input.R1} {input.R2}\
 		--readFilesCommand zcat\
+		--genomeLoad NoSharedMemory\
 		--outFileNamePrefix {wildcards.sample}_pass2
 	echo "Finished Step 4"
 	
 	module load picard/{params.picard}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARDJARPATH/AddOrReplaceReadGroups.jar\
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JARPATH/AddOrReplaceReadGroups.jar\
 	VALIDATION_STRINGENCY=SILENT\
 	INPUT={wildcards.sample}_pass2Aligned.out.sam\
 	OUTPUT={params.home}/{wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.bam\

@@ -35,6 +35,6 @@ rule hsMetrics:
 	shell: """
 	#######################
 	module load picard/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARDJARPATH/CalculateHsMetrics.jar BAIT_INTERVALS={input.probe_intervals} TARGET_INTERVALS={input.target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JARPATH/CalculateHsMetrics.jar BAIT_INTERVALS={input.probe_intervals} TARGET_INTERVALS={input.target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT
 	#######################
 	"""

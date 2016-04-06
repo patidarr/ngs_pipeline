@@ -764,7 +764,7 @@ rule Picard_MarkDup:
 	shell: """
 	#######################
 	module load picard/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARDJARPATH/MarkDuplicates.jar AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JARPATH/MarkDuplicates.jar AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT
 	module load samtools/{params.samtools}
 	samtools index {output.bam}
 	######################
@@ -914,13 +914,13 @@ rule MuTect:
 		rulename = "MuTect",
 		batch    = config[config['host']]["job_mutect"],
 		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R",
-		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4"
+		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4 --min_qscore 20 -rf MappingQuality -mmq 30"
 	shell: """
 	#######################
 	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
 	module load muTect/{version}
 	module load R
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $MUTECTJARPATH -T MuTect \
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $MUTECT_JAR -T MuTect \
 		--reference_sequence {input.ref} \
 		--cosmic {input.cosmic} \
 		--dbsnp {input.dbsnp} \
@@ -1063,7 +1063,7 @@ rule snpEff:
 	shell: """
 	#######################
 	module load snpEff/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar ${{SNPEFFHOME}}/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar ${{SNPEFFHOME}}/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $SNPEFF_JARPATH/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar $SNPEFF_JARPATH/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff}
 	#######################
 	"""
 ############
