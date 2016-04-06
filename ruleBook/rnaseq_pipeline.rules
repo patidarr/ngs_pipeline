@@ -337,7 +337,6 @@ rule STAR:
 		--genomeDir GenomeForPass2\
 		--runThreadN ${{THREADS}}\
 		--outSAMattributes All\
-		--genomeLoad LoadAndKeep\
 		--readFilesIn {input.R1} {input.R2}\
 		--readFilesCommand zcat\
 		--genomeLoad NoSharedMemory\

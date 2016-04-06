@@ -10,13 +10,13 @@
       "Sample_NCI0274_B_P_HH53YBGXX"
     ]
   },
-	"sample_Type": {
+  "sample_Type": {
     "Sample_NCI0274_B_P_HH53YBGXX": "Normal",
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "Tumor" 
-},
+    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "Tumor"
+  },
   "sample_captures": {
-    "Sample_NCI0274_B_P_HH53YBGXX": ["clin.snv.v1"],
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": ["clin.snv.v1"]
+    "Sample_NCI0274_B_P_HH53YBGXX": "clin.snv.v1",
+    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "clin.snv.v1"
   },
   "sample_RNASeq": {
     "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": [
@@ -29,10 +29,7 @@
     ]
   },
   "Diagnosis": {
-    "Sample_NCI0274_B_E_HH53YBGXX": "Breast cancer",
     "Sample_NCI0274_B_P_HH53YBGXX": "Breast cancer",
-    "Sample_NCI0274tumor_E_HGCG3BGXX": "Breast cancer",
-    "Sample_NCI0274tumor_200ng_P_HGCG3BGXX": "Breast cancer",
     "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "Breast cancer",
     "Sample_NCI0274_T_T_HHC2JBGXX": "Breast cancer"
   }
