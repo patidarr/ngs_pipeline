@@ -96,6 +96,7 @@ rule tophat:
 	shell: """
 	#######################
 	module load tophat/{version}
+	module load samtools
 	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
 	cp -rf ${{LOCAL}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam

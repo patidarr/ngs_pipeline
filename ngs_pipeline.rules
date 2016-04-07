@@ -677,7 +677,7 @@ rule CoveragePlot:
 		
 	cp -f {input.covFiles} {wildcards.subject}/qc/ 
 		
-	module load R/{version}
+	module load R
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
 	#######################
 	"""
@@ -722,7 +722,7 @@ rule Circos:
 	shell: """
 	#######################
 	cp -f {input.lohFiles} {wildcards.subject}/qc/
-	module load R/{version}
+	module load R
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.circos}
 	#######################
 	"""
@@ -742,7 +742,7 @@ rule BoxPlot_Hotspot:
 	shell: """
 	#######################
 	cp -f {input.covFiles} {wildcards.subject}/qc/
-	module load R/{version}
+	module load R
 	R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.boxplot}
 	#######################
 	"""
