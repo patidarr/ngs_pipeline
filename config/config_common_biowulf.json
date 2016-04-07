@@ -31,7 +31,7 @@
 	"tophat"		: "2.0.13",
 	"bowtie" 		: "1.1.1",
 	"igvtools"		: "2.3.31",
-	"cufflinks"		: "2.2.1-dev",
+	"cufflinks"		: "2.2.1",
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",

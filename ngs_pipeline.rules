@@ -690,6 +690,7 @@ rule IGV_Session:
 	message: "Making IGV session xml file for {wildcards.subject}"
 	params:
 		rulename = "igv_session",
+		batch    = config[config['host']]["job_covplot"],
 		work_dir =  WORK_DIR
 	shell: """
 	#######################
@@ -1078,7 +1079,7 @@ rule vcf2txt:
 	output:
 		txt="{subject}/calls/{base}.snpEff.txt"
 	params:
-		rulename      ="snpEff",
+		rulename      ="vcf2txt",
 		batch         =config[config['host']]["job_default"],
 		annovar       =config["annovar"]
 	shell: """
@@ -1151,12 +1152,12 @@ rule SIFT:
 	shell: """
 	#######################
 	if [ -s {input.sift} ]; then
-		module load python/2.7.4
+		module load python/2.7.9
 		module load SIFT/{version}
 		DIR=`pwd`
 		cd ${{DIR}}/`dirname {input.sift}`
 		FILE=`basename {input.sift}` 
-		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o $SIFT_SCRATCHDIR -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o ${{LOCAL}}  -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
 		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
 	else
 		echo -e "Chr\\tStart\\tEnd\\tRef\\tAlt\\tSIFT Prediction\\tSIFT Score" >{output}
@@ -1278,7 +1279,8 @@ rule DBinput:
 		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl"
 	output: "{subject}/{subject}/db/{subject}.{group}"
 	params:
-		rulename  = "makeDBinput"
+		rulename  = "makeDBinput",
+		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
 	perl {input.convertor} {input.txtFiles} >{output}

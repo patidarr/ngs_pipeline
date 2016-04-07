@@ -73,6 +73,10 @@ rule RNASeq:
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
 	output: temp("rnaseqDone")
+	params:
+		rulename  = "RNASeq_final",
+		batch     = config[config['host']]["job_default"]
+
 	shell: """
 	#######################
 	echo "This is the end of RNASeq" >{output}
@@ -114,6 +118,7 @@ rule symlink_tophatBam:
 		bai="{base}/{sample}/{sample}.tophat.final.bam.bai"
 	params:
 		rulename  = "tophat_link",
+		batch     = config[config['host']]["job_default"]
 	shell: """
 	#######################
 	cd {wildcards.base}/{wildcards.sample}/
