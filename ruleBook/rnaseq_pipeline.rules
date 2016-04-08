@@ -261,7 +261,7 @@ rule deFuse:
 	shell: """
 	#######################
 	module load defuse/{version}
-	
+	module load R	
 	export TMPDIR="{wildcards.base}/{wildcards.sample}/fusion/temp/R"
 	export TMP="{wildcards.base}/{wildcards.sample}/fusion/temp/R"
 	export TEMP="{wildcards.base}/{wildcards.sample}/fusion/temp/R"
