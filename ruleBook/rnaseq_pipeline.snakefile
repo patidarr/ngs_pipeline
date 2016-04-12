@@ -25,18 +25,18 @@ for subject  in config['RNASeq'].keys():
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
-		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapCaller.annotated.txt"])
+		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
 		EXPRESSION += [subject+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
 		EXPRESSION += [subject+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]
 		for gtf in config['GTF']:
 			EXPRESSION += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.hapCaller.raw.vcf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{sample}/fusion/{sample}.actionable.fusion.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUBJECT_VCFS:
-		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapCaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUBJECT_VCFS[subject] = []
-		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapCaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUB_HOT:
 		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
@@ -86,7 +86,7 @@ rule RNASeq:
 ############
 #	Tophat
 ############
-rule tophat:
+rule TOPHAT:
 	input:
 		R=lambda wildcards: FQ[wildcards.sample],
 #		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
@@ -111,7 +111,7 @@ rule tophat:
 ############
 #       Link Tophat bam file
 ############
-rule symlink_tophatBam:
+rule TOPHAT_LINK:
 	input:
 		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
@@ -131,7 +131,7 @@ rule symlink_tophatBam:
 ############
 #       Tophat-fusion
 ############
-rule tophat_fusion:
+rule TOPHAT_FUSION:
 	input:
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
@@ -163,7 +163,7 @@ rule tophat_fusion:
 ############
 #       Cufflinks
 ############
-rule cufflinks:
+rule CUFFLINKS:
 	input:
 		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
@@ -187,7 +187,7 @@ rule cufflinks:
 ############
 #       Exon Expression
 ############
-rule exon_exp:
+rule EXON_EXPRESSION:
 	input:
 		bam="{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
@@ -227,7 +227,7 @@ rule exon_exp:
 ############
 #       Fusioncatcher
 ############
-rule fusioncatcher:
+rule FUSION_CATCHER:
 	input:
 		R=lambda wildcards: FQ[wildcards.sample]
 #		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
@@ -248,7 +248,7 @@ rule fusioncatcher:
 ############
 #       deFuse
 ############
-rule deFuse:
+rule DeFuse:
 	input:
 		R=lambda wildcards: FQ[wildcards.sample],
 #		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
@@ -411,7 +411,7 @@ rule HapCall_RNASeq:
 		ref=config["reference"],
 		dbsnp=config["dbsnp"]
 	output:
-		vcf="{base}/{sample}/calls/{sample}.hapCaller.raw.vcf"
+		vcf="{base}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf"
 	version: config["GATK"]
 	params:
 		rulename = "HC",
@@ -426,7 +426,7 @@ rule HapCall_RNASeq:
 ############
 # Coverage
 ############
-rule coverage:
+rule CoveragE:
 	input:
 		bam="{subject}/{sample}/{sample}.star.final.bam",
 		bai="{subject}/{sample}/{sample}.star.final.bam.bai",
@@ -446,7 +446,7 @@ rule coverage:
 ############
 # Filter fusion for every library
 ############
-rule sub_fusion:
+rule Sub_Fusion:
 	input:
 		tophat="{subject}/{sample}/fusion/tophat-fusion.txt",
 		fc="{subject}/{sample}/fusion/fusion-catcher.txt",

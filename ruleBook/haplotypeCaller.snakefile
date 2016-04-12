@@ -6,7 +6,7 @@ rule HAPCALLER:
 		dbsnp=config["dbsnp"],
 		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 	output:
-		vcf="{subject}/{sample}/calls/{sample}.hapcaller.raw.vcf"
+		vcf="{subject}/{sample}/calls/{sample}.HC_DNASeq.raw.vcf"
 	version: config["GATK"]
 	params:
 		rulename = "HC",

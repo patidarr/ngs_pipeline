@@ -1,7 +1,7 @@
 ############
 ##      Depth Per Base for entire target intervals
 ############
-rule readDepth:
+rule ReadDepth:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
 		bai="{base}/{sample}/{sample}.bwa.final.bam.bai"

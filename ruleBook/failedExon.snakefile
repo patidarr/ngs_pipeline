@@ -1,4 +1,4 @@
-rule  failedExons:
+rule  FailedExons:
 	input:
 		depth_file="{base}/qc/{sample}.depth_per_base"
 	output:
@@ -6,7 +6,7 @@ rule  failedExons:
 		failed_gene_stats="{base}/qc/{sample}.failGenes"
 	params:
 		rulename	= "failedExons",
-		threshold	= lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample]][config['sample_Type'][wildcards.sample]],
+		threshold	= lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample]][config['sample_type'][wildcards.sample]],
 		tool		= NGS_PIPELINE + "/scripts/failed_Exon_Final.pl",
 		batch		= config[config['host']]['job_failedExon']
 	shell:	"""

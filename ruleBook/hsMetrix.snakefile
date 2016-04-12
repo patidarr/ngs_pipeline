@@ -1,4 +1,4 @@
-rule targetIntervals:
+rule TargetIntervals:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
 		bai="{base}/{sample}/{sample}.bwa.final.bam.bai"
@@ -20,7 +20,7 @@ rule targetIntervals:
 	#######################
 	"""
 
-rule hsMetrics:
+rule HSMetrics:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam",
 		probe_intervals  = "{base}/qc/{sample}.probe.intervals",

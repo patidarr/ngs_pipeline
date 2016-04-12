@@ -1,4 +1,4 @@
-rule consolidated_QC:
+rule QC:
 	input:
 		bam="{base}/{sample}/{sample}.bwa.final.bam"
 	output: "{base}/qc/{sample}.consolidated_QC"

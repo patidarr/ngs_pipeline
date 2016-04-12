@@ -5,7 +5,7 @@ rule PLATYPUS:
 		dbsnp=config["dbsnp"],
 		interval=config["coding_bed"]
 	output:
-		vcf="{subject}/{sample}/calls/{sample}.platypus.raw.vcf"
+		vcf="{subject}/{sample}/calls/{sample}.Platypus.raw.vcf"
 	version: config["platypus"]
 	log: "log/platypus.{subject}"
 	params:
