@@ -3,7 +3,7 @@
 #PBS -N ngs-pipeline
 #
 # Author: Rajesh Patidar
-# 
+#
 # Usually slurm can translate the PBS varibles so no need to initialize the following sbatch vars.
 #
 ##SBATCH --job-name="KhanLab"
@@ -22,19 +22,19 @@ if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	export DATA_DIR="/data/khanlab/projects/DATA"
 	export ACT_DIR="/Actionable/"
 	export HOST="biowulf.nih.gov"
-	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
+	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 	SAM_CONFIG=$WORK_DIR/samplesheet.json
 elif [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	module load python/3.4.3
 	module load snakemake
-	export NGS_PIPELINE="/home/patidarr/ngs_pipeline/"
-	export WORK_DIR="/home/patidarr/trial1/"
+	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
+	export WORK_DIR="/projects/Clinomics/"
 	export DATA_DIR="/projects/Clinomics/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="login01"
-	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
+	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 	SAM_CONFIG=$WORK_DIR/samplesheet.json
-else 
+else
 	echo -e "Host `hostname` is not recognized\n"
 	echo -e "This pipeline is customized to run on biowulf.nih.gov or TGen Cluster@ KhanLab\n";
 	exit;
@@ -65,13 +65,13 @@ elif [ $HOST == 'login01' ]; then
 fi
 
 
-# Summary 
+# Summary
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
 
 ## DRY Run with Print out the shell commands that will be executed
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r
 
-#DAG 
+#DAG
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dag | dot -Tpng > dag.png
 
 #Rulegraph

@@ -25,18 +25,18 @@ for subject  in config['RNASeq'].keys():
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
-		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapcaller.annotated.txt"])
+		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".hapCaller.annotated.txt"])
 		EXPRESSION += [subject+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
-		EXPRESSION += [subject+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]	
+		EXPRESSION += [subject+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]
 		for gtf in config['GTF']:
 			EXPRESSION += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.hapcaller.annotated.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.hapCaller.raw.vcf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{sample}/fusion/{sample}.actionable.fusion.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUBJECT_VCFS:
-		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapCaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUBJECT_VCFS[subject] = []
-		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapcaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.hapCaller.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUB_HOT:
 		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
@@ -68,6 +68,7 @@ rule RNASeq:
 		RNASEQ_BAM,
 		EXPRESSION,
 		RNA_CALLS,
+		SUBJECT_VCFS,
 		expand("{subject}"+ACT_DIR+"{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),
@@ -87,10 +88,11 @@ rule RNASeq:
 ############
 rule tophat:
 	input:
-		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
-	output: 
-		"{base}/{sample}/tophat_{sample}/accepted_hits.bam", 
+		R=lambda wildcards: FQ[wildcards.sample],
+#		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+#		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+	output:
+		"{base}/{sample}/tophat_{sample}/accepted_hits.bam",
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
 	version: config["tophat"]
 	params:
@@ -101,7 +103,7 @@ rule tophat:
 	#######################
 	module load tophat/{version}
 	module load samtools
-	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
+	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R[0]} {input.R[1]}
 	cp -rf ${{LOCAL}}/* {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 	#######################
@@ -123,17 +125,17 @@ rule symlink_tophatBam:
 	#######################
 	cd {wildcards.base}/{wildcards.sample}/
 	ln -sf tophat_{wildcards.sample}/accepted_hits.bam {wildcards.sample}.tophat.final.bam
-	ln -sf tophat_{wildcards.sample}/accepted_hits.bam.bai {wildcards.sample}.tophat.final.bam.bai	
+	ln -sf tophat_{wildcards.sample}/accepted_hits.bam.bai {wildcards.sample}.tophat.final.bam.bai
 	#######################
 	"""
 ############
 #       Tophat-fusion
 ############
 rule tophat_fusion:
-	input: 
+	input:
 		"{base}/{sample}/tophat_{sample}/accepted_hits.bam",
-		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"	
-	output: 
+		"{base}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
+	output:
 		"{base}/{sample}/tophatfusion_out/result.txt",
 		"{base}/{sample}/fusion/tophat-fusion.txt"
 	version: config["tophat"]
@@ -179,7 +181,7 @@ rule cufflinks:
 	module load cufflinks/{version}
 	cufflinks -p ${{THREADS}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
 	/usr/bin/python {input.convertor} genes {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking_log2
-	/usr/bin/python {input.convertor} isoforms {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2 
+	python {input.convertor} isoforms {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2
 	#######################
 	"""
 ############
@@ -211,15 +213,15 @@ rule exon_exp:
         done
         wait;
         cat ${{LOCAL}}/ucsc*.out >{output.ucsc}
-	rm -rf ${{LOCAL}}/*	
+	rm -rf ${{LOCAL}}/*
 
 	split -d -l 15000 {input.ens} ${{LOCAL}}/ens
 	for file in ${{LOCAL}}/ens*
 	do
 		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
-	done 
+	done
 	wait
-	cat ${{LOCAL}}/ens*.out >{output.ens}	
+	cat ${{LOCAL}}/ens*.out >{output.ens}
 	#######################
         """
 ############
@@ -227,9 +229,10 @@ rule exon_exp:
 ############
 rule fusioncatcher:
 	input:
-		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
-	output: 
+		R=lambda wildcards: FQ[wildcards.sample]
+#		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+#		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+	output:
 		"{base}/{sample}/fusion/fusion-catcher.txt"
 	version: config['fusioncatcher']
 	params:
@@ -238,7 +241,7 @@ rule fusioncatcher:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -p ${{THREADS}} -i {input.R1},{input.R2} -o ${{LOCAL}}/
+	fusioncatcher -p ${{THREADS}} -i {input.R[0]},{input.R[1]} -o ${{LOCAL}}/
 	cp ${{LOCAL}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""
@@ -247,8 +250,9 @@ rule fusioncatcher:
 ############
 rule deFuse:
 	input:
-		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+		R=lambda wildcards: FQ[wildcards.sample],
+#		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+#		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 		config=config["defuse_config"],
 	output:
 		"{base}/{sample}/fusion/defuse.raw.txt",
@@ -261,13 +265,13 @@ rule deFuse:
 	shell: """
 	#######################
 	module load defuse/{version}
-	module load R	
+	module load R
 	export TMPDIR="{wildcards.base}/{wildcards.sample}/fusion/temp/R"
 	export TMP="{wildcards.base}/{wildcards.sample}/fusion/temp/R"
 	export TEMP="{wildcards.base}/{wildcards.sample}/fusion/temp/R"
-	
-	gunzip -c {input.R1} >{wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq &
-	gunzip -c {input.R2} >{wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq &
+
+	gunzip -c {input.R[0]} >{wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq &
+	gunzip -c {input.R[1]} >{wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq &
 	wait
 	defuse.pl -c {input.config} \
 		-1 {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq\
@@ -275,17 +279,17 @@ rule deFuse:
 		-p ${{THREADS}} \
 		-n {wildcards.sample}\
 		-o {wildcards.base}/{wildcards.sample}/fusion/temp\
-		-s direct 
+		-s direct
 	cp {wildcards.base}/{wildcards.sample}/fusion/temp/results.filtered.tsv  {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt
 	cp {wildcards.base}/{wildcards.sample}/fusion/temp/results.tsv           {wildcards.base}/{wildcards.sample}/fusion/defuse.raw.txt
-	
+
 	for ID in `cut -f1 {wildcards.base}/{wildcards.sample}/fusion/defuse.filtered.txt|grep -v cluster_id`;
-	do 
-		echo "get_reads.pl -c {input.config} -o {wildcards.base}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt" 
+	do
+		echo "get_reads.pl -c {input.config} -o {wildcards.base}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt"
 	done >{wildcards.base}/{wildcards.sample}/fusion/cmd.swarm
 	cat {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm | parallel -j ${{THREADS}} --no-notice
 	touch {wildcards.base}/{wildcards.sample}/fusion/defuse.Reads/defuse.done
-	rm -rf {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq 
+	rm -rf {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq
 	rm -rf {wildcards.base}/{wildcards.sample}/fusion/temp {wildcards.base}/{wildcards.sample}/fusion/cmd.swarm
 	#######################
 	"""
@@ -294,8 +298,9 @@ rule deFuse:
 ############
 rule STAR:
 	input:
-		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+		R=lambda wildcards: FQ[wildcards.sample],
+#		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
+#		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 		ref=config["reference"],
 	output:
 		temp("{base}/{sample}/{sample}.star.bam"),
@@ -315,7 +320,7 @@ rule STAR:
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
 		--genomeDir {params.star_ref} \
-		--readFilesIn {input.R1} {input.R2} \
+		--readFilesIn {input.R[0]} {input.R[1]} \
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample} \
 		--runThreadN ${{THREADS}} \
@@ -343,12 +348,12 @@ rule STAR:
 		--genomeDir GenomeForPass2\
 		--runThreadN ${{THREADS}}\
 		--outSAMattributes All\
-		--readFilesIn {input.R1} {input.R2}\
+		--readFilesIn {input.R[0]} {input.R[1]}\
 		--readFilesCommand zcat\
 		--genomeLoad NoSharedMemory\
 		--outFileNamePrefix {wildcards.sample}_pass2
 	echo "Finished Step 4"
-	
+
 	module load picard/{params.picard}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JARPATH/AddOrReplaceReadGroups.jar\
 	VALIDATION_STRINGENCY=SILENT\
@@ -384,10 +389,10 @@ rule GATK_RNASeq:
 	#######################
 	module load GATK/{version}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o ${{LOCAL}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
-	
+
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam -o ${{LOCAL}}/{wildcards.sample}.realignment.intervals
 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam 
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam
 
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 
@@ -406,7 +411,7 @@ rule HapCall_RNASeq:
 		ref=config["reference"],
 		dbsnp=config["dbsnp"]
 	output:
-		vcf="{base}/{sample}/calls/{sample}.hapcaller.raw.vcf"
+		vcf="{base}/{sample}/calls/{sample}.hapCaller.raw.vcf"
 	version: config["GATK"]
 	params:
 		rulename = "HC",
