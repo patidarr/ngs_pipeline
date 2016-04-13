@@ -253,20 +253,20 @@ rule Khanlab_Pipeline:
 	input:
 		SUB_IGV.values(),
 		COPY_NUMBER,
-#		ALL_VCFs,
-#		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
-#		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
-#		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
-#		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
-#		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
-#		"rnaseqDone",
-#		"QC_AllSamples.txt",
+		ALL_VCFs,
+		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
+		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
+		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
+		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
+		"rnaseqDone",
+		"QC_AllSamples.txt",
 		ALL_QC,
-#		ALL_FASTQC,
-#		ALL_BAMS,
-#		varFiles,
-#		DBFiles,
-#		ActionableFiles
+		ALL_FASTQC,
+		ALL_BAMS,
+		varFiles,
+		DBFiles,
+		ActionableFiles
 	version: "1.0"
 	params:
 		rulename = "Final",
