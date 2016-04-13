@@ -68,7 +68,6 @@ rule RNASeq:
 		RNASEQ_BAM,
 		EXPRESSION,
 		RNA_CALLS,
-		SUBJECT_VCFS,
 		expand("{subject}"+ACT_DIR+"{subject}.fusion.actionable.txt", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
 		expand("{subject}/qc/{subject}.coveragePlot.png", subject=config['RNASeq']),

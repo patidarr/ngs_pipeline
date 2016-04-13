@@ -111,11 +111,7 @@ for subject  in config['RNASeq'].keys():
                 PATIENTS.append(subject)
 ###########################################################################
 ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_BAMS    = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_BAMS   += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC      = ["{subject}/{sample}/calls/{sample}.HC_DNASeq.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC      = ["{subject}/{sample}/calls/{sample}.Platypus.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -254,16 +250,10 @@ rule Khanlab_Pipeline:
 		SUB_IGV.values(),
 		COPY_NUMBER,
 		ALL_VCFs,
-		expand("{subject}/qc/{subject}.coveragePlot.png", subject=SUBS),
-		expand("{subject}/qc/{subject}.circos.png", subject=SUBS),
-		expand("{subject}/qc/{subject}.genotyping.txt", subject=SUBS),
-		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=SUBS),
-		expand("{subject}/igv/session_{subject}.xml", subject=SUBS),
 		"rnaseqDone",
 		"QC_AllSamples.txt",
 		ALL_QC,
 		ALL_FASTQC,
-		ALL_BAMS,
 		varFiles,
 		DBFiles,
 		ActionableFiles
