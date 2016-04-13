@@ -1,36 +1,100 @@
 {
   "subject": {
-    "NCI0274": [
-      "Sample_NCI0274_B_P_HH53YBGXX",
-      "Sample_NCI0274tumor_100ng_P_HGCG3BGXX"
+    "CL0035": [
+      "CL0035_T1D_E",
+      "CL0035_T1D_P"
+    ],
+    "NCI0291": [
+      "NCI0291_B_E",
+      "NCI0291_B_P",
+      "NCI0291_T_E",
+      "NCI0291_T_P"
+    ]
+  },
+  "library": {
+    "CL0035_T1D_E": [
+      "Sample_CL0035_T1D_E_HWJW5BGXX"
+    ],
+    "CL0035_T1D_P": [
+      "Sample_CL0035_T1D_P_HWJW5BGXX"
+    ],
+    "NCI0291_B_E": [
+      "Sample_NCI0291_B_E_HH3CWBGXX"
+    ],
+    "NCI0291_B_P": [
+      "Sample_NCI0291_B_P_HH3CWBGXX"
+    ],
+    "NCI0291_T_E": [
+      "Sample_NCI0291_T_E_HWHT3BGXX"
+    ],
+    "NCI0291_T_P": [
+      "Sample_NCI0291_T_P_HWHT3BGXX"
+    ],
+    "CL0035_T1R_T": [
+      "Sample_CL0035_T1R_T_HWHT3BGXX"
+    ],
+    "CL0035_T1R_T": [
+      "Sample_CL0035_T1R_T_HWJW5BGXX"
+    ],
+    "CL0035_T2R_T": [
+      "Sample_CL0035_T2R_T_HWJW5BGXX"
+    ],
+    "NCI0291_T_T": [
+      "Sample_NCI0291_T_T_HWJW5BGXX"
     ]
   },
   "sample_references": {
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": [
-      "Sample_NCI0274_B_P_HH53YBGXX"
+    "NCI0291_T_E": [
+      "NCI0291_B_E"
+    ],
+    "NCI0291_T_P": [
+      "NCI0291_B_P"
     ]
   },
-  "sample_Type": {
-    "Sample_NCI0274_B_P_HH53YBGXX": "Normal",
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "Tumor"
+  "sample_type": {
+    "CL0035_T1D_E": "Normal",
+    "CL0035_T1D_P": "Tumor",
+    "NCI0291_B_E": "Normal",
+    "NCI0291_T_E": "Tumor",
+    "NCI0291_B_P": "Normal",
+    "NCI0291_T_P": "Tumor"
   },
   "sample_captures": {
-    "Sample_NCI0274_B_P_HH53YBGXX": "clin.snv.v1",
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "clin.snv.v1"
+    "CL0035_T1D_P": "clin.snv.v1",
+    "CL0035_T1D_E": "clin.ex.v1",
+    "NCI0291_B_E": "clin.ex.v1",
+    "NCI0291_B_P": "clin.snv.v1",
+    "NCI0291_T_E": "clin.ex.v1",
+    "NCI0291_T_P": "clin.snv.v1"
   },
   "sample_RNASeq": {
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": [
-      "Sample_NCI0274_T_T_HHC2JBGXX"
+    "NCI0291_T_E": [
+      "NCI0291_T_T"
+    ],
+    "NCI0291_T_P": [
+      "NCI0291_T_T"
     ]
   },
   "RNASeq": {
-    "NCI0274": [
-      "Sample_NCI0274_T_T_HHC2JBGXX"
+    "CL0035": [
+      "CL0035_T1R_T",
+      "CL0035_T1R_T",
+      "CL0035_T2R_T"
+    ],
+    "NCI0291": [
+      "NCI0291_T_T"
     ]
   },
   "Diagnosis": {
-    "Sample_NCI0274_B_P_HH53YBGXX": "Breast cancer",
-    "Sample_NCI0274tumor_100ng_P_HGCG3BGXX": "Breast cancer",
-    "Sample_NCI0274_T_T_HHC2JBGXX": "Breast cancer"
+    "CL0035_T1D_E": "ALL",
+    "CL0035_T1D_P": "ALL",
+    "CL0035_T1R_T": "ALL",
+    "CL0035_T1R_T": "ALL",
+    "CL0035_T2R_T": "ALL",
+    "NCI0291_B_E": "Glioblastoma",
+    "NCI0291_B_P": "Glioblastoma",
+    "NCI0291_T_E": "Glioblastoma",
+    "NCI0291_T_P": "Glioblastoma",
+    "NCI0291_T_T": "Glioblastoma"
   }
 }

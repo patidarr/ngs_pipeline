@@ -3,7 +3,7 @@
 #PBS -N ngs-pipeline
 #
 # Author: Rajesh Patidar
-#
+# 
 # Usually slurm can translate the PBS varibles so no need to initialize the following sbatch vars.
 #
 ##SBATCH --job-name="KhanLab"
@@ -17,8 +17,8 @@ NOW=$(date +"%Y%m%d_%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module use /data/khanlab/apps/Modules
 	module load python/3.4.3
-	export NGS_PIPELINE="/data/khanlab/projects/patidar/Snakemake"
-	export WORK_DIR="/data/khanlab/projects/patidar/Snakemake/test"
+	export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline-dev"
+	export WORK_DIR="/data/khanlab/projects/patidar/Test_Run2/"
 	export DATA_DIR="/data/khanlab/projects/DATA"
 	export ACT_DIR="/Actionable/"
 	export HOST="biowulf.nih.gov"
@@ -27,14 +27,14 @@ if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 elif [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	module load python/3.4.3
 	module load snakemake
-	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
-	export WORK_DIR="/projects/Clinomics/"
+	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline-dev"
+	export WORK_DIR="/projects/Clinomics/Test_Run2/"
 	export DATA_DIR="/projects/Clinomics/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="login01"
 	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 	SAM_CONFIG=$WORK_DIR/samplesheet.json
-else
+else 
 	echo -e "Host `hostname` is not recognized\n"
 	echo -e "This pipeline is customized to run on biowulf.nih.gov or TGen Cluster@ KhanLab\n";
 	exit;
@@ -65,17 +65,17 @@ elif [ $HOST == 'login01' ]; then
 fi
 
 
-# Summary
+# Summary 
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
 
 ## DRY Run with Print out the shell commands that will be executed
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r
 
-#DAG
+#DAG 
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dag | dot -Tpng > dag.png
 
 #Rulegraph
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpng > Rulegraph.png
 
 # Mail Rulegraph and DAG to self#  echo DAG |mutt -s "DAG" -a dag.png -a rulegraph.png -- patidarr@mail.nih.gov
-#  echo DAG |mutt -s "DAG" -a dag.png -a rulegraph.png -- patidarr@mail.nih.gov
+#  echo DAG |mutt -s "DAG" -a dag.png -a Rulegraph.png -- patidarr@mail.nih.gov
