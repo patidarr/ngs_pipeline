@@ -865,10 +865,11 @@ rule Bam2MPG:
 	module load vcftools/{params.vcftools}
 	for CHR in `seq 1 22` X Y;
 	do
-	bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam} &
-	done
-	wait
-
+	echo "bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam}"
+	done >swarm.file
+	cat swarm.file |parallel -j ${{THREADS}} --no-notice
+	rm -rf swarm.file
+	
 	for CHR in `seq 1 22` X Y
 	do
 		cat ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
@@ -890,7 +891,7 @@ rule Bam2MPG:
 
 	bgzip {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
 	tabix -f -p vcf {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
-	rm -rf {wildcards.sample}.recode.vcf
+	rm -rf {wildcards.sample}.recode.vcf 
 	gunzip -c {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz >{wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.raw.vcf
 	#######################
 	"""
