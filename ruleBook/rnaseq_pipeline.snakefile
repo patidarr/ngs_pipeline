@@ -22,7 +22,7 @@ for subject  in config['RNASeq'].keys():
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/tophat-fusion.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
-		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
+		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
 		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
