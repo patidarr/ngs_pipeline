@@ -18,3 +18,14 @@ rule QC:
 	python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}
 	#######################
 	"""
+rule QC_Sum1:
+	input : CON_QC
+	output: "Consolidated_QC.txt"
+	params:
+		rulename  = "QC_Sum",
+		batch	  = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	cat {input} |sort |uniq >{output}
+	#######################
+	"""
