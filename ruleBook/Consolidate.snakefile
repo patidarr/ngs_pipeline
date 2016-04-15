@@ -1,6 +1,6 @@
 rule QC:
 	input: bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam"
-	output: "{base}/{TIME}/qc/{sample}.consolidated_QC"
+	output: "{base}/{TIME}/{sample}/qc/{sample}.consolidated_QC"
 	version:
 		config['samtools']
 	params:

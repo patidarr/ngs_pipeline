@@ -12,7 +12,7 @@
 ##SBATCH --mem=1g
 ##SBATCH --gres=lscratch:01
 #
-TIME=$(date +"%Y_%m_%d")
+export TIME=$(date +"%Y%m%d")
 #TIME=$(date +"%Y%m%d_%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module use /data/khanlab/apps/Modules

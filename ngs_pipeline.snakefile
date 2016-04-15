@@ -179,17 +179,17 @@ for sample in config['sample_references'].keys():
 		  (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
 	)
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.v1.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.v1.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v1.annotated.txt"]
-	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v1.filtered.txt"]
-        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.v2.txt"]
-        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.v2.txt"]
-        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v2.annotated.txt"]
-        COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v2.filtered.txt"]
-	SOMATIC +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
-	SOMATIC +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
-	SOMATIC +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".copyNumber.v1.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.v1.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v1.annotated.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v1.filtered.txt"]
+        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".copyNumber.v2.txt"]
+        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.v2.txt"]
+        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v2.annotated.txt"]
+        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v2.filtered.txt"]
+	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
+	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
+	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
 	if subject in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject].extend(local)
 
@@ -210,7 +210,6 @@ if len(config['sample_RNASeq']) > 0:
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
-
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
@@ -368,7 +367,7 @@ rule GENOTYPING:
 		vcf2loh=NGS_PIPELINE + "/scripts/vcf2loh.pl",
 	output:
 		vcf="{base}/{TIME}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
-		gt="{base}/{TIME}/{sample}/qc/{sample}.{aligner}.gt",
+		gt= "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.gt",
 		loh="{base}/{TIME}/{sample}/qc/{sample}.{aligner}.loh"
 	version: config["samtools_old"]
 	params:
@@ -382,9 +381,9 @@ rule GENOTYPING:
 	samtools mpileup -u -C50 -f {input.ref} -l {input.interval} {input.bam} | bcftools view -gc - >{output.vcf}
 	perl {input.vcf2genotype} {output.vcf} >{output.gt}
 	if [ {HOST} == 'biowulf.nih.gov' ]; then
-		cp -f {output.gt} {params.dest}/{wildcards.sample}.gt
+		cp -f {output.gt} {params.dest}{wildcards.sample}.gt
 	elif [ {HOST} == 'login01' ]; then
-		ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}/{wildcards.sample}.gt"
+		ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}{wildcards.sample}.gt"
 	fi
 	perl {input.vcf2loh} {output.vcf} >{output.loh}
 	#######################
@@ -528,10 +527,10 @@ rule CN_LRR:
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
-		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.v1.txt",
-		hq="{subject}/{Tumor}/copyNumber/{Tumor}.hq.v1.txt",
-		final="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v1.annotated.txt",
-		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v1.filtered.txt"
+		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.v1.txt",
+		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.v1.txt",
+		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v1.annotated.txt",
+		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v1.filtered.txt"
 	params:
 		rulename = "LRR",
 		batch    = config[config['host']]["job_default"],
@@ -540,7 +539,7 @@ rule CN_LRR:
 	#######################
 	module load R
 	module load bedtools/2.25.0
-	mkdir -p {wildcards.subject}/Actionable/
+	mkdir -p {wildcards.subject}/{TIME}/Actionable/
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 
@@ -554,7 +553,7 @@ rule CN_LRR:
 	max=`echo "${{median}}+(2*${{MAD}})"|bc`
 
 	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
-	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.v1.txt
+	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.v1.txt
 	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
 
 	head -1 {output.final} >{output.filtered}
@@ -562,7 +561,7 @@ rule CN_LRR:
 	do
 		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
 	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
-	cp -f {output.filtered} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.CN.v1.filtered.txt
+	cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v1.filtered.txt
 	rm -rf {output.out}.temp1 {output.out}.temp
 	#######################
 	"""
@@ -574,14 +573,14 @@ rule CN_LRR1:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
-		tool=NGS_PIPELINE+ "/scripts//AddGene.pl",
+		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
-		out="{subject}/{Tumor}/copyNumber/{Tumor}.copyNumber.v2.txt",
-		hq="{subject}/{Tumor}/copyNumber/{Tumor}.hq.v2.txt",
-		final="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v2.annotated.txt",
-		filtered="{subject}/{Tumor}/copyNumber/{Tumor}.CN.v2.filtered.txt"
+		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.v2.txt",
+		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.v2.txt",
+		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v2.annotated.txt",
+		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v2.filtered.txt"
 	params:
 		rulename = "LRR",
 		batch    = config[config['host']]["job_default"],
@@ -590,7 +589,7 @@ rule CN_LRR1:
 	#######################
 	module load R
 	module load bedtools/2.25.0
-	mkdir -p {wildcards.subject}/Actionable/
+	mkdir -p {wildcards.subject}/{TIME}/Actionable/
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
 
@@ -616,7 +615,7 @@ rule CN_LRR1:
 	max=`echo "${{median}}+(2.5*${{MAD}})"|bc`
 
 	perl {input.filter} filter {output.out}.corrected ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
-	cp -f {output.final} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.copyNumber.v2.txt
+	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.v2.txt
 	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
 
 	head -1 {output.final} >{output.filtered}
@@ -624,7 +623,7 @@ rule CN_LRR1:
 	do
 		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
 	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
-	cp -f {output.filtered} {wildcards.subject}{ACT_DIR}/{wildcards.Tumor}.CN.v2.filtered.txt
+	cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v2.filtered.txt
 	rm -rf {output.out}.temp1 {output.out}.temp
 	#######################
 	"""
@@ -847,8 +846,8 @@ rule Bam2MPG:
 		vcftools  = config["vcftools"]
 	shell: """
 	#######################
-	if [ -f {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz ]; then
-        	rm -rf {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.*
+	if [ -f {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz ]; then
+        	rm -rf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.*
 
 	fi
 
@@ -878,12 +877,12 @@ rule Bam2MPG:
 
 	vcftools --vcf ${{LOCAL}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out {wildcards.sample} --recode --keep-INFO-all
 
-	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf |vcf-sort >{wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
+	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf |vcf-sort >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
 
-	bgzip {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
-	tabix -f -p vcf {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
+	bgzip {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
+	tabix -f -p vcf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
 	rm -rf {wildcards.sample}.recode.vcf 
-	gunzip -c {wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz >{wildcards.subject}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.raw.vcf
+	gunzip -c {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.raw.vcf
 	#######################
 	"""
 ############
@@ -893,7 +892,7 @@ rule Sub_MPG:
 	input:
 		vcf=lambda wildcards: SUB_MPG[wildcards.subject],
 	output:
-		vcf="{subject}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
+		vcf="{subject}/{TIME}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
 	version: config["vcftools"]
 	params:
 		rulename = "mergevcf",
@@ -959,8 +958,8 @@ rule Strelka:
 		config=config["strelka_config"],
 		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]],
 	output:
-		snps="{subject}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
-		indels="{subject}/{Tumor}/calls/{Tumor}.strelka.indels.raw.vcf"
+		snps="{subject}/{TIME}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
+		indels="{subject}/{TIME}/{Tumor}/calls/{Tumor}.strelka.indels.raw.vcf"
 	version: config["strelka"]
 	params:
 		rulename = "Strelka",
@@ -994,7 +993,7 @@ rule Sub_HapCall:
 		dbsnp=config["dbsnp"],
 		interval= config["coding_bed"]
 	output:
-		vcf="{subject}/{subject}/calls/{subject}.hapCaller.raw.vcf"
+		vcf="{subject}/{TIME}/{subject}/calls/{subject}.hapCaller.raw.vcf"
 	version: config["GATK"]
 	params:
 		rulename = "HC",
@@ -1018,7 +1017,7 @@ rule Sub_Platypus:
 		dbsnp=config["dbsnp"],
 		interval=config["coding_bed"]
 	output:
-		vcf="{subject}/{subject}/calls/{subject}.platypus.raw.vcf"
+		vcf="{subject}/{TIME}/{subject}/calls/{subject}.platypus.raw.vcf"
 	version: config["platypus"]
 	log: "log/platypus.{subject}"
 	params:
@@ -1211,7 +1210,7 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.civic
 {wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
 	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
-	perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output} >>{wildcards.subject}/annotation/AnnotationInput.annotations.final.txt
+	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output} >>{wildcards.subject}/annotation/AnnotationInput.annotations.final.txt
 	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.1 |sort -n |uniq >{output}
 
 	rm -rf {wildcards.subject}/annotation/AnnotationInput.pph {wildcards.subject}/annotation/AnnotationInput.anno.* {wildcards.subject}/annotation/AnnotationInput.hgmd {wildcards.subject}/annotation/AnnotationInput.match {wildcards.subject}/annotation/AnnotationInput.candl {wildcards.subject}/annotation/AnnotationInput.tcc {wildcards.subject}/annotation/AnnotationInput.mcg {wildcards.subject}/annotation/AnnotationInput.civic {wildcards.subject}/annotation/AnnotationInput.anno.pcg {wildcards.subject}/annotation/AnnotationInput.clinvar {wildcards.subject}/annotation/AnnotationInput {wildcards.subject}/annotation/allSites
@@ -1242,9 +1241,9 @@ rule AttachAnnotation:
 rule Expressed:
 	input:
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
-		Mutation="{subject}/{TIME}/{sample}/calls/{base}.annotated.txt",
+		Mutation="{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.txt",
 		convertor = NGS_PIPELINE + "/scripts/mpileup.pl"
-	output: "{subject}/{TIME}/{sample}/calls/{base}.annotated.expressed.txt"
+	output: "{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.expressed.txt"
 	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
@@ -1262,7 +1261,7 @@ rule DBinput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
 		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl"
-	output: "{subject}/{TIME}/{subject}/db/{subject}.{group}"
+	output: "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.{group}"
 	params:
 		rulename  = "makeDBinput",
 		batch    = config[config['host']]['job_default']
@@ -1276,14 +1275,14 @@ rule DBinput:
 ############
 rule Actionable_Somatic:
 	input:
-		somatic="{subject}/{TIME}/{subject}/db/{subject}.somatic",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
+		somatic=   "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.somatic",
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
-		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 	output:
-		somatic="{subject}/{TIME}{ACT_DIR}/{subject}.somatic.actionable.txt",
+		somatic="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.somatic.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
@@ -1297,10 +1296,10 @@ rule Actionable_Somatic:
 ############
 rule Actionable_Germline:
 	input:
-		germline="{subject}/{TIME}/{subject}/db/{subject}.germline",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
+		germline  ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.germline",
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
-		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
@@ -1310,15 +1309,15 @@ rule Actionable_Germline:
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
-		germline="{subject}/{TIME}{ACT_DIR}/{subject}.germline.actionable.txt",
+		germline="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.germline.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
-	if [ -e {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
+	if [ -e {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
 	then
-		perl {input.convertor} germline {wildcards.subject}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
+		perl {input.convertor} germline {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
 	else
 		touch {input.germline}.dummy
 		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}.gl
@@ -1333,10 +1332,10 @@ rule Actionable_Germline:
 ############
 rule Actionable_RNAseq:
 	input:
-		rnaseq="{subject}/{TIME}/{subject}/db/{subject}.rnaseq",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
+		rnaseq    ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.rnaseq",
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
-		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		tsid   = config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
@@ -1346,7 +1345,7 @@ rule Actionable_RNAseq:
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
-		rnaseq="{subject}/{TIME}{ACT_DIR}/{subject}.rnaseq.actionable.txt",
+		rnaseq="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.rnaseq.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
