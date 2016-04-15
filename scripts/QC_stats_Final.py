@@ -189,7 +189,7 @@ def _ontarget(bam):
     return stats 
     
 
-print string.join(['Patient', 'sample', 'diagnosis',
+print string.join(['#Patient', 'sample', 'diagnosis',
                    'total_reads', 'mapped_reads',
                    'percent_mapped',
                    'ontarget_reads', 'percent_ontarget', 

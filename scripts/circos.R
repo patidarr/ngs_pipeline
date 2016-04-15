@@ -2,10 +2,10 @@ suppressPackageStartupMessages(library(OmicCircos))
 library(stringr)
 library(RColorBrewer)
 
-args<-commandArgs()
-DIR = str_trim(args[6])
-FILE=str_trim(args[7])
-SAM=str_trim(args[8])
+args<-commandArgs(TRUE)
+DIR = str_trim(args[1])
+FILE=str_trim(args[2])
+SAM=str_trim(args[3])
 
 files <- list.files(path = DIR, pattern=".loh$")
 
@@ -19,7 +19,7 @@ options(stringsAsFactors = FALSE);
 set.seed(1234);
 png(FILE ,width = 1000, height = 1000, res=100, points=12);
 par(mar=c(2, 2, 2, 2));
-plot(c(1,800), c(1,800), type="n", axes=FALSE, xlab="", ylab="", main="");
+plot(c(1,800), c(1,800), type="n", axes=FALSE, xlab="", ylab="", main="", type=c("cairo"));
 
 circos(R=400, cir="hg19", type="chr", mapping=UCSC.hg19.chr,print.chr.lab=TRUE, W=10, lwd=5, cex=1.5);
 

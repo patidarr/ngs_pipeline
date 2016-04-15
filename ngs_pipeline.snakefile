@@ -24,7 +24,7 @@ config['host'] = HOST
 ###########################################################################
 #
 #		This initializes all the variables we need for the jobs.
-#		It also removes the host specific contraints like scratch
+#		It also removes the host specific constraints like scratch
 #		area on the node.
 #		module purge is needed to remove all the loaded modules and
 #			inside the rule load what is necessary.
@@ -48,6 +48,7 @@ elif [ {HOST} == 'login01' ]
 		THREADS=${{PBS_NUM_PPN}}
 fi
 """)
+
 ###########################################################################
 #
 #			Conversion
@@ -179,14 +180,10 @@ for sample in config['sample_references'].keys():
 		  (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
 	)
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".copyNumber.v1.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.v1.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v1.annotated.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v1.filtered.txt"]
-        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".copyNumber.v2.txt"]
-        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.v2.txt"]
-        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v2.annotated.txt"]
-        COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.v2.filtered.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".copyNumber.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.annotated.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.filtered.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -250,7 +247,8 @@ rule Khanlab_Pipeline:
 		COPY_NUMBER,
 		ALL_VCFs,
 		"rnaseqDone",
-		"QC_AllSamples.txt",
+		CON_QC,
+#		"QC_AllSamples.txt",
 		"Consolidated_QC.txt",
 		ALL_QC,
 		ALL_FASTQC,
@@ -350,6 +348,8 @@ rule NOVOALIGN:
 		echo "Running on {HOST}"
 		`cat /cm/local/apps/torque/var/spool/aux/${{PBS_JOBID}} | sort | uniq > ${{LOCAL}}/hosts.txt`
 		mpiexec -f ${{LOCAL}}/hosts.txt -np 3 novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo
+	else 
+		novoalign -c ${{THREADS}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo
 	fi
 #	novoalign -c ${{THREADS}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo
 	samtools index {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo.bam
@@ -385,6 +385,8 @@ rule GENOTYPING:
 		cp -f {output.gt} {params.dest}{wildcards.sample}.gt
 	elif [ {HOST} == 'login01' ]; then
 		ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}{wildcards.sample}.gt"
+	else
+		echo "Only subject level genotyping will be performed"
 	fi
 	perl {input.vcf2loh} {output.vcf} >{output.loh}
 	#######################
@@ -567,7 +569,7 @@ rule CN_LRR:
 	#######################
 	"""
 ############
-#       Somatic Copy Number LRR Corrected
+#       Somatic Copy Number LRR (Median Corrected)
 ############
 rule CN_LRR1:
 	input:
@@ -578,10 +580,10 @@ rule CN_LRR1:
 		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
-		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.v2.txt",
-		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.v2.txt",
-		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v2.annotated.txt",
-		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v2.filtered.txt"
+		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
+		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.txt",
+		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.annotated.txt",
+		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.filtered.txt"
 	params:
 		rulename = "LRR",
 		batch    = config[config['host']]["job_default"],
@@ -616,7 +618,7 @@ rule CN_LRR1:
 	max=`echo "${{median}}+(2.5*${{MAD}})"|bc`
 
 	perl {input.filter} filter {output.out}.corrected ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
-	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.v2.txt
+	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.txt
 	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
 
 	head -1 {output.final} >{output.filtered}

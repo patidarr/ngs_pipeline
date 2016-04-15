@@ -1,10 +1,10 @@
 library(stringr)
 library(RColorBrewer)
 
-args<-commandArgs()
-DIR = str_trim(args[6])
-FILE=str_trim(args[7])
-SAM=str_trim(args[8])
+args<-commandArgs(TRUE)
+DIR = str_trim(args[1])
+FILE=str_trim(args[2])
+SAM=str_trim(args[3])
 
 files <- list.files(path = DIR, pattern=".hotspot.depth$")
 
@@ -22,7 +22,7 @@ for (i in 1:length(files)){
 }
 ##
 
-png(FILE,width = 1000, height = 1000, res=100);
+png(FILE,width = 1000, height = 1000, res=100, type=c("cairo"));
 par(mar = c(18, 5, 4, 2) + 0.1)
 plot(10,10,  xlim=c(1,length(files)+1), ylim=c(0,y_max+1), xaxt='n', yaxt="n", xlab='', ylab='Coverage', main=paste(SAM, "Hotspot Coverage", sep="\n"))
 

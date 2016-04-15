@@ -1,11 +1,8 @@
 library(stringr)
-args<-commandArgs()
-print(args[6])
-print(args[7])
-print(args[8])
-DIR = str_trim(args[6])
-FILE=str_trim(args[7])
-SAM=str_trim(args[8])
+args<-commandArgs(TRUE)
+DIR = str_trim(args[1])
+FILE=str_trim(args[2])
+SAM=str_trim(args[3])
 
 
 files <- list.files(path = DIR, pattern="coverage.txt$")
@@ -22,7 +19,7 @@ library(RColorBrewer)
 cols <- brewer.pal(length(cov)+1, "Dark2")
 
 # Save the graph to a file
-png(FILE, h=1000, w=1000, pointsize=10)
+png(FILE, h=1000, w=1000, pointsize=10, type=c("cairo"))
 
 # Create plot area, but do not plot anything. Add gridlines and axis labels.
 par(las=2)

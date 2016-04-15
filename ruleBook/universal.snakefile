@@ -16,6 +16,6 @@ rule BAM2TDF:
 	#######################
 	module load igvtools/{version}
 
-	igvtools count {input.bam} {output} {params.ref}
+	igvtools count {input.bam} {output} {params.ref} >/dev/null 2>&1
 	#######################
 	"""
