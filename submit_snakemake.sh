@@ -22,7 +22,7 @@ if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	module load python/3.4.3
 	module load snakemake
-	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline-dev"
+	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
 	export WORK_DIR="/projects/Clinomics/Test_Run2/"
 	export DATA_DIR="/projects/Clinomics/DATA/"
 	export ACT_DIR="/Actionable/"
