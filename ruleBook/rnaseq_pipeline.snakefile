@@ -69,8 +69,6 @@ rule RNASeq:
 		EXPRESSION,
 		RNA_CALLS,
 		expand("{subject}"+ACT_DIR+"{subject}.fusion.actionable.txt", subject=config['RNASeq']),
-		expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=config['RNASeq']),
-		expand("{subject}/qc/{subject}.circos.png", subject=config['RNASeq']),
 	output: temp("rnaseqDone")
 	params:
 		rulename  = "RNASeq_final",

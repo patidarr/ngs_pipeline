@@ -124,7 +124,7 @@ ALL_QC	   += ["{subject}/qc/{sample}.consolidated_QC".format(subject=SAMPLE_TO_S
 ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/qc/{subject}.circos.png", subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=PATIENTS)
 ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/igv/session_{subject}.xml", subject=PATIENTS)
@@ -731,16 +731,16 @@ rule Circos:
 		lohFiles=lambda wildcards: SUB_LOH[wildcards.subject],
 		circos =NGS_PIPELINE + "/scripts/circos.R"
 	output:
-		"{subject}/qc/{subject}.circos.png",
+		"{subject}/{TIME}/qc/{subject}.circos.png",
 	version: config["R"]
 	params:
 		rulename = "Circos",
 		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
-	cp -f {input.lohFiles} {wildcards.subject}/qc/
+	cp -f {input.lohFiles} ${{LOCAL}}
 	module load R
-	xvfb-run R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.circos}
+	xvfb-run R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.circos}
 	#######################
 	"""
 ############
