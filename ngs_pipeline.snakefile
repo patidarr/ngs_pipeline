@@ -187,9 +187,9 @@ for sample in config['sample_references'].keys():
         COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".hq.v2.txt"]
         COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v2.annotated.txt"]
         COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".CN.v2.filtered.txt"]
-	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
-	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
-	SOMATIC +=[subject+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
+	SOMATIC +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
+	SOMATIC +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
+	SOMATIC +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
 	if subject in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject].extend(local)
 
@@ -208,8 +208,8 @@ if len(config['sample_RNASeq']) > 0:
 			subject=SAMPLE_TO_SUBJECT[Tumor]
 			RNASeqBam    = subject + "/"+TIME+ "/" + RNASample + "/"+RNASample+".star.final.bam"
 			expressedPairs[Tumor] = RNASeqBam
-			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
-			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
+			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
 
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
