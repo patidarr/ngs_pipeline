@@ -5,26 +5,21 @@
 # Author: Rajesh Patidar
 # 
 # Usually slurm can translate the PBS varibles so no need to initialize the following sbatch vars.
-#
-##SBATCH --job-name="KhanLab"
-##SBATCH --mail-type=FAIL
-##SBATCH --cpus-per-task=1
-##SBATCH --mem=1g
-##SBATCH --gres=lscratch:01
-#
-export TIME=$(date +"%Y%m%d")
-#TIME=$(date +"%Y%m%d_%H")
+export TIME="20160415"
+#export TIME=$(date +"%Y%m%d")
+#export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module use /data/khanlab/apps/Modules
 	module load python/3.4.3
-	export NGS_PIPELINE="/gpfs/gsfs4/users/khanlab/projects/patidar/ngs_pipeline/"
-	export WORK_DIR="/gpfs/gsfs4/users/khanlab/projects/patidar/ngs_pipeline/test"
-	export DATA_DIR="/data/khanlab/projects/DATA/"
+	export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline/"
+	export WORK_DIR="/data/khanlab/projects/patidar/ngs_pipeline/test"
+	export DATA_DIR="/data/khanlab/projects/patidar/ngs_pipeline/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="biowulf.nih.gov"
 	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
-	SAM_CONFIG=/gpfs/gsfs4/users/khanlab/projects/patidar/ngs_pipeline/samplesheet.json
-elif [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
+	SAM_CONFIG=$WORK_DIR/samplesheet.json
+	
+elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	module load python/3.4.3
 	module load snakemake
 	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline-dev"
@@ -36,7 +31,8 @@ elif [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	SAM_CONFIG=$WORK_DIR/samplesheet.json
 else 
 	echo -e "Host `hostname` is not recognized\n"
-	echo -e "This pipeline is customized to run on biowulf.nih.gov or TGen Cluster@ KhanLab\n";
+	echo -e "This pipeline is customized to run on biowulf.nih.gov or TGen Cluster @ KhanLab\n";
+	echo -e "If you would like to use it on another system, you have to change config/config_cluster.json and some hardcoded system dependent\n";
 	exit;
 fi
 
@@ -52,9 +48,6 @@ if [ ! -d annovar ]; then
 	mkdir annovar
 	touch annovar/AnnotationInput.final.txt
 fi
-
-
-
 cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${TIME}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
@@ -63,7 +56,6 @@ elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
 	snakemake $cmd --cluster "qsub  -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
 fi
-
 
 # Summary 
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
