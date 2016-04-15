@@ -92,15 +92,15 @@ for subject in config['subject'].keys():
 	SUBS.append(subject)
 	PATIENTS.append(subject)
 	SUB_BAMS[subject]= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_COV[subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_HOT[subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_LOH[subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_GT[subject]  = ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_COV[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.coverage.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_HOT[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_LOH[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.loh".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_GT[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_MPG[subject] = ["{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.novo.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
 ###########################################################################
@@ -112,12 +112,12 @@ for subject  in config['RNASeq'].keys():
 ###########################################################################
 ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC	   += ["{subject}/qc/{sample}.depth_per_base".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC	   += ["{subject}/qc/{sample}.failExons".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC	   += ["{subject}/qc/{sample}.failGenes".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{TIME}/{sample}/qc/BamQC/qualimapReport.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.depth_per_base".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.failExons".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.failGenes".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.hsmetrics".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -163,7 +163,7 @@ for subject in config['subject']:
 	for sample in config['subject'][subject]:
 		local.extend([(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_DNASeq.snpEff.txt"),
 			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".Platypus.snpEff.txt"),
-			      (subject+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")])
+			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
 	germline = [w.replace('snpEff','annotated') for w in local]
@@ -174,9 +174,9 @@ for sample in config['sample_references'].keys():
 	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
 	local.extend(
-		[ (subject+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
-		(subject+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
-		(subject+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
+		[ (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.snpEff.txt"),
+		  (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.snpEff.txt"),
+		  (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
 	)
 	COPY_NUMBER +=[subject+"/"+sample+"/copyNumber/"+sample+".copyNumber.v1.txt"]
@@ -206,7 +206,7 @@ if len(config['sample_RNASeq']) > 0:
 	for Tumor in config['sample_RNASeq']:
 		for RNASample in config['sample_RNASeq'][Tumor]:
 			subject=SAMPLE_TO_SUBJECT[Tumor]
-			RNASeqBam    = subject + "/" + RNASample + "/"+RNASample+".star.final.bam"
+			RNASeqBam    = subject + "/"+TIME+ "/" + RNASample + "/"+RNASample+".star.final.bam"
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
@@ -219,8 +219,8 @@ DBFiles =[]
 ActionableFiles =[]
 for subject in SUBJECT_ANNO.keys():
 	for group in SUBJECT_ANNO[subject].keys():
-		DBFiles +=[subject+"/"+subject+"/db/"+subject+"."+group]
-		ActionableFiles +=[subject+ACT_DIR+subject+"."+group+".actionable.txt"]
+		DBFiles +=[subject+"/"+TIME+"/"+subject+"/db/"+subject+"."+group]
+		ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+"."+group+".actionable.txt"]
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
@@ -277,8 +277,7 @@ rule Khanlab_Pipeline:
 #	FASTQC
 ############
 rule FASTQC:
-	input:
-		R=lambda wildcards: FQ[wildcards.sample]
+	input: R=lambda wildcards: FQ[wildcards.sample]
 	output:
 		"{base}/{TIME}/{sample}/qc/fastqc/{sample}_R1_fastqc.html",
 		"{base}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html"
@@ -300,10 +299,7 @@ rule FASTQC:
 #       BWA
 ############
 rule BWA:
-	input:
-		R=lambda wildcards: FQ[wildcards.sample],
-		#R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-		#R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+	input: R=lambda wildcards: FQ[wildcards.sample],
 		ref=config["bwaIndex"]
 	output:
 		temp("{base}/{TIME}/{sample}/{sample}.bwa.bam"),
@@ -330,14 +326,11 @@ rule BWA:
 #	Novoalign
 ############
 rule NOVOALIGN:
-	input:
-		R=lambda wildcards: FQ[wildcards.sample],
-#		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-#		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
+	input: R=lambda wildcards: FQ[wildcards.sample],
 		index=config["Novo_index"]
 	output:
-		temp("{subject}/{sample}/{sample}.novo.bam"),
-		temp("{subject}/{sample}/{sample}.novo.bam.bai")
+		temp("{subject}/{TIME}/{sample}/{sample}.novo.bam"),
+		temp("{subject}/{TIME}/{sample}/{sample}.novo.bam.bai")
 	version: config["novocraft"]
 	resources: novoalign=1
 	params:
@@ -352,14 +345,14 @@ rule NOVOALIGN:
 
 	if [ {HOST} == 'biowulf.nih.gov' ]; then
 		echo "Running on {HOST}"
-		mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
+		mpiexec  -envall -host `scontrol show hostname ${{SLURM_NODELIST}} | paste -d',' -s` -np ${{SLURM_NTASKS}} novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo
 	elif [ {HOST} == 'login01' ]; then
 		echo "Running on {HOST}"
 		`cat /cm/local/apps/torque/var/spool/aux/${{PBS_JOBID}} | sort | uniq > ${{LOCAL}}/hosts.txt`
-		mpiexec -f ${{LOCAL}}/hosts.txt -np 3 novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
+		mpiexec -f ${{LOCAL}}/hosts.txt -np 3 novoalignMPI -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo
 	fi
-#	novoalign -c ${{THREADS}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo
-	samtools index {wildcards.subject}/{wildcards.sample}/{wildcards.sample}.novo.bam
+#	novoalign -c ${{THREADS}} -F STDFQ -o SAM \"@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}\" -t 250 --hlimit 7 -p 5,2 -l 30 -e 100 -i 200 100 -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -H -d {input.index} -f {input.R[0]} {input.R[1]} | samtools view -uS - | samtools sort -m 30000000000 - {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo
+	samtools index {wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.novo.bam
 	#######################
 	"""
 ############
@@ -640,9 +633,9 @@ rule CN_LRR1:
 ############
 rule HotSpotCoverage:
 	input:
-		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
+		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam",
 		interval=config["hotspot_intervals"]
-	output: "{base}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
+	output: "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
 	version: config["bedtools"]
 	params:
 		rulename  = "HotSpotCov",
@@ -767,13 +760,13 @@ rule BoxPlot_Hotspot:
 ############
 rule Picard_MarkDup:
 	input:
-		bam="{subject}/{sample}/{sample}.{base}.bam",
-		bai="{subject}/{sample}/{sample}.{base}.bam.bai"
+		bam="{subject}/{TIME}/{sample}/{sample}.{base}.bam",
+		bai="{subject}/{TIME}/{sample}/{sample}.{base}.bam.bai"
 
 	output:
-		bam=temp("{subject}/{sample}/{sample}.{base}.dd.bam"),
-		index=temp("{subject}/{sample}/{sample}.{base}.dd.bam.bai"),
-		metrics="{subject}/{sample}/qc/{base}.markdup.txt"
+		bam=temp("{subject}/{TIME}/{sample}/{sample}.{base}.dd.bam"),
+		index=temp("{subject}/{TIME}/{sample}/{sample}.{base}.dd.bam.bai"),
+		metrics="{subject}/{TIME}/{sample}/qc/{base}.markdup.txt"
 	version: config["picard"]
 	params:
 		rulename  = "mark_dup",
@@ -792,11 +785,11 @@ rule Picard_MarkDup:
 ############
 rule CopyNovoBam:
 	input:
-		bam="{base}/{sample}/{sample}.novo.dd.bam",
-		bai="{base}/{sample}/{sample}.novo.dd.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.novo.dd.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.novo.dd.bam.bai",
 	output:
-		bam="{base}/{sample}/{sample}.novo.final.bam",
-		bai="{base}/{sample}/{sample}.novo.final.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.novo.final.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.novo.final.bam.bai",
 	params:
 		rulename = "copy",
 		batch    = config[config['host']]['job_default']
@@ -839,13 +832,13 @@ rule GATK:
 ############
 rule Bam2MPG:
 	input:
-		bam="{subject}/{sample}/{sample}.novo.final.bam",
-		bai="{subject}/{sample}/{sample}.novo.final.bam.bai",
+		bam="{subject}/{TIME}/{sample}/{sample}.novo.final.bam",
+		bai="{subject}/{TIME}/{sample}/{sample}.novo.final.bam.bai",
 		ref=config["reference"],
 		interval=config["coding_bed"]
 	output:
-		snps="{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
-		vcf="{subject}/{sample}/calls/{sample}.bam2mpg.raw.vcf"
+		snps="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
+		vcf="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.raw.vcf"
 	version: config["bam2mpg"]
 	params:
 		rulename  = "bam2mpg",
@@ -926,9 +919,9 @@ rule MuTect:
 		cosmic=config["cosmic"],
 		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]],
 	output:
-		vcf="{subject}/{Tumor}/calls/{Tumor}.MuTect.raw.vcf",
-		call_stats="{subject}/{Tumor}/qc/{Tumor}.mutect.call_stats.txt",
-		coverage="{subject}/{Tumor}/qc/{Tumor}.mutect.coverage.wig.txt"
+		vcf="{subject}/{TIME}/{Tumor}/calls/{Tumor}.MuTect.raw.vcf",
+		call_stats="{subject}/{TIME}/{Tumor}/qc/{Tumor}.mutect.call_stats.txt",
+		coverage="{subject}/{TIME}/{Tumor}/qc/{Tumor}.mutect.coverage.wig.txt"
 	version: config["MuTect"]
 	params:
 		rulename = "MuTect",
@@ -1044,11 +1037,11 @@ rule Sub_Platypus:
 ############
 rule SNPEff:
 	input:
-		vcf="{subject}/calls/{base}.raw.vcf",
+		vcf="{subject}/{TIME}/calls/{base}.raw.vcf",
 		ref=config["reference"],
 		snpEff_config=config["snpEff_config"],
 	output:
-		eff="{subject}/calls/{base}.raw.snpEff.vcf"
+		eff="{subject}/{TIME}/calls/{base}.raw.snpEff.vcf"
 	version: config["snpEff"]
 	params:
 		rulename      ="snpEff",
@@ -1066,10 +1059,10 @@ rule SNPEff:
 ############
 rule VCF2TXT:
 	input:
-		eff="{subject}/calls/{base}.raw.snpEff.vcf",
+		eff="{subject}/{TIME}/calls/{base}.raw.snpEff.vcf",
 		vcf2txt=NGS_PIPELINE + "/scripts/vcf2txt.pl"
 	output:
-		txt="{subject}/calls/{base}.snpEff.txt"
+		txt="{subject}/{TIME}/calls/{base}.snpEff.txt"
 	params:
 		rulename      ="vcf2txt",
 		batch         =config[config['host']]["job_default"],
@@ -1229,11 +1222,11 @@ rule CombineAnnotation:
 ############
 rule AttachAnnotation:
 	input:
-		txt="{subject}/{base1}/calls/{base}.snpEff.txt",
+		txt="{subject}/{TIME}/{base1}/calls/{base}.snpEff.txt",
 		ref="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		convertor  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl"
 	output:
-		txt="{subject}/{base1}/calls/{base}.annotated.txt"
+		txt="{subject}/{TIME}/{base1}/calls/{base}.annotated.txt"
 	version: "1.0"
 	params:
 		rulename   = "add",
@@ -1249,9 +1242,9 @@ rule AttachAnnotation:
 rule Expressed:
 	input:
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
-		Mutation="{subject}/{sample}/calls/{base}.annotated.txt",
+		Mutation="{subject}/{TIME}/{sample}/calls/{base}.annotated.txt",
 		convertor = NGS_PIPELINE + "/scripts/mpileup.pl"
-	output: "{subject}/{sample}/calls/{base}.annotated.expressed.txt"
+	output: "{subject}/{TIME}/{sample}/calls/{base}.annotated.expressed.txt"
 	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
@@ -1269,7 +1262,7 @@ rule DBinput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
 		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl"
-	output: "{subject}/{subject}/db/{subject}.{group}"
+	output: "{subject}/{TIME}/{subject}/db/{subject}.{group}"
 	params:
 		rulename  = "makeDBinput",
 		batch    = config[config['host']]['job_default']
@@ -1283,14 +1276,14 @@ rule DBinput:
 ############
 rule Actionable_Somatic:
 	input:
-		somatic="{subject}/{subject}/db/{subject}.somatic",
+		somatic="{subject}/{TIME}/{subject}/db/{subject}.somatic",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 	output:
-		somatic="{subject}/{ACT_DIR}/{subject}.somatic.actionable.txt",
+		somatic="{subject}/{TIME}{ACT_DIR}/{subject}.somatic.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
@@ -1304,7 +1297,7 @@ rule Actionable_Somatic:
 ############
 rule Actionable_Germline:
 	input:
-		germline="{subject}/{subject}/db/{subject}.germline",
+		germline="{subject}/{TIME}/{subject}/db/{subject}.germline",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
@@ -1317,7 +1310,7 @@ rule Actionable_Germline:
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
-		germline="{subject}/{ACT_DIR}/{subject}.germline.actionable.txt",
+		germline="{subject}/{TIME}{ACT_DIR}/{subject}.germline.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
@@ -1340,7 +1333,7 @@ rule Actionable_Germline:
 ############
 rule Actionable_RNAseq:
 	input:
-		rnaseq="{subject}/{subject}/db/{subject}.rnaseq",
+		rnaseq="{subject}/{TIME}/{subject}/db/{subject}.rnaseq",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
@@ -1353,7 +1346,7 @@ rule Actionable_RNAseq:
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
-		rnaseq="{subject}/{ACT_DIR}/{subject}.rnaseq.actionable.txt",
+		rnaseq="{subject}/{TIME}{ACT_DIR}/{subject}.rnaseq.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']

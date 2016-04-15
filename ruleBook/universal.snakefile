@@ -3,10 +3,10 @@
 ############
 rule BAM2TDF:
 	input:
-		bam="{base}/{sample}/{sample}.{aligner}.final.bam",
-		bam_bai="{base}/{sample}/{sample}.{aligner}.final.bam.bai"
+		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam",
+		bam_bai="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam.bai"
 	output:
-		"{base}/{sample}/{sample}.{aligner}.final.bam.tdf"
+		"{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam.tdf"
 	version: config['igvtools']
 	params:
 		rulename        = "bamtdf",

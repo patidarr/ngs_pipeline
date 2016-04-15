@@ -12,54 +12,54 @@ for subject,samples in config['RNASeq'].items():
 	for sample in samples:
 		SUB2RNA[sample]=subject
 for subject  in config['RNASeq'].keys():
-	DBFiles         +=[subject+"/"+subject+"/db/"+subject+".rnaseq"]
+	DBFiles         +=[subject+"/"+TIME+"/"+subject+"/db/"+subject+".rnaseq"]
 	ActionableFiles +=[subject+ACT_DIR+subject+".fusion.actionable.txt"]
 	ActionableFiles +=[subject+ACT_DIR+subject+".rnaseq.actionable.txt"]
 	for sample in config['RNASeq'][subject]:
-		RNASEQ_BAM += [subject+"/"+sample+"/"+sample+".star.final.bam"]
+		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
 		RNASEQ_BAM += [subject+"/"+sample+"/"+sample+".tophat.final.bam"]
 		ALL_FASTQC += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/tophat-fusion.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
-		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
-		ALL_QC      += [subject+"/"+sample+"/qc/"+sample+".star.gt"]
-		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
+		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
+		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
+		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
 		EXPRESSION += [subject+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
 		EXPRESSION += [subject+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]
 		for gtf in config['GTF']:
 			EXPRESSION += [subject+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-	RNA_CALLS  += ["{subject}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	RNA_CALLS  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{sample}/fusion/{sample}.actionable.fusion.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUBJECT_VCFS:
-		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUBJECT_VCFS[subject] += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUBJECT_VCFS[subject] = []
-		SUBJECT_VCFS[subject] += ["{subject}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUBJECT_VCFS[subject] += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUB_HOT:
-		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_HOT[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.hotspot.depth".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_LOH[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.loh".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_COV[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.coverage.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_GT[subject]  += ["{subject}/{TIME}/{sample}/qc/{sample}.star.gt".format(TIME=TIME,subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUB_HOT[subject] = []
 		SUB_LOH[subject] = []
 		SUB_COV[subject] = []
 		SUB_GT[subject]  = []
 		SUB_IGV[subject] = []
-		SUB_HOT[subject] += ["{subject}/{sample}/qc/{sample}.star.hotspot.depth".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_LOH[subject] += ["{subject}/{sample}/qc/{sample}.star.loh".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_COV[subject] += ["{subject}/{sample}/qc/{sample}.star.coverage.txt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_GT[subject]  += ["{subject}/{sample}/qc/{sample}.star.gt".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.star.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{sample}/{sample}.tophat.final.bam.tdf".format(subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_HOT[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.hotspot.depth".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_LOH[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.loh".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_COV[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.coverage.txt".format(TIME=TIME,subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_GT[subject]  += ["{subject}/{TIME}/{sample}/qc/{sample}.star.gt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############
@@ -369,14 +369,14 @@ rule STAR:
 #       GATK Best Practices
 ############
 rule GATK_RNASeq:
-	input:  bam="{base}/{sample}/{sample}.star.dd.bam",
-		bai="{base}/{sample}/{sample}.star.dd.bam.bai",
+	input:  bam="{base}/{TIME}/{sample}/{sample}.star.dd.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.star.dd.bam.bai",
 		ref=config["reference"],
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
 	output:
-		bam="{base}/{sample}/{sample}.star.final.bam",
-		index="{base}/{sample}/{sample}.star.final.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.star.final.bam",
+		index="{base}/{TIME}/{sample}/{sample}.star.final.bam.bai",
 	version: config["GATK"]
 	params:
 		rulename  = "gatk",
@@ -394,7 +394,7 @@ rule GATK_RNASeq:
 
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 
-	mv {wildcards.base}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
 	######################
 	"""
 ############
@@ -402,12 +402,12 @@ rule GATK_RNASeq:
 ############
 rule HapCall_RNASeq:
 	input:
-		bam="{base}/{sample}/{sample}.star.final.bam",
-		bai="{base}/{sample}/{sample}.star.final.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.star.final.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.star.final.bam.bai",
 		ref=config["reference"],
 		dbsnp=config["dbsnp"]
 	output:
-		vcf="{base}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf"
+		vcf="{base}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf"
 	version: config["GATK"]
 	params:
 		rulename = "HC",
@@ -424,11 +424,11 @@ rule HapCall_RNASeq:
 ############
 rule CoveragE:
 	input:
-		bam="{subject}/{sample}/{sample}.star.final.bam",
-		bai="{subject}/{sample}/{sample}.star.final.bam.bai",
+		bam="{subject}/{TIME}/{sample}/{sample}.star.final.bam",
+		bai="{subject}/{TIME}/{sample}/{sample}.star.final.bam.bai",
 		interval=config["refSeq_bed"]
 	output:
-		"{subject}/{sample}/qc/{sample}.star.coverage.txt"
+		"{subject}/{TIME}/{sample}/qc/{sample}.star.coverage.txt"
 	version: config["bedtools"]
 	params:
 		rulename = "coverage",
