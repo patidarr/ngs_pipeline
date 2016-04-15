@@ -123,7 +123,7 @@ ALL_QC	   += ["{subject}/qc/{sample}.hsmetrics".format(subject=SAMPLE_TO_SUBJECT
 ALL_QC	   += ["{subject}/qc/{sample}.consolidated_QC".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
-ALL_QC     += expand("{subject}/qc/{subject}.coveragePlot.png", subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.circos.png", subject=PATIENTS)
 ALL_QC     += expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=PATIENTS)
 ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
@@ -683,7 +683,7 @@ rule CoveragePlot:
 	input:
 		covFiles=lambda wildcards: SUB_COV[wildcards.subject],
 		coverage =NGS_PIPELINE + "/scripts/coverage.R"
-	output: "{subject}/qc/{subject}.coveragePlot.png",
+	output: "{subject}/{TIME}/qc/{subject}.coveragePlot.png",
 	version: config["R"]
 	params:
 		rulename = "covplot",
@@ -691,10 +691,10 @@ rule CoveragePlot:
 	shell: """
 	#######################
 
-	cp -f {input.covFiles} {wildcards.subject}/qc/
+	cp -f {input.covFiles} ${{LOCAL}}
 
 	module load R
-	xvfb-run R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.coverage}
+	xvfb-run R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.coverage}
 	#######################
 	"""
 ############
