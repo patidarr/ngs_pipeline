@@ -1,9 +1,5 @@
 {
   "subject": {
-    "CL0035": [
-      "CL0035_T1D_E",
-      "CL0035_T1D_P"
-    ],
     "NCI0291": [
       "NCI0291_B_E",
       "NCI0291_B_P",
@@ -12,12 +8,6 @@
     ]
   },
   "library": {
-    "CL0035_T1D_E": [
-      "Sample_CL0035_T1D_E_HWJW5BGXX"
-    ],
-    "CL0035_T1D_P": [
-      "Sample_CL0035_T1D_P_HWJW5BGXX"
-    ],
     "NCI0291_B_E": [
       "Sample_NCI0291_B_E_HH3CWBGXX"
     ],
@@ -29,15 +19,6 @@
     ],
     "NCI0291_T_P": [
       "Sample_NCI0291_T_P_HWHT3BGXX"
-    ],
-    "CL0035_T1R_T": [
-      "Sample_CL0035_T1R_T_HWHT3BGXX"
-    ],
-    "CL0035_T1R_T": [
-      "Sample_CL0035_T1R_T_HWJW5BGXX"
-    ],
-    "CL0035_T2R_T": [
-      "Sample_CL0035_T2R_T_HWJW5BGXX"
     ],
     "NCI0291_T_T": [
       "Sample_NCI0291_T_T_HWJW5BGXX"
@@ -52,16 +33,12 @@
     ]
   },
   "sample_type": {
-    "CL0035_T1D_E": "Normal",
-    "CL0035_T1D_P": "Tumor",
     "NCI0291_B_E": "Normal",
     "NCI0291_T_E": "Tumor",
     "NCI0291_B_P": "Normal",
     "NCI0291_T_P": "Tumor"
   },
   "sample_captures": {
-    "CL0035_T1D_P": "clin.snv.v1",
-    "CL0035_T1D_E": "clin.ex.v1",
     "NCI0291_B_E": "clin.ex.v1",
     "NCI0291_B_P": "clin.snv.v1",
     "NCI0291_T_E": "clin.ex.v1",
@@ -76,21 +53,11 @@
     ]
   },
   "RNASeq": {
-    "CL0035": [
-      "CL0035_T1R_T",
-      "CL0035_T1R_T",
-      "CL0035_T2R_T"
-    ],
     "NCI0291": [
       "NCI0291_T_T"
     ]
   },
   "Diagnosis": {
-    "CL0035_T1D_E": "ALL",
-    "CL0035_T1D_P": "ALL",
-    "CL0035_T1R_T": "ALL",
-    "CL0035_T1R_T": "ALL",
-    "CL0035_T2R_T": "ALL",
     "NCI0291_B_E": "Glioblastoma",
     "NCI0291_B_P": "Glioblastoma",
     "NCI0291_T_E": "Glioblastoma",

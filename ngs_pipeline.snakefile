@@ -11,7 +11,8 @@ WORK_DIR=os.environ['WORK_DIR']
 DATA_DIR=os.environ['DATA_DIR']
 ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
-
+TIME=os.environ['TIME']
+print(TIME)
 if HOST == 'biowulf.nih.gov':
 	configfile: NGS_PIPELINE +"/config/config_common_biowulf.json"
 	configfile: NGS_PIPELINE +"/config/config_cluster.json"
@@ -98,9 +99,9 @@ for subject in config['subject'].keys():
 	SUB_GT[subject]  = ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject] += ["{subject}/{sample}/{sample}.bwa.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject] += ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject] += ["{subject}/{sample}/{sample}.novo.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.bwa.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.novo.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
 ###########################################################################
@@ -110,7 +111,7 @@ for subject  in config['RNASeq'].keys():
         if subject not in PATIENTS:
                 PATIENTS.append(subject)
 ###########################################################################
-ALL_FASTQC  = ["{subject}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{sample}/qc/{sample}.bwa.flagstat.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -279,11 +280,9 @@ rule Khanlab_Pipeline:
 rule FASTQC:
 	input:
 		R=lambda wildcards: FQ[wildcards.sample]
-#		R1=DATA_DIR + "/{sample}/{sample}_R1.fastq.gz",
-#		R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz"
 	output:
-		"{base}/{sample}/qc/fastqc/{sample}_R1_fastqc.html",
-		"{base}/{sample}/qc/fastqc/{sample}_R2_fastqc.html"
+		"{base}/{TIME}/{sample}/qc/fastqc/{sample}_R1_fastqc.html",
+		"{base}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html"
 	version: config["fastqc"]
 	params:
 		rulename  = "fastqc",
@@ -294,8 +293,8 @@ rule FASTQC:
 	ln -sf {input.R[0]} ${{LOCAL}}/{wildcards.sample}_R1.fastq.gz
 	ln -sf {input.R[1]} ${{LOCAL}}/{wildcards.sample}_R2.fastq.gz
 
-	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} ${{LOCAL}}/{sample}_R1.fastq.gz
-	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} ${{LOCAL}}/{sample}_R2.fastq.gz
+	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} ${{LOCAL}}/{wildcards.sample}_R1.fastq.gz
+	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} ${{LOCAL}}/{wildcards.sample}_R2.fastq.gz
 	#######################
 	"""
 ############

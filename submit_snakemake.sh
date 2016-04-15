@@ -12,18 +12,18 @@
 ##SBATCH --mem=1g
 ##SBATCH --gres=lscratch:01
 #
-#NOW=$(date +"%H%M%S_%m%d%Y")
-NOW=$(date +"%Y%m%d_%H")
+TIME=$(date +"%Y_%m_%d")
+#TIME=$(date +"%Y%m%d_%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module use /data/khanlab/apps/Modules
 	module load python/3.4.3
-	export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline-dev"
-	export WORK_DIR="/data/khanlab/projects/patidar/Test_Run2/"
-	export DATA_DIR="/data/khanlab/projects/DATA"
+	export NGS_PIPELINE="/gpfs/gsfs4/users/khanlab/projects/patidar/ngs_pipeline/"
+	export WORK_DIR="/gpfs/gsfs4/users/khanlab/projects/patidar/ngs_pipeline/test"
+	export DATA_DIR="/data/khanlab/projects/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="biowulf.nih.gov"
 	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
-	SAM_CONFIG=$WORK_DIR/samplesheet.json
+	SAM_CONFIG=/gpfs/gsfs4/users/khanlab/projects/patidar/ngs_pipeline/samplesheet.json
 elif [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	module load python/3.4.3
 	module load snakemake
@@ -55,13 +55,13 @@ fi
 
 
 
-cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${NOW}.stats"
+cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${TIME}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
-	snakemake $cmd --cluster "sbatch --mail-type=FAIL -o log/{params.rulename}.%j.o {params.batch}" >& ngs_pipeline_${NOW}.log
+	snakemake $cmd --cluster "sbatch --mail-type=FAIL -o log/{params.rulename}.%j.o {params.batch}" >& ngs_pipeline_${TIME}.log
 elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
-	snakemake $cmd --cluster "qsub  -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
+	snakemake $cmd --cluster "qsub  -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
 fi
 
 

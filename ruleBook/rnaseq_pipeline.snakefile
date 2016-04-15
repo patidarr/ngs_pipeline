@@ -18,7 +18,7 @@ for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
 		RNASEQ_BAM += [subject+"/"+sample+"/"+sample+".star.final.bam"]
 		RNASEQ_BAM += [subject+"/"+sample+"/"+sample+".tophat.final.bam"]
-		ALL_FASTQC += [subject+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+		ALL_FASTQC += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/tophat-fusion.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/fusion-catcher.txt"]
 		RNASEQ_FUSION += [subject+"/"+sample+"/fusion/defuse.filtered.txt"]
