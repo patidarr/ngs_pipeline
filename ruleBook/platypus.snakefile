@@ -1,11 +1,11 @@
 rule PLATYPUS:
 	input:
-		bam="{subject}/{sample}/{sample}.bwa.final.bam",
+		bam="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam",
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		interval=config["coding_bed"]
 	output:
-		vcf="{subject}/{sample}/calls/{sample}.Platypus.raw.vcf"
+		vcf="{subject}/{TIME}/{sample}/calls/{sample}.Platypus.raw.vcf"
 	version: config["platypus"]
 	log: "log/platypus.{subject}"
 	params:

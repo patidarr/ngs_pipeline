@@ -3,10 +3,10 @@
 ############
 rule ReadDepth:
 	input:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		bai="{base}/{sample}/{sample}.bwa.final.bam.bai"
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.bwa.final.bam.bai"
 	output:
-		"{base}/qc/{sample}.depth_per_base"
+		"{base}/{TIME}/{sample}/qc/{sample}.depth_per_base"
 	version: config['bedtools']
 	params:
 		rulename	= "readDepth",

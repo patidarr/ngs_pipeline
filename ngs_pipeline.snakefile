@@ -12,7 +12,6 @@ DATA_DIR=os.environ['DATA_DIR']
 ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
 TIME=os.environ['TIME']
-print(TIME)
 if HOST == 'biowulf.nih.gov':
 	configfile: NGS_PIPELINE +"/config/config_common_biowulf.json"
 	configfile: NGS_PIPELINE +"/config/config_cluster.json"
@@ -92,14 +91,14 @@ for sample in config['library'].keys():
 for subject in config['subject'].keys():
 	SUBS.append(subject)
 	PATIENTS.append(subject)
-	SUB_BAMS[subject]= ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_BAMS[subject]= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_COV[subject] = ["{subject}/{sample}/qc/{sample}.bwa.coverage.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_HOT[subject] = ["{subject}/{sample}/qc/{sample}.bwa.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_LOH[subject] = ["{subject}/{sample}/qc/{sample}.bwa.loh".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_GT[subject]  = ["{subject}/{sample}/qc/{sample}.bwa.gt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_MPG[subject] = ["{subject}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject] = ["{subject}/{sample}/{sample}.bwa.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.bwa.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.novo.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject]+= ["{subject}/{sample}/{sample}.novo.final.bam.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
@@ -120,7 +119,7 @@ ALL_QC	   += ["{subject}/qc/{sample}.depth_per_base".format(subject=SAMPLE_TO_SU
 ALL_QC	   += ["{subject}/qc/{sample}.failExons".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.failGenes".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC	   += ["{subject}/qc/{sample}.consolidated_QC".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
@@ -131,9 +130,9 @@ ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, su
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
-			TumorBam   = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
+			TumorBam   = "{subject}/{TIME}/{sample}/{sample}.bwa.final".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
 			TumorCopy  = "{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
-			NormalBam  = "{subject}/{sample}/{sample}.bwa.final".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+			NormalBam  = "{subject}/{TIME}/{sample}/{sample}.bwa.final".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			NormalCopy = "{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
@@ -162,8 +161,8 @@ SOMATIC =[]
 for subject in config['subject']:
 	local  = []
 	for sample in config['subject'][subject]:
-		local.extend([(subject+"/"+sample+"/calls/"+sample+".HC_DNASeq.snpEff.txt"),
-			      (subject+"/"+sample+"/calls/"+sample+".Platypus.snpEff.txt"),
+		local.extend([(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_DNASeq.snpEff.txt"),
+			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".Platypus.snpEff.txt"),
 			      (subject+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
@@ -307,8 +306,8 @@ rule BWA:
 		#R2=DATA_DIR + "/{sample}/{sample}_R2.fastq.gz",
 		ref=config["bwaIndex"]
 	output:
-		temp("{base}/{sample}/{sample}.bwa.bam"),
-		temp("{base}/{sample}/{sample}.bwa.bam.bai")
+		temp("{base}/{TIME}/{sample}/{sample}.bwa.bam"),
+		temp("{base}/{TIME}/{sample}/{sample}.bwa.bam.bai")
 	version: config["bwa"]
 	params:
 		rulename  = "bwa",
@@ -323,8 +322,8 @@ rule BWA:
 	-t ${{THREADS}}\
 	-R '@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}' \
 	{input.ref} {input.R[0]} {input.R[1]} | samtools view -Sbh - \
-	| samtools sort -m 30000000000 - {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa
-	samtools index {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.bam
+	| samtools sort -m 30000000000 - {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bwa
+	samtools index {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bwa.bam
 	#######################
 	"""
 ############
@@ -369,15 +368,15 @@ rule NOVOALIGN:
 # Using Older version of samtools for this purpose
 rule GENOTYPING:
 	input:
-		bam="{base}/{sample}/{sample}.{aligner}.bam",
+		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.bam",
 		interval=config["genotypeBed"],
 		ref=config["reference"],
 		vcf2genotype=NGS_PIPELINE + "/scripts/vcf2genotype.pl",
 		vcf2loh=NGS_PIPELINE + "/scripts/vcf2loh.pl",
 	output:
-		vcf="{base}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
-		gt="{base}/{sample}/qc/{sample}.{aligner}.gt",
-		loh="{base}/{sample}/qc/{sample}.{aligner}.loh"
+		vcf="{base}/{TIME}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
+		gt="{base}/{TIME}/{sample}/qc/{sample}.{aligner}.gt",
+		loh="{base}/{TIME}/{sample}/qc/{sample}.{aligner}.loh"
 	version: config["samtools_old"]
 	params:
 		rulename  = "genotype",
@@ -443,16 +442,16 @@ rule SampleGT:
 ############
 rule BamQC:
 	input:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		bai="{base}/{sample}/{sample}.bwa.final.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.bwa.final.bam.bai",
 		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace('.bed', '.gff'),
 	output:
-		"{base}/{sample}/qc/BamQC/qualimapReport.html"
+		"{base}/{TIME}/{sample}/qc/BamQC/qualimapReport.html"
 	version: config["qualimap"]
 	params:
 		rulename = "bamqc",
 		batch	 = config[config['host']]["job_qualimap"],
-		outdir	 ="{base}/{sample}/qc/BamQC",
+		outdir	 ="{base}/{TIME}/{sample}/qc/BamQC",
 	shell: """
 	#######################
 	module load qualimap/{version}
@@ -482,7 +481,7 @@ rule QC_Sum:
 #       Samtools flagstat
 ############
 rule FLAGSTAT:
-	input:	"{base}/{sample}/{sample}.{aligner}.final.bam"
+	input:	"{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam"
 	output: "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.flagstat.txt"
 	version: config["samtools"]
 	params:
@@ -500,7 +499,7 @@ rule FLAGSTAT:
 ############
 rule CopyNumber:
 	input:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
 		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 		flagstat="{base}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt",
 		tool=NGS_PIPELINE+ "/scripts/copyNumber.sh"
@@ -661,11 +660,11 @@ rule HotSpotCoverage:
 ############
 rule Coverage:
 	input:
-		bam="{subject}/{sample}/{sample}.bwa.final.bam",
-		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
+		bam="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		bai="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.bai",
 		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 	output:
-		"{subject}/{sample}/qc/{sample}.bwa.coverage.txt"
+		"{subject}/{TIME}/{sample}/qc/{sample}.bwa.coverage.txt"
 	version: config["bedtools"]
 	params:
 		rulename = "coverage",
@@ -813,14 +812,14 @@ rule CopyNovoBam:
 #       GATK Best Practices
 ############
 rule GATK:
-	input: 	bam="{base}/{sample}/{sample}.bwa.dd.bam",
-		bai="{base}/{sample}/{sample}.bwa.dd.bam.bai",
+	input: 	bam="{base}/{TIME}/{sample}/{sample}.bwa.dd.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.bwa.dd.bam.bai",
 		ref=config["reference"],
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
 	output:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		index="{base}/{sample}/{sample}.bwa.final.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		index="{base}/{TIME}/{sample}/{sample}.bwa.final.bam.bai",
 	version: config["GATK"]
 	params:
 		rulename  = "gatk",
@@ -832,7 +831,7 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
-	mv -f {wildcards.base}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
+	mv -f {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
 	######################
 	"""
 ############
@@ -1038,31 +1037,6 @@ rule Sub_Platypus:
 	LIST=`echo {input.bams}|sed -e 's/ /,/g'`
 	platypus callVariants --nCPU=${{THREADS}} --bufferSize=1000000 --maxReads=100000000 --bamFiles=${{LIST}} --regions={input.interval} --output={output.vcf} --refFile={input.ref}  --logFileName={log}
 	sed -i 's/.bwa.final//g' {output.vcf}
-	#######################
-	"""
-############
-#       FreeBayes 	** Not in use **
-############
-rule  FreeBayes:
-	input:
-		bam="{subject}/{sample}/{sample}.bwa.final.bam",
-		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
-		ref=config["reference"],
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
-	output:
-		vcf="{subject}/{sample}/calls/{sample}.freebayes.vcf"
-	version: config["freebayes"]
-	params:
-		rulename = "freebayes",
-		batch    = config[config['host']]["job_freebayes"],
-		vcftools = config["vcftools"]
-	shell: """
-	#######################
-	module load freebayes/{version}
-	freebayes -f {input.ref} --haplotype-length 50 -b {input.bam} -v {output.vcf}
-	module load vcftools/{params.vcftools}
-	vcftools --vcf {output} --bed {input.interval} --out {output.vcf} --recode --keep-INFO-all
-	mv -f {output.vcf}.recode.vcf {output.vcf}
 	#######################
 	"""
 ############

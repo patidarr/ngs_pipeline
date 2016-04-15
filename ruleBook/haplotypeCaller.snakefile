@@ -1,12 +1,12 @@
 rule HAPCALLER:
 	input: 	
-		bam="{subject}/{sample}/{sample}.bwa.final.bam",
-		bai="{subject}/{sample}/{sample}.bwa.final.bam.bai",
+		bam="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		bai="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 	output:
-		vcf="{subject}/{sample}/calls/{sample}.HC_DNASeq.raw.vcf"
+		vcf="{subject}/{TIME}/{sample}/calls/{sample}.HC_DNASeq.raw.vcf"
 	version: config["GATK"]
 	params:
 		rulename = "HC",
