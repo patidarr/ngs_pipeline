@@ -42,7 +42,8 @@
     "NCI0291_B_E": "clin.ex.v1",
     "NCI0291_B_P": "clin.snv.v1",
     "NCI0291_T_E": "clin.ex.v1",
-    "NCI0291_T_P": "clin.snv.v1"
+    "NCI0291_T_P": "clin.snv.v1",
+    "NCI0291_T_T": "access"
   },
   "sample_RNASeq": {
     "NCI0291_T_E": [

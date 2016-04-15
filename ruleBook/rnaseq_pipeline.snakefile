@@ -414,7 +414,7 @@ rule CoveragE:
 	input:
 		bam="{subject}/{TIME}/{sample}/{sample}.star.final.bam",
 		bai="{subject}/{TIME}/{sample}/{sample}.star.final.bam.bai",
-		interval=config["refSeq_bed"]
+		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]]
 	output:
 		"{subject}/{TIME}/{sample}/qc/{sample}.star.coverage.txt"
 	version: config["bedtools"]
