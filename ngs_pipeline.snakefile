@@ -127,7 +127,7 @@ ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME,
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
-ALL_QC     += expand("{subject}/igv/session_{subject}.xml", subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
@@ -702,7 +702,7 @@ rule CoveragePlot:
 ############
 rule IGV_Session:
 	input: bams=lambda wildcards: SUB_IGV[wildcards.subject]
-	output: "{subject}/igv/session_{subject}.xml"
+	output: "{subject}/{TIME}/igv/session_{subject}.xml"
 	message: "Making IGV session xml file for {wildcards.subject}"
 	params:
 		rulename = "igv_session",
