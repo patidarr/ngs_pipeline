@@ -125,7 +125,7 @@ ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject
 ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/qc/{subject}.hotspot_coverage.png", subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
 ALL_QC     += expand("{subject}/igv/session_{subject}.xml", subject=PATIENTS)
 if len(config['sample_references']) > 0:
@@ -751,16 +751,16 @@ rule BoxPlot_Hotspot:
 		covFiles=lambda wildcards: SUB_HOT[wildcards.subject],
 		boxplot =NGS_PIPELINE + "/scripts/boxplot.R"
 	output:
-		"{subject}/qc/{subject}.hotspot_coverage.png",
+		"{subject}/{TIME}/qc/{subject}.hotspot_coverage.png",
 	version: config["R"]
 	params:
 		rulename = "Boxplot",
 		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
-	cp -f {input.covFiles} {wildcards.subject}/qc/
+	cp -f {input.covFiles} ${{LOCAL}}
 	module load R
-	xvfb-run R --vanilla --slave --silent --args {wildcards.subject}/qc/ {output} {wildcards.subject} <{input.boxplot}
+	xvfb-run R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.boxplot}
 	#######################
 	"""
 ############
