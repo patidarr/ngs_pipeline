@@ -118,7 +118,7 @@ ALL_QC     += ["{subject}/{sample}/qc/BamQC/qualimapReport.html".format(subject=
 ALL_QC	   += ["{subject}/qc/{sample}.depth_per_base".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.failExons".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.failGenes".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC	   += ["{subject}/qc/{sample}.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.hsmetrics".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)

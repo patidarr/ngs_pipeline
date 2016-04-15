@@ -1,10 +1,10 @@
 rule TargetIntervals:
 	input:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		bai="{base}/{sample}/{sample}.bwa.final.bam.bai"
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.bwa.final.bam.bai"
 	output:
-		probe_intervals  = temp("{base}/qc/{sample}.probe.intervals"),
-		target_intervals = temp("{base}/qc/{sample}.target.intervals")
+		probe_intervals  = temp("{base}/{TIME}/{sample}/qc/{sample}.probe.intervals"),
+		target_intervals = temp("{base}/{TIME}/{sample}/qc/{sample}.target.intervals")
 	version:
 		config['samtools']
 	params:
@@ -22,11 +22,11 @@ rule TargetIntervals:
 
 rule HSMetrics:
 	input:
-		bam="{base}/{sample}/{sample}.bwa.final.bam",
-		probe_intervals  = "{base}/qc/{sample}.probe.intervals",
-		target_intervals = "{base}/qc/{sample}.target.intervals",
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		probe_intervals  = "{base}/{TIME}/{sample}/qc/{sample}.probe.intervals",
+		target_intervals = "{base}/{TIME}/{sample}/qc/{sample}.target.intervals",
 	output:
-		"{base}/qc/{sample}.hsmetrics"
+		"{base}/{TIME}/{sample}/qc/{sample}.hsmetrics"
 	version: config['picard']
 	params:
 		rulename = "hsMetrics",

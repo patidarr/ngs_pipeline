@@ -1,9 +1,9 @@
 rule  FailedExons:
 	input:
-		depth_file="{base}/qc/{sample}.depth_per_base"
+		depth_file="{base}/{TIME}/{sample}/qc/{sample}.depth_per_base"
 	output:
-		failed_exon_stats="{base}/qc/{sample}.failExons",
-		failed_gene_stats="{base}/qc/{sample}.failGenes"
+		failed_exon_stats="{base}/{TIME}/{sample}/qc/{sample}.failExons",
+		failed_gene_stats="{base}/{TIME}/{sample}/qc/{sample}.failGenes"
 	params:
 		rulename	= "failedExons",
 		threshold	= lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample]][config['sample_type'][wildcards.sample]],
