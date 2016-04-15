@@ -122,7 +122,7 @@ ALL_QC	   += ["{subject}/qc/{sample}.failGenes".format(subject=SAMPLE_TO_SUBJECT
 ALL_QC	   += ["{subject}/qc/{sample}.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/qc/{sample}.consolidated_QC".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{sample}/copyNumber/{sample}.count.txt".format(subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += expand("{subject}/qc/{subject}.genotyping.txt", subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
@@ -406,7 +406,7 @@ rule SampleGT:
 		mail =NGS_PIPELINE + "/scripts/tsv2html.sh",
 		score=NGS_PIPELINE + "/scripts/scoreGenotyes.pl"
 	output:
-		"{subject}/qc/{subject}.genotyping.txt",
+		"{subject}/{TIME}/qc/{subject}.genotyping.txt",
 	version: config["R"]
 	params:
 		rulename = "SampleGT",
@@ -415,27 +415,27 @@ rule SampleGT:
 		host	 = config["host"]
 	shell: """
 	#######################
-	mkdir -p {wildcards.subject}/qc/GT
-	mkdir -p {wildcards.subject}/qc/RATIO/
-	cp {input.gtFiles} {wildcards.subject}/qc/GT/
-	echo Sample >{wildcards.subject}/qc/RATIO/FirstColumn
+	mkdir -p {wildcards.subject}/{TIME}/qc/GT
+	mkdir -p {wildcards.subject}/{TIME}/qc/RATIO/
+	cp {input.gtFiles} {wildcards.subject}/{TIME}/qc/GT/
+	echo Sample >{wildcards.subject}/{TIME}/qc/RATIO/FirstColumn
 
-	for file in {wildcards.subject}/qc/GT/*
+	for file in {wildcards.subject}/{TIME}/qc/GT/*
 	do
 		sample=`basename ${{file}} .gt`
-		echo ${{sample}} >>{wildcards.subject}/qc/RATIO/FirstColumn
-		echo ${{sample}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
-		for file2 in {wildcards.subject}/qc/GT/*
+		echo ${{sample}} >>{wildcards.subject}/{TIME}/qc/RATIO/FirstColumn
+		echo ${{sample}} >>{wildcards.subject}/{TIME}/qc/RATIO/${{sample}}.ratio
+		for file2 in {wildcards.subject}/{TIME}/qc/GT/*
 		do
-			perl {input.score} ${{file}} ${{file2}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
+			perl {input.score} ${{file}} ${{file2}} >>{wildcards.subject}/{TIME}/qc/RATIO/${{sample}}.ratio
 		done
 	done
-	paste {wildcards.subject}/qc/RATIO/FirstColumn {wildcards.subject}/qc/RATIO/*.ratio >{wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	rm -rf {wildcards.subject}/qc/GT/ {wildcards.subject}/qc/RATIO/
-	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --head {WORK_DIR}/{wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
+	paste {wildcards.subject}/{TIME}/qc/RATIO/FirstColumn {wildcards.subject}/{TIME}/qc/RATIO/*.ratio >{wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
+	rm -rf {wildcards.subject}/{TIME}/qc/GT/ {wildcards.subject}/{TIME}/qc/RATIO/
+	sed -i 's/Sample_//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
+	sed -i 's/.bwa//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
+	sed -i 's/.star//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
+	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --head {WORK_DIR}/{wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
 	#######################
 	"""
 ############
