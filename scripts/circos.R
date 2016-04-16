@@ -17,9 +17,9 @@ cols <- brewer.pal(length(files)+1, "Dark2")
 
 options(stringsAsFactors = FALSE);
 set.seed(1234);
-png(FILE ,width = 1000, height = 1000, res=100, points=12);
+png(FILE ,width = 1000, height = 1000, res=100, points=12, type=c("cairo"));
 par(mar=c(2, 2, 2, 2));
-plot(c(1,800), c(1,800), type="n", axes=FALSE, xlab="", ylab="", main="", type=c("cairo"));
+plot(c(1,800), c(1,800), type="n", axes=FALSE, xlab="", ylab="", main="");
 
 circos(R=400, cir="hg19", type="chr", mapping=UCSC.hg19.chr,print.chr.lab=TRUE, W=10, lwd=5, cex=1.5);
 

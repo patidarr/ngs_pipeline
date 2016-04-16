@@ -248,7 +248,8 @@ rule DeFuse:
 	version: config["defuse"]
 	params:
 		rulename = "deFuse",
-		batch    = config[config['host']]["job_deFuse"]
+		batch    = config[config['host']]["job_deFuse"],
+		parallel = NGS_PIPELINE + "/scripts/parallel"
 	shell: """
 	#######################
 	module load defuse/{version}
@@ -274,7 +275,7 @@ rule DeFuse:
 	do
 		echo "get_reads.pl -c {input.config} -o {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt"
 	done >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm
-	cat {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm | parallel -j ${{THREADS}} --no-notice
+	cat {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm | {params.parallel} -j ${{THREADS}} --no-notice
 	touch {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/defuse.done
 	rm -rf {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq
 	rm -rf {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm
@@ -339,7 +340,7 @@ rule STAR:
 	echo "Finished Step 4"
 
 	module load picard/{params.picard}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JARPATH/AddOrReplaceReadGroups.jar\
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JAR AddOrReplaceReadGroups\
 	VALIDATION_STRINGENCY=SILENT\
 	INPUT={wildcards.sample}_pass2Aligned.out.sam\
 	OUTPUT={params.home}/{wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.star.bam\
@@ -367,7 +368,7 @@ rule GATK_RNASeq:
 		index="{base}/{TIME}/{sample}/{sample}.star.final.bam.bai",
 	version: config["GATK"]
 	params:
-		rulename  = "gatk",
+		rulename  = "gatk_R",
 		batch     = config[config['host']]["job_gatk"]
 	shell: """
 	#######################
