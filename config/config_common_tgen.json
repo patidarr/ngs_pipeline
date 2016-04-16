@@ -52,7 +52,7 @@
 		"clin.snv.v2"	: "/projects/Clinomics/Tools/ref/hg19/design/clin_snv_v2_0783981.target.hg19.merged.bed",
 		"rms_capture"	: "/projects/Clinomics/Tools/ref/hg19/design/RMS_Panel.target.hg19.merged.bed",
 		"access"	: "/projects/Clinomics/Tools/ref/hg19/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
-		"ploya"		: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed"
+		"polya"		: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed"
 	},
 	"failed_exon_params": {
 		"seqcap":{
