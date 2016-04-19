@@ -253,7 +253,6 @@ rule DeFuse:
 	shell: """
 	#######################
 	module load defuse/{version}
-	module load R
 	export TMPDIR="{wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/R"
 	export TMP="{wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/R"
 	export TEMP="{wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/R"
@@ -447,7 +446,7 @@ rule Sub_Fusion:
 		batch    = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	mkdir -p {wildcards.subject}/Actionable
+	mkdir -p {wildcards.subject}/{TIME}/Actionable
 	perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |sort >{output}
 	#######################
 	"""
