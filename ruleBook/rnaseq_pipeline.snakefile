@@ -369,7 +369,7 @@ rule GATK_RNASeq:
 	version: config["GATK"]
 	params:
 		rulename  = "gatk_R",
-		batch     = config[config['host']]["job_gatk"]
+		batch     = config[config['host']]["job_gatk_RNA"]
 	shell: """
 	#######################
 	module load GATK/{version}

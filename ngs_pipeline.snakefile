@@ -835,7 +835,7 @@ rule Bam2MPG:
 		bam="{subject}/{TIME}/{sample}/{sample}.novo.final.bam",
 		bai="{subject}/{TIME}/{sample}/{sample}.novo.final.bam.bai",
 		ref=config["reference"],
-		interval=config["coding_bed"]
+		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]]
 	output:
 		snps="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
 		vcf="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.raw.vcf"

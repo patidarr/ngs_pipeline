@@ -15,6 +15,7 @@
 		"job_markdup"    : "--partition=ccr --time=05:00:00 --mem=19G  --cpus-per-task=15 --gres=lscratch:40",
 		"job_covplot"    : "--partition=ccr --time=01:00:00 --mem=01G  --cpus-per-task=1  --gres=lscratch:01",
 		"job_gatk"       : "--partition=ccr --time=30:00:00 --mem=40G  --cpus-per-task=32 --gres=lscratch:100",
+		"job_gatk_RNA"   : "--partition=ccr --time=30:00:00 --mem=100G  --cpus-per-task=32 --gres=lscratch:100",
 		"job_bam2mpg"    : "--partition=ccr --time=24:00:00 --mem=120G --cpus-per-task=32 --gres=lscratch:100",
 		"job_mutect"     : "--partition=ccr --time=24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:10",
 		"job_strelka"    : "--partition=ccr --time=10:00:00 --mem=50G  --cpus-per-task=32 --gres=lscratch:20",
@@ -53,6 +54,7 @@
 		"job_markdup"    : "-l nodes=1:ppn=15,mem=19gb,walltime=96:00:00",
 		"job_covplot"    : "-l nodes=tgcompute31:ppn=16,mem=47gb,walltime=96:00:00",
 		"job_gatk"       : "-l nodes=1:ppn=16,mem=45gb,walltime=96:00:00",
+		"job_gatk_RNA"   : "-l nodes=1:ppn=10,mem=100gb,walltime=96:00:00",
 		"job_bam2mpg"    : "-l nodes=1:ppn=16,mem=47gb,walltime=96:00:00",
 		"job_mutect"     : "-l nodes=1:ppn=10,mem=10gb,walltime=96:00:00",
 		"job_strelka"    : "-l nodes=1:ppn=16,mem=45gb,walltime=96:00:00",
@@ -73,6 +75,6 @@
 		"job_annovar"    : "-l nodes=1:ppn=05,mem=10gb,walltime=96:00:00",
 		"job_igvtools"   : "-l nodes=1:ppn=05,mem=10gb,walltime=96:00:00",
 		"job_novoalign"  : "-l nodes=2:ppn=16,mem=47gb,walltime=96:00:00",
-		"job_deFuse"     : "-l nodes=1:ppn=10,mem=240gb,walltime=96:00:00"
+		"job_deFuse"     : "-l nodes=tghighmem-01:ppn=10,mem=240gb,walltime=96:00:00"
 	}
 }
