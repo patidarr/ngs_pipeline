@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+use Getopt::Long;
+use Pod::Usage;
+use Time::Piece;
+my $NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/";
+my $mode = 'd';
+my $dataDir="/projects/Clinomics/DATA/";
+my $workDir="";
+my $help;
+GetOptions(
+		'mode=s'      =>\$mode,
+		'datadir=s'   =>\$dataDir,
+		'workdir=s'   =>\$workDir,
+		'help|h'      =>\$help,
+	  )or pod2usage();
+
+$help and pod2usage ();
+
+if (!$mode){
+	print STDERR "ERROR: must specify '-mode'\n";
+	print STDERR "\t Possible values are:\n";
+	print STDERR "\t\td (development) Default\n";
+	print STDERR "\t\tp (production)\n";
+	exit;
+}
+if (!$dataDir){
+        print STDERR "On biowulf the raw data is stored in /data/khanlab/projects/DATA/\n";
+        print STDERR "On TGen the raw data is stored in /projects/Clinomics/DATA/\n";
+	print STDERR "If your data is coming from somewhere else specify using this variable\n";
+        exit;
+}
+if (!$workDir){
+	print STDERR "On biowulf the development version is ran in /data/khanlab/projects/DATA/\n";
+	print STDERR "This is set here specifically to run the dev mode in a test location\n";
+	exit;
+}
+
+if (`hostname` =~ /cn/ or `hostname` eq 'biowulf.nih.gov'){
+	$NGS_PIPELINE = "/data/khanlab/projects/patidar/ngs_pipeline/";
+	`sbatch --export=time=$mode,dataDir=$dataDir,workDir=$workDir --cpus-per-task=1 --partition=ccr --time=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+}
+elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
+	$NGS_PIPELINE = "/projects/Clinomics/Tools/ngs_pipeline/";
+	`qsub -v time=$mode,dataDir=$dataDir,workDir=$workDir -l nodes=1:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+}
+else{
+	print STDERR "This pipeline is not configured to run on this host `hostname`\n";
+	print STDERR "Please change configuration files as well as Snakemake file to accomodate the same\n";
+	die;
+}
+=head1 SYNOPSIS
+
+ launch -mode d -datadir /data/Clinomics/DATA/ -workdir /projects/Clinomics/Test_Run2
+ Usage:
+
+        -h, -help, --help Print this message.
+
+        -mode		This sets up the time in the patient directory, in production mode the time is dynamically decided, 
+			  in dev mode a pre set time is used for debugging purposes.
+
+	-datadir	On biowulf the raw data is stored in /data/khanlab/projects/DATA/
+			  On TGen the raw data is stored in /data/Clinomics/DATA/
+			  If your data is coming from somewhere else specify using this variable
+			  -datadir "/data/Clinomics/testData/"
+
+	-workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
+
+ For questions or comments, please contact: Rajesh Patidar <rajesh.patidar@nih.gov>
+
+=cut
