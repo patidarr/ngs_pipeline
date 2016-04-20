@@ -21,7 +21,7 @@ if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module load python/3.4.3
 	export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline/"
 	export WORK_DIR="/data/khanlab/projects/DNASeq/"
-	export DATA_DIR="/data/khanlab/DATA/"
+	export DATA_DIR="/data/khanlab/projects/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="biowulf.nih.gov"
 	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
@@ -49,6 +49,7 @@ if [[ ! -z $dataDir ]]; then
 fi
 if [[ ! -z $workDir ]]; then
 	export WORK_DIR=$workDir
+	SAM_CONFIG=$WORK_DIR/samplesheet.json
 fi
 
 
