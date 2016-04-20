@@ -75,6 +75,6 @@
 		"job_annovar"    : "-l nodes=1:ppn=05,mem=10gb,walltime=96:00:00",
 		"job_igvtools"   : "-l nodes=1:ppn=05,mem=10gb,walltime=96:00:00",
 		"job_novoalign"  : "-l nodes=2:ppn=16,mem=47gb,walltime=96:00:00",
-		"job_deFuse"     : "-q hmem -l nodes=1:ppn=10,mem=240gb,walltime=96:00:00"
+		"job_deFuse"     : "-q hmem -l nodes=1:ppn=30,mem=240gb,walltime=96:00:00"
 	}
 }

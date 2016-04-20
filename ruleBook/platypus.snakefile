@@ -3,7 +3,7 @@ rule PLATYPUS:
 		bam="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam",
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
-		interval=config["coding_bed"]
+		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 	output:
 		vcf="{subject}/{TIME}/{sample}/calls/{sample}.Platypus.raw.vcf"
 	version: config["platypus"]

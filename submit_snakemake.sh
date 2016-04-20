@@ -5,15 +5,23 @@
 # Author: Rajesh Patidar
 # 
 # Usually slurm can translate the PBS varibles so no need to initialize the following sbatch vars.
-export TIME="20160415"
+set -eo pipefail
+if [[ $time == 'd' ]]; then
+	export TIME="20160415"
+elif [[ $time == 'p' ]]; then
+	export TIME=$(date +"%Y%m%d")
+else
+	echo -e "Can not run without knowing which mode you would like to set time up\n";
+	exit;
+fi
 #export TIME=$(date +"%Y%m%d")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module use /data/khanlab/apps/Modules
 	module load python/3.4.3
 	export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline/"
-	export WORK_DIR="/data/khanlab/projects/patidar/ngs_pipeline/test"
-	export DATA_DIR="/data/khanlab/projects/DATA/"
+	export WORK_DIR="/data/khanlab/projects/DNASeq/"
+	export DATA_DIR="/data/khanlab/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="biowulf.nih.gov"
 	SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
@@ -23,7 +31,7 @@ elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `ho
 	module load python/3.4.3
 	module load snakemake
 	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
-	export WORK_DIR="/projects/Clinomics/Test_Run2/"
+	export WORK_DIR="/projects/Clinomics/Test_Run3/"
 	export DATA_DIR="/projects/Clinomics/DATA/"
 	export ACT_DIR="/Actionable/"
 	export HOST="login01"
@@ -36,11 +44,16 @@ else
 	exit;
 fi
 
+if [[ ! -z $dataDir ]]; then 
+	export DATA_DIR=$dataDir
+fi
+if [[ ! -z $workDir ]]; then
+	export WORK_DIR=$workDir
+fi
+
+
+
 cd $WORK_DIR
-#if [ `cat $SAM_CONFIG |/usr/bin/json_verify -c` -ne "JSON is valid" ]; then
-#       echo "$SAM_CONFIG is not a valid json file"
-#       exit
-#fi
 if [ ! -d log ]; then
 	mkdir log
 fi
@@ -51,7 +64,7 @@ fi
 cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${TIME}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
-	snakemake $cmd --cluster "sbatch --mail-type=FAIL -o log/{params.rulename}.%j.o {params.batch}" >& ngs_pipeline_${TIME}.log
+	snakemake $cmd --cluster "sbatch                     -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
 elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
 	snakemake $cmd --cluster "qsub  -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
