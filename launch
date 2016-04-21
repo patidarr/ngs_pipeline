@@ -36,8 +36,7 @@ if (!$workDir){
 	print STDERR "This is set here specifically to run the dev mode in a test location\n";
 	exit;
 }
-
-if (`hostname` =~ /cn/ or `hostname` eq 'biowulf.nih.gov'){
+if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	$NGS_PIPELINE = "/data/khanlab/projects/patidar/ngs_pipeline/";
 	`sbatch --export=time=$mode,dataDir=$dataDir,workDir=$workDir --cpus-per-task=1 --partition=ccr --time=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
 }
@@ -66,6 +65,44 @@ else{
 			  -datadir "/data/Clinomics/testData/"
 
 	-workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
+
+	export TIME="20160415"
+        if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
+                module use /data/khanlab/apps/Modules
+                module load python/3.4.3
+                export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline/"
+                export WORK_DIR="/data/khanlab/projects/DNASeq/"
+                export DATA_DIR="/data/khanlab/projects/DATA/"
+                export ACT_DIR="/Actionable/"
+                export HOST="biowulf.nih.gov"
+                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+                SAM_CONFIG=$WORK_DIR/samplesheet.json
+        elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
+                module load python/3.4.3
+                module load snakemake
+                export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
+                export WORK_DIR="/projects/Clinomics/Test_Run3/"
+                export DATA_DIR="/projects/Clinomics/DATA/"
+                export ACT_DIR="/Actionable/"
+                export HOST="login01"
+                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+                SAM_CONFIG=$WORK_DIR/samplesheet.json                                                                                           
+        }
+	#Summary 
+	#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
+	
+	# DRY Run with Print out the shell commands that will be executed
+	#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r
+
+	#DAG 
+	#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dag | dot -Tpng > dag.png
+
+	#Rulegraph
+	#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpng > Rulegraph.png
+
+	# Mail Rulegraph and DAG to self#  echo DAG |mutt -s "DAG" -a dag.png -a rulegraph.png -- patidarr@mail.nih.gov
+	#  echo DAG |mutt -s "DAG" -a dag.png -a Rulegraph.png -- patidarr@mail.nih.gov
+	                                                                                                                      
 
  For questions or comments, please contact: Rajesh Patidar <rajesh.patidar@nih.gov>
 

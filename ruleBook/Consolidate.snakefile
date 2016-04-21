@@ -18,7 +18,7 @@ rule QC:
 	python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}
 	#######################
 	"""
-rule QC_Sum1:
+rule QC_Summary:
 	input : CON_QC
 	output: "Consolidated_QC.txt"
 	params:

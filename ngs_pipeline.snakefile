@@ -41,7 +41,7 @@ elif [ {HOST} == 'login01' ]
 	then
 		module load torque/4.2.2
 		module load gcc/4.8.1
-		module load Parallel/20120122
+		module use /home/patidarr/Modules
 		MEM=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
 		mkdir -p /projects/scratch/${{PBS_JOBID}}/
 		LOCAL="/projects/scratch/${{PBS_JOBID}}/"
@@ -519,7 +519,7 @@ rule CopyNumber:
 ############
 #       Somatic Copy Number
 ############
-rule CN_LRR:
+rule CN_LRR_old:
 	input:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
@@ -569,7 +569,7 @@ rule CN_LRR:
 ############
 #       Somatic Copy Number LRR (Median Corrected)
 ############
-rule CN_LRR1:
+rule CN_LRR:
 	input:
 		files=lambda wildcards: somaticCopy[wildcards.Tumor],
 		ref=config["gene_coord"],
@@ -859,11 +859,13 @@ rule Bam2MPG:
 	do
 	echo "bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam}"
 	done >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file
-	cat   {wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file |{params.parallel} -j ${{THREADS}} --no-notice
+	cat   {wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file |{params.parallel} -j 10 --no-notice
 	rm -rf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file
 	
 	for CHR in `seq 1 22` X Y
 	do
+		
+		echo "Started indexing chr${{CHR}}"
 		cat ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
 		mv -f ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf
 		bgzip ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf
@@ -872,6 +874,7 @@ rule Bam2MPG:
 		bgzip ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf
 		tabix -p vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
 		tabix -p vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
+		echo "Finished indexing chr${{CHR}}"
 	done
 	echo "Combine chr level vcf files"
 	vcf-concat ${{LOCAL}}/chr*{wildcards.sample}.*.vcf.gz >${{LOCAL}}/{wildcards.sample}.snps.vcf
