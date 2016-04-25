@@ -19,7 +19,7 @@ fi
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module use /data/khanlab/apps/Modules
 	module load python/3.4.3
-	export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline/"
+	export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
 	export WORK_DIR="/data/khanlab/projects/DNASeq/"
 	export DATA_DIR="/data/khanlab/projects/DATA/"
 	export ACT_DIR="/Actionable/"
