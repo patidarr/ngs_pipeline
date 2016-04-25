@@ -374,7 +374,7 @@ rule GATK_RNASeq:
 	module load GATK/{version}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o ${{LOCAL}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
 
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T RealignerTargetCreator -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam -o ${{LOCAL}}/{wildcards.sample}.realignment.intervals
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T RealignerTargetCreator -nt 10 -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam -o ${{LOCAL}}/{wildcards.sample}.realignment.intervals
 
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam
 

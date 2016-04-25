@@ -28,6 +28,7 @@ if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	SAM_CONFIG=$WORK_DIR/samplesheet.json
 	
 elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
+	module use /home/patidarr/Modules
 	module load python/3.4.3
 	module load snakemake
 	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"

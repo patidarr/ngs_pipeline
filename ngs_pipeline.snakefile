@@ -41,7 +41,6 @@ elif [ {HOST} == 'login01' ]
 	then
 		module load torque/4.2.2
 		module load gcc/4.8.1
-		module use /home/patidarr/Modules
 		MEM=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
 		mkdir -p /projects/scratch/${{PBS_JOBID}}/
 		LOCAL="/projects/scratch/${{PBS_JOBID}}/"
