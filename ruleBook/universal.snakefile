@@ -16,6 +16,7 @@ rule BAM2TDF:
 	#######################
 	module load igvtools/{version}
 
-	igvtools count {input.bam} {output} {params.ref} >/dev/null 2>&1
+	cd ${{LOCAL}}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} $IGVTOOLSHOME/igvtools.jar count {WORK_DIR}/{input.bam} {WORK_DIR}/{output} {params.ref}
 	#######################
 	"""
