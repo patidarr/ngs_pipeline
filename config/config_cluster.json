@@ -1,6 +1,6 @@
 {
 	"biowulf.nih.gov":{
-		"job_default"    : "--partition=ccr --time=01:00:00 --mem=01G  --cpus-per-task=1  --gres=lscratch:01",
+		"job_default"    : "--partition=ccr --time=01:00:00 --mem=01G  --cpus-per-task=1  --gres=lscratch:02",
 		"job_snpeff"     : "--partition=ccr --time=04:00:00 --mem=10G  --cpus-per-task=32 --gres=lscratch:05",
 		"job_c_QC"       : "--partition=ccr --time=10:00:00 --mem=10G  --cpus-per-task=5  --gres=lscratch:05",
 		"job_failedExon" : "--partition=ccr --time=24:00:00 --mem=10G  --cpus-per-task=5  --gres=lscratch:05",
@@ -13,7 +13,7 @@
 		"job_SIFT"       : "--partition=ccr --time=24:00:00 --mem=4G   --cpus-per-task=2  --gres=lscratch:10",
 		"job_tophat"     : "--partition=ccr --time=50:00:00 --mem=65G  --cpus-per-task=32 --gres=lscratch:400",
 		"job_markdup"    : "--partition=ccr --time=05:00:00 --mem=19G  --cpus-per-task=15 --gres=lscratch:40",
-		"job_covplot"    : "--partition=ccr --time=01:00:00 --mem=01G  --cpus-per-task=1  --gres=lscratch:01",
+		"job_covplot"    : "--partition=ccr --time=01:00:00 --mem=01G  --cpus-per-task=1  --gres=lscratch:02",
 		"job_gatk"       : "--partition=ccr --time=30:00:00 --mem=40G  --cpus-per-task=32 --gres=lscratch:100",
 		"job_gatk_RNA"   : "--partition=ccr --time=30:00:00 --mem=100G  --cpus-per-task=32 --gres=lscratch:100",
 		"job_bam2mpg"    : "--partition=ccr --time=24:00:00 --mem=120G --cpus-per-task=32 --gres=lscratch:100",
@@ -24,7 +24,7 @@
 		"job_Combine"    : "--partition=ccr --time=05:00:00 --mem=2G   --cpus-per-task=1",
 		"job_flagstat"   : "--partition=ccr --time=05:00:00 --mem=2G   --cpus-per-task=2",
 		"job_genotype"   : "--partition=ccr --time=05:00:00 --mem=2G   --cpus-per-task=2",
-		"job_fastqc"     : "--partition=b1  --time=01:00:00 --mem=19G  --cpus-per-task=10 --gres=lscratch:01",
+		"job_fastqc"     : "--partition=b1  --time=01:00:00 --mem=19G  --cpus-per-task=10 --gres=lscratch:02",
 		"job_expressed"  : "--partition=b1  --time=24:00:00 --mem=2G   --cpus-per-task=1",
 		"job_tophatPost" : "--partition=b1  --time=50:00:00 --mem=225g --cpus-per-task=32",
 		"job_bwa"        : "--partition=ccr --time=20:00:00 --mem=50G  --cpus-per-task=32 ",
@@ -35,7 +35,8 @@
 		"job_vcf2txt"    : "--partition=ccr --time=01:00:00 --mem=5G   --cpus-per-task=2",
 		"job_annovar"    : "--partition=ccr --time=20:00:00 --mem=10G  --cpus-per-task=5",
 		"job_igvtools"   : "--partition=ccr --time=05:00:00 --mem=10G  --cpus-per-task=1 --gres=lscratch:05",
-		"job_novoalign"  : "--partition=ccr --time=20:00:00 --mem=60G  --nodes=2  --ntasks=3 --exclusive",
+		"job_novoalign1" : "--partition=ccr --time=20:00:00 --mem=60G  --nodes=2  --ntasks=3 --exclusive",
+		"job_novoalign"  : "--partition=ccr --time=20:00:00 --mem=60G  --cpus-per-task=32 --gres=lscratch:02",
 		"job_deFuse"     : "--partition=largemem --time=24:00:00   --mem=240g --cpus-per-task=32"
 	},
 	"login01":{
@@ -74,7 +75,8 @@
 		"job_vcf2txt"    : "-l nodes=1:ppn=02,mem=05gb,walltime=96:00:00",
 		"job_annovar"    : "-l nodes=1:ppn=05,mem=10gb,walltime=96:00:00",
 		"job_igvtools"   : "-l nodes=1:ppn=01,mem=10gb,walltime=96:00:00",
-		"job_novoalign"  : "-l nodes=2:ppn=16,mem=47gb,walltime=96:00:00",
+		"job_novoalign1" : "-l nodes=2:ppn=16,mem=47gb,walltime=96:00:00",
+		"job_novoalign"  : "-l nodes=1:ppn=16,mem=47gb,walltime=96:00:00",
 		"job_deFuse"     : "-q hmem -l nodes=1:ppn=30,mem=1000gb,walltime=96:00:00"
 	}
 }
