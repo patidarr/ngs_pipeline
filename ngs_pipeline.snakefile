@@ -260,9 +260,9 @@ rule Khanlab_Pipeline:
 		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl"
 	shell: """
 	#######################
-#	find log/ -type f -empty -delete
+	find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp {params.group} {{}} \;
-#	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
+	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {params.wait4job} ${{Final}}

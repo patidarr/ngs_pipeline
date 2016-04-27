@@ -1,5 +1,5 @@
 {
-	"group"			: "Clinomics",
+	"group"			: "clinomics",
 	"host"			: "login01",
 	"mail"			: "-c patidarr@mail.nih.gov",
 	"mails"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
