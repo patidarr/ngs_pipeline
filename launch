@@ -43,7 +43,7 @@ if (!$workDir){
 	exit;
 }
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
-	$NGS_PIPELINE = "/data/khanlab/projects/patidar/ngs_pipeline/";
+	$NGS_PIPELINE = "/data/Clinomics/Tools/ngs_pipeline-dev/";
 	`sbatch --export=time=$mode,dataDir=$dataDir,workDir=$workDir --cpus-per-task=1 --partition=ccr --time=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
 }
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
