@@ -381,7 +381,8 @@ rule GENOTYPING:
 	if [ {HOST} == 'biowulf.nih.gov' ]; then
 		cp -f {output.gt} {params.dest}{wildcards.sample}.gt
 	elif [ {HOST} == 'login01' ]; then
-		ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}{wildcards.sample}.gt"
+		#Should change location so that Manoj can copy as well.
+		#ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}{wildcards.sample}.gt"
 	else
 		echo "Only subject level genotyping will be performed"
 	fi

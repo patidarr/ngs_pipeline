@@ -30,7 +30,7 @@
 	"novocraft"		: "3.02.10mpich2",
 	"tophat"		: "2.0.13",
 	"bowtie" 		: "1.1.1",
-	"igvtools"		: "2.3.31",
+	"igvtools"		: "2.3.57",
 	"cufflinks"		: "2.2.1_patched",
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",

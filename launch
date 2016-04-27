@@ -10,9 +10,9 @@ my $dataDir="/projects/Clinomics/DATA/";
 my $workDir="";
 my $help;
 GetOptions(
-		'mode=s'      =>\$mode,
-		'datadir=s'   =>\$dataDir,
-		'workdir=s'   =>\$workDir,
+		'mode|m=s'      =>\$mode,
+		'datadir|d=s'   =>\$dataDir,
+		'workdir|w=s'   =>\$workDir,
 		'help|h'      =>\$help,
 	  )or pod2usage();
 
@@ -42,7 +42,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 }
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
 	$NGS_PIPELINE = "/projects/Clinomics/Tools/ngs_pipeline/";
-	`qsub -v time=$mode,dataDir=$dataDir,workDir=$workDir -l nodes=1:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+	`qsub -W umask=022 -v time=$mode,dataDir=$dataDir,workDir=$workDir -l nodes=1:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
 }
 else{
 	print STDERR "This pipeline is not configured to run on this host `hostname`\n";
@@ -56,15 +56,15 @@ else{
 
         -h, -help, --help Print this message.
 
-        -mode		This sets up the time in the patient directory, in production mode the time is dynamically decided, 
+        -m, -mode		This sets up the time in the patient directory, in production mode the time is dynamically decided, 
 			  in dev mode a pre set time is used for debugging purposes.
 
-	-datadir	On biowulf the raw data is stored in /data/khanlab/projects/DATA/
+	-d, -datadir	On biowulf the raw data is stored in /data/khanlab/projects/DATA/
 			  On TGen the raw data is stored in /data/Clinomics/DATA/
 			  If your data is coming from somewhere else specify using this variable
 			  -datadir "/data/Clinomics/testData/"
 
-	-workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
+	-w, -workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
 
 	##########################################
 	#
@@ -87,7 +87,7 @@ else{
                 module load python/3.4.3
                 module load snakemake
                 export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
-                export WORK_DIR="/projects/Clinomics/Test_Run3/"
+                export WORK_DIR="/projects/Clinomics/Test_Run2/"
                 export DATA_DIR="/projects/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
                 export HOST="login01"
