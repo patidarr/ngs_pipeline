@@ -1,5 +1,6 @@
 #!/bin/sh
 #PBS -N ANNOVAR
+set -eo pipefail
 cd $1 ###
 echo `pwd`
 file="$2.anno"   ###
@@ -103,7 +104,9 @@ annotate_variation.pl\
 	-otherinfo\
 	-filter\
 	-dbtype generic\
-	-genericdbfile ${BUILD}_PCG_112015.txt
+	-genericdbfile ${BUILD}_PCG_042616.txt
+
+#	-genericdbfile ${BUILD}_PCG_112015.txt
 awk -F "\t" '{OFS="\t"};{print $3,$4,$5,$6,$7,$2}' $file.${BUILD}_generic_dropped |sed -e 's/,/\t/g' >$file.pcg
 head -1 $DATADIR/${BUILD}_PCG_112015.txt >>$file.pcg
 rm -rf $file.${BUILD}_generic_dropped $file.${BUILD}_generic_filtered
@@ -118,7 +121,7 @@ $CUSTOM $DATADIR/${BUILD}_clinvar_20160203.txt $file >$OUT.clinvar
 #
 ################################
 OUT=`echo $file |sed -e 's/.anno//g'`
-$CUSTOM $DATADIR/${BUILD}_hgmd.2015.4.txt $file >$OUT.hgmd
+$CUSTOM $DATADIR/${BUILD}_hgmd.2016.1.txt $file >$OUT.hgmd
 ################################
 # Add MATCH Trial
 #
