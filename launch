@@ -6,7 +6,13 @@ use Pod::Usage;
 use Time::Piece;
 my $NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/";
 my $mode = 'd';
-my $dataDir="/projects/Clinomics/DATA/";
+my $dataDir="";
+if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
+	$dataDir="/data/Clinomics/DATA/";
+}
+elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
+	$dataDir="/projects/Clinomics/DATA/";
+}
 my $workDir="";
 my $help;
 GetOptions(
@@ -71,9 +77,15 @@ else{
 	#	It is assumed that workdir contains the samplesheet.json 
 	#
 	##########################################
-
-	export TIME="20160415"
-        if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
+	#
+	#	DryRun
+	#
+	#########################################
+	#
+	#
+	#	Biowulf
+	#
+		export TIME="20160415"
                 module use /data/khanlab/apps/Modules
                 module load python/3.4.3
                 export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
@@ -83,7 +95,12 @@ else{
                 export HOST="biowulf.nih.gov"
                 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
                 SAM_CONFIG=$WORK_DIR/samplesheet.json
-        elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
+		snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r
+	#
+	#
+	#	TGen
+	#
+		export TIME="20160415"
                 module load python/3.4.3
                 module load snakemake
                 export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
@@ -92,8 +109,10 @@ else{
                 export ACT_DIR="/Actionable/"
                 export HOST="login01"
                 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
-                SAM_CONFIG=$WORK_DIR/samplesheet.json                                                                                           
-        }
+                SAM_CONFIG=$WORK_DIR/samplesheet.json
+		snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r                                  
+	
+
 	#Summary 
 	#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
 	
@@ -106,7 +125,7 @@ else{
 	#Rulegraph
 	#  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG -n --forceall --rulegraph | dot -Tpng > Rulegraph.png
 
-	# Mail Rulegraph and DAG to self#  echo DAG |mutt -s "DAG" -a dag.png -a rulegraph.png -- patidarr@mail.nih.gov
+	# Mail Rulegraph and DAG to self
 	#  echo DAG |mutt -s "DAG" -a dag.png -a Rulegraph.png -- patidarr@mail.nih.gov
 	                                                                                                                      
 
