@@ -66,13 +66,19 @@ else{
 
 	-workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
 
+	##########################################
+	#
+	#	It is assumed that workdir contains the samplesheet.json 
+	#
+	##########################################
+
 	export TIME="20160415"
         if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
                 module use /data/khanlab/apps/Modules
                 module load python/3.4.3
-                export NGS_PIPELINE="/data/khanlab/projects/patidar/ngs_pipeline/"
+                export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
                 export WORK_DIR="/data/khanlab/projects/DNASeq/"
-                export DATA_DIR="/data/khanlab/projects/DATA/"
+                export DATA_DIR="/data/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
                 export HOST="biowulf.nih.gov"
                 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
