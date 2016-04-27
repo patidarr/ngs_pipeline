@@ -378,15 +378,9 @@ rule GENOTYPING:
 	module load samtools/{version}
 	samtools mpileup -u -C50 -f {input.ref} -l {input.interval} {input.bam} | bcftools view -gc - >{output.vcf}
 	perl {input.vcf2genotype} {output.vcf} >{output.gt}
-	if [ {HOST} == 'biowulf.nih.gov' ]; then
-		cp -f {output.gt} {params.dest}{wildcards.sample}.gt
-	elif [ {HOST} == 'login01' ]; then
-		#Should change location so that Manoj can copy as well.
-		#ssh {params.host} "scp {WORK_DIR}/{output.gt} biowulf.nih.gov:{params.dest}{wildcards.sample}.gt"
-	else
-		echo "Only subject level genotyping will be performed"
-	fi
+	
 	perl {input.vcf2loh} {output.vcf} >{output.loh}
+	
 	#######################
 	"""
 ############
@@ -1268,11 +1262,13 @@ rule DBinput:
 		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl"
 	output: "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.{group}"
 	params:
-		rulename  = "makeDBinput",
-		batch    = config[config['host']]['job_default']
+		rulename = "makeDBinput",
+		batch    = config[config['host']]['job_default'],
+		tool	 = NGS_PIPELINE + "/scripts/AddSampleType.pl",
+		hash= config["sample_type"].items(),
 	shell: """
 	#######################
-	perl {input.convertor} {input.txtFiles} >{output}
+	perl {input.convertor} {input.txtFiles} |perl {params.tool} - "{params.hash}" >{output}
 	#######################
 	"""
 ############
