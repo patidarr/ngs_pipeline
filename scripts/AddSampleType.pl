@@ -16,5 +16,5 @@ unless (open(IN, $file)){
 while(<IN>){
 	chomp;
 	my @line = split("\t", $_);
-	print "$line[0]\t$line[1]\t$line[2]\t$line[3]\t$line[4]\t$line[5]\t".$HASH{$line[5]}."$line[6]\t$line[7]\t$line[8]\t$line[9]\t$line[10]\n";
+	print "$line[0]\t$line[1]\t$line[2]\t$line[3]\t$line[4]\t$line[5]\t".$HASH{$line[5]}."\t$line[6]\t$line[7]\t$line[8]\t$line[9]\t$line[10]\n";
 }
