@@ -53,7 +53,8 @@
 		"clin.snv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
 		"rms_capture"	: "/data/Clinomics/Ref/khanlab/design/RMS_Panel.target.hg19.merged.bed",
 		"access" 	: "/data/Clinomics/Ref/khanlab/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
-		"polya"		: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed"
+		"polya"		: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
+		"seqcapez"	: "/data/Clinomics/Ref/khanlab/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed"
 	},
 	"failed_exon_params": {
 		"seqcap":{
@@ -75,7 +76,11 @@
 		"clin.snv.v2":{
 			"Normal":"20",
 			"Tumor":"50"
-		}
+		},
+		"seqcapez":{
+			"Normal":"100",
+			"Tumor":"100"
+                }
 	},
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",
