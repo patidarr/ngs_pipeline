@@ -98,7 +98,7 @@ sub Germline{
 		#if (!exists $DATA{$site_sample}){ # i.e. position in sample is germline
 			my ($source, $level) = findSource($ANNOTATION{"$site"}, $cancerGeneList, $inherited, $JW, $CL, $GHR);
 			my @ANN = split("\t", $ANNOTATION{"$site"});
-			my $vaf = VAF($temp[9], $temp[10]);
+			my $vaf = VAF($temp[10], $temp[11]);
 			if(($temp[9] !~ /\D/) and $temp[9] >=10 and $vaf >=0.25){
 				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CGCensus_Hereditary|Genetics_HumanRef]/){
 					if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
@@ -246,7 +246,7 @@ sub Somatic{
 		my $val;
 		my $vcf;
 		my $end = @temp - 1 ;
-		my $vaf = VAF($temp[9], $temp[10]);
+		my $vaf = VAF($temp[10], $temp[11]);
 		my $key = join "\t", @temp[0..4];
 		$val = "$temp[0]\t$temp[1]\t$temp[2]";
 		$vcf = join "\t", @temp[5..$end];
