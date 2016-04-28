@@ -2,7 +2,10 @@
 use strict;
 use warnings;
 
-open(ANNOTATION, "$ARGV[0]");
+unless (open(ANNOTATION, "$ARGV[0]")){
+	print STDERR "Can not open file $ARGV[0]\n";
+	die $!;
+}
 my %HASH;
 my $cols=0;
 while(<ANNOTATION>){

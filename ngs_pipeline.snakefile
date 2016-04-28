@@ -1210,9 +1210,13 @@ rule CombineAnnotation:
 {wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
 	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
 	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output} >>{wildcards.subject}/annotation/AnnotationInput.annotations.final.txt
-	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.1 |sort -n |uniq >{output}
+	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.1 |sort -n |uniq >{output}.all
+	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output}.all >{output}
+	grep -v -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output}.all >>{output}
+	rm -rf {output}.all {wildcards.subject}/annotation/list
+	
 
-	rm -rf {wildcards.subject}/annotation/AnnotationInput.pph {wildcards.subject}/annotation/AnnotationInput.anno.* {wildcards.subject}/annotation/AnnotationInput.hgmd {wildcards.subject}/annotation/AnnotationInput.match {wildcards.subject}/annotation/AnnotationInput.candl {wildcards.subject}/annotation/AnnotationInput.tcc {wildcards.subject}/annotation/AnnotationInput.mcg {wildcards.subject}/annotation/AnnotationInput.civic {wildcards.subject}/annotation/AnnotationInput.anno.pcg {wildcards.subject}/annotation/AnnotationInput.clinvar {wildcards.subject}/annotation/AnnotationInput {wildcards.subject}/annotation/allSites
+	#rm -rf {wildcards.subject}/annotation/AnnotationInput.pph {wildcards.subject}/annotation/AnnotationInput.anno.* {wildcards.subject}/annotation/AnnotationInput.hgmd {wildcards.subject}/annotation/AnnotationInput.match {wildcards.subject}/annotation/AnnotationInput.candl {wildcards.subject}/annotation/AnnotationInput.tcc {wildcards.subject}/annotation/AnnotationInput.mcg {wildcards.subject}/annotation/AnnotationInput.civic {wildcards.subject}/annotation/AnnotationInput.anno.pcg {wildcards.subject}/annotation/AnnotationInput.clinvar {wildcards.subject}/annotation/AnnotationInput {wildcards.subject}/annotation/allSites
 	#######################
 	"""
 ############

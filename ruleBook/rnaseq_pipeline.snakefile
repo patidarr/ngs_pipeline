@@ -463,6 +463,10 @@ rule Actionable_fusion:
 		batch    = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	cat {input.fusion} |sort |uniq >{output}
+	cat {input.fusion} |sort |uniq >{output}.tmp
+	grep "#LeftGene" >{output}
+	grep -v "#LeftGene" >>{output}
+	
+	rm -rf {output}.tmp
 	#######################
 	"""

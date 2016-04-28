@@ -2,7 +2,6 @@
 #PBS -N ANNOVAR
 set -eo pipefail
 cd $1 ###
-echo `pwd`
 file="$2.anno"   ###
 DATADIR=$4
 CUSTOM=$3    ###
@@ -108,7 +107,7 @@ annotate_variation.pl\
 
 #	-genericdbfile ${BUILD}_PCG_112015.txt
 awk -F "\t" '{OFS="\t"};{print $3,$4,$5,$6,$7,$2}' $file.${BUILD}_generic_dropped |sed -e 's/,/\t/g' >$file.pcg
-head -1 $DATADIR/${BUILD}_PCG_112015.txt >>$file.pcg
+head -1 $DATADIR/${BUILD}_PCG_042616.txt >>$file.pcg
 rm -rf $file.${BUILD}_generic_dropped $file.${BUILD}_generic_filtered
 ################################
 # Add HGMD
