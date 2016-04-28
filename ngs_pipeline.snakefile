@@ -519,7 +519,7 @@ rule CN_LRR_old:
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
 		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
+		cgc    = config["annovar_data"]+"geneLists/combinedList_02282016",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
 		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.v1.txt",
@@ -569,7 +569,7 @@ rule CN_LRR:
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
 		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+"geneLists/combinedList_030816",
+		cgc    = config["annovar_data"]+"geneLists/combinedList_02282016",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
 		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
@@ -1280,12 +1280,13 @@ rule DBinput:
 ############
 rule Actionable_Somatic:
 	input:
-		somatic=   "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.somatic",
-		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
-		refFile= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
-		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
-		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
-		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
+		somatic       = "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.somatic",
+		annotation    = "{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		refFile       = config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
+		combinedList  = config["annovar_data"]+"geneLists/combinedList_02282016",
+		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		convertor     = NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 	output:
 		somatic="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.somatic.actionable.txt",
 	params:
@@ -1293,7 +1294,7 @@ rule Actionable_Somatic:
 		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
-	perl {input.convertor} somatic  {input.refFile} {input.cgc} {input.somatic} {input.annotation} >{output.somatic}
+	perl {input.convertor} somatic  {input.refFile} {input.cgc} {input.combinedList} {input.somatic} {input.annotation} >{output.somatic}
 	#######################
 	"""
 ############
