@@ -58,7 +58,8 @@ else{
 =head1 SYNOPSIS
 
  launch -mode d -datadir /data/Clinomics/DATA/ -workdir /projects/Clinomics/Test_Run2
- Usage:
+ ###############################################################
+ Arguments: 
 
         -h, -help, --help Print this message.
 
@@ -71,6 +72,7 @@ else{
 			  -datadir "/data/Clinomics/testData/"
 
 	-w, -workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
+ ##############################################################
 
 	##########################################
 	#
@@ -80,7 +82,7 @@ else{
 	#
 	#	DryRun
 	#
-	#########################################
+	##########################################
 	#
 	#
 	#	Biowulf

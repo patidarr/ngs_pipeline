@@ -85,7 +85,7 @@ sub Germline{
 	my $ORI =OpneFH($germline);
 	my $head =`grep -m1 -P "^Chr\tStart\tEnd\tRef\tAlt\t" $annotation |sort |uniq`;
 	chomp($head);
-	print "$head\tSample\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
+	print "$head\tSample\tSampleType\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
 	while (<$ORI>){
 		chomp;
 		my @temp = split("\t", $_);
@@ -239,7 +239,7 @@ sub Somatic{
 	close REF;
 	print "Chr\tStart\tEnd\tRef\tAlt\t";
 	print $ANNOTATION{"Chr\tStart\tEnd\tRef\tAlt"};
-	print "\tSample\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
+	print "\tSample\tSampleType\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
 	while (<ORI>){
 		chomp;
 		my @temp = split("\t", $_);
