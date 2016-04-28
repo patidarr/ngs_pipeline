@@ -17,7 +17,6 @@ fi
 #export TIME=$(date +"%Y%m%d")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
-	module use /data/khanlab/apps/Modules
 	module load python/3.4.3
 	export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
 	export WORK_DIR="/data/khanlab/projects/DNASeq/"
@@ -71,7 +70,7 @@ elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
 	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
 fi
-
+chmod -R a+rw $WORK_DIR/
 # Summary 
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
 
