@@ -17,7 +17,7 @@ if($ARGV[0] eq 'somatic'){
 	# 5 == Annotations
 }
 elsif($ARGV[0] eq 'germline' or $ARGV[0] eq 'rnaseq'){
-	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $ARGV[9], $ARGV[10]);
+	Germline($ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $ARGV[9], $ARGV[10], $ARGV[11],$ARGV[12]);
 	# 1 == somaticFile
 	# 2 == germlineFile
 	# 3 == Annotations
@@ -28,6 +28,8 @@ elsif($ARGV[0] eq 'germline' or $ARGV[0] eq 'rnaseq'){
 	# 8 == ClinOmics Tier2 [reference]
 	# 9 == Genetics_HumanRef [reference]
 	#10 == ClinomicsPanel [reference]
+	#11 == FoundationMed [reference]
+	#12 == CancerGeneCensus [reference]
 }
 else{
 	die $!;
@@ -52,7 +54,7 @@ sub FillHASH{
 	return(%HASH);
 }
 sub Germline{
-	my ($somatic, $germline, $annotation, $cancerGeneList, $hotspot, $inherited, $JW, $CL, $GHR, $CLNP) = (@_);
+	my ($somatic, $germline, $annotation, $cancerGeneList, $hotspot, $inherited, $JW, $CL, $GHR, $CLNP, $fm, $cgc_all) = (@_);
 	my $SOM = OpneFH($somatic);
 	my $ANN = OpneFH($annotation);
 	my $HOT = OpneFH($hotspot);
@@ -98,11 +100,11 @@ sub Germline{
 		$vcf = join "\t", @temp[5..$end];
 		if (!exists $DATA{$site}){ # i.e. position is germline!!
 		#if (!exists $DATA{$site_sample}){ # i.e. position in sample is germline
-			my ($source, $level) = findSource($ANNOTATION{"$site"}, $cancerGeneList, $inherited, $JW, $CL, $GHR, $CLNP);
+			my ($source, $level) = findSource($ANNOTATION{"$site"}, $cancerGeneList, $inherited, $JW, $CL, $GHR, $CLNP, $fm, $cgc_all);
 			my @ANN = split("\t", $ANNOTATION{"$site"});
 			my $vaf = VAF($temp[10], $temp[11]);
 			if(($temp[10] !~ /\D/) and $temp[10] >=10 and $vaf >=0.25){
-				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CGCensus_Hereditary|Genetics_HumanRef|ClinomicsPanel]/){
+				if($source =~ /[ACMG|ACMG-clinvar|HGMD|HGMD-clinvar|ACMG|InheritedDiseases|JW_germline|ClinOmicsTier2|CGCensus_Hereditary|Genetics_HumanRef|ClinomicsPanel|FoundationMed|CancerGeneCensus]/){
 					if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
 						$level  = "stringent";
 						$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
@@ -111,12 +113,12 @@ sub Germline{
 						$level  = "stringent";
 						
 					}
-					if ($temp[6] =~ /Tumor/ and $vaf >=0.75){
-						$level  = "stringent";
-					}
-					if ($temp[6] =~ /Normal/ and $vaf <=0.60){
-                                                $level  = "stringent";
-                                        }
+#					if ($temp[6] =~ /Tumor/ and $vaf >=0.75){
+#						$level  = "stringent";
+#					}
+#					if ($temp[6] =~ /Normal/ and $vaf <=0.60){
+#                                               $level  = "stringent";
+#                                        }
 					print "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\t$level\n";
 				}
 			}
@@ -125,7 +127,7 @@ sub Germline{
 	close $ORI;
 }
 sub findSource{
-	my ($input, $cancerGeneList, $inherited, $JW, $CL, $GHR, $CLNP)= (@_);
+	my ($input, $cancerGeneList, $inherited, $JW, $CL, $GHR, $CLNP, $fm, $cgc_all)= (@_);
 	my %source;
 	my $level = "2";
 	my %CANCER_GENE     =FillHASH(OpneFH($cancerGeneList));
@@ -134,6 +136,9 @@ sub findSource{
 	my %CL_List         =FillHASH(OpneFH($CL));
 	my %GHR_List        =FillHASH(OpneFH($GHR));
 	my %CLNP_List 	    =FillHASH(OpneFH($CLNP));
+	my %FM_List 	    =FillHASH(OpneFH($fm));
+	my %CGC_List 	    =FillHASH(OpneFH($cgc_all));
+	
 	my @ANN = split("\t", $input);
 	if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
 		$source{'ACMG'} = 'yes';
@@ -204,6 +209,26 @@ sub findSource{
 		}
 		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
 			$source{'ClinomicsPanel'} = 'yes';
+			$level = "stringent";
+		}
+	}
+	if (exists $FM_List{$ANN[$index_of_Gene]}){
+		$source{'FoundationMed'} = 'yes';
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+			$level = "stringent";
+		}
+		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+			$source{'FoundationMed'} = 'yes';
+			$level = "stringent";
+		}
+	}
+	if (exists $CGC_List{$ANN[$index_of_Gene]}){
+		$source{'CancerGeneCensus'} = 'yes';
+		if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+			$level = "stringent";
+		}
+		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+			$source{'CancerGeneCensus'} = 'yes';
 			$level = "stringent";
 		}
 	}

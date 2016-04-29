@@ -1314,6 +1314,9 @@ rule Actionable_Germline:
 		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		clnpnl = config["annovar_data"]+"geneLists/ClinomicsPanel.txt",
+		fmList = config["annovar_data"]+"geneLists/FMI.geneList.txt",
+		cgc_all= config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
+		
 		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
@@ -1325,10 +1328,10 @@ rule Actionable_Germline:
 	#######################
 	if [ -e {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
 	then
-		perl {input.convertor} germline {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} {input.clnpnl} > {output.germline}
+		perl {input.convertor} germline {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} {input.clnpnl} {input.fmList} {input.cgc_all} > {output.germline}
 	else
 		touch {input.germline}.dummy
-		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} {input.clnpnl} > {output.germline}.gl
+		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} {input.clnpnl} {input.fmList} {input.cgc_all} > {output.germline}.gl
 		perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.combinedList}  {input.germline} {input.annotation} >{output.germline}.som
 		perl {input.combine} {output.germline}.gl {output.germline}.som  >{output.germline}
 		rm -rf {output.germline}.gl {output.germline}.som {input.germline}.dummy
@@ -1352,6 +1355,8 @@ rule Actionable_RNAseq:
 		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		clnpnl = config["annovar_data"]+"geneLists/ClinomicsPanel.txt",
+		fmList = config["annovar_data"]+"geneLists/FMI.geneList.txt",
+                cgc_all= config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
@@ -1362,7 +1367,7 @@ rule Actionable_RNAseq:
 	shell: """
 	#######################
 	touch {input.rnaseq}.dummy
-	perl {input.convertor} rnaseq {input.rnaseq}.dummy {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} {input.clnpnl} > {output.rnaseq}.gl
+	perl {input.convertor} rnaseq {input.rnaseq}.dummy {input.rnaseq} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} {input.clnpnl} {input.fmList} {input.cgc_all} > {output.rnaseq}.gl
 	perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.combinedList}  {input.rnaseq} {input.annotation} >{output.rnaseq}.som
 	perl {input.combine} {output.rnaseq}.gl {output.rnaseq}.som  >{output.rnaseq}
 	rm -rf {output.rnaseq}.gl {output.rnaseq}.som {input.rnaseq}.dummy
