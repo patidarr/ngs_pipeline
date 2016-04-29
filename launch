@@ -57,7 +57,7 @@ else{
 }
 =head1 SYNOPSIS
 
- launch -mode d -datadir /data/Clinomics/DATA/ -workdir /projects/Clinomics/Test_Run2
+ launch -mode d -datadir /projects/Clinomics/DATA/ -workdir /projects/Clinomics/Test_Run2
  ###############################################################
  Arguments: 
 
@@ -67,7 +67,7 @@ else{
 			  in dev mode a pre set time is used for debugging purposes.
 
 	-d, -datadir	On biowulf the raw data is stored in /data/khanlab/projects/DATA/
-			  On TGen the raw data is stored in /data/Clinomics/DATA/
+			  On TGen the raw data is stored in /projects/Clinomics/DATA/
 			  If your data is coming from somewhere else specify using this variable
 			  -datadir "/data/Clinomics/testData/"
 
@@ -91,8 +91,8 @@ else{
                 module load python/3.4.3
                 export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
                 export WORK_DIR="/data/khanlab/projects/DNASeq/"
-                #export DATA_DIR="/data/khanlab/projects/DATA/"
-                export DATA_DIR="/data/Clinomics/DATA/"
+                export DATA_DIR="/data/khanlab/projects/DATA/"
+                #export DATA_DIR="/data/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
                 export HOST="biowulf.nih.gov"
                 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
