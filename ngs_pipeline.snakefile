@@ -519,7 +519,7 @@ rule CN_LRR_old:
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
 		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+"geneLists/combinedList_02282016",
+		cgc    = config["annovar_data"]+"geneLists/combinedList_04292016",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
 		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.v1.txt",
@@ -569,7 +569,7 @@ rule CN_LRR:
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
 		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+"geneLists/combinedList_02282016",
+		cgc    = config["annovar_data"]+"geneLists/combinedList_04292016",
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
 		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
@@ -1284,7 +1284,7 @@ rule Actionable_Somatic:
 		annotation    = "{subject}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile       = config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_02282016",
+		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor     = NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 	output:
@@ -1314,7 +1314,7 @@ rule Actionable_Germline:
 		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		clnpnl = config["annovar_data"]+"geneLists/ClinomicsPanel.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_02282016",
+		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		germline="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.germline.actionable.txt",
@@ -1352,7 +1352,7 @@ rule Actionable_RNAseq:
 		ghr    = config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt",
 		cgc    = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		clnpnl = config["annovar_data"]+"geneLists/ClinomicsPanel.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_02282016",
+		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		rnaseq="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.rnaseq.actionable.txt",
