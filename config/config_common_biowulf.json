@@ -35,7 +35,7 @@
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
-	"Actionable_mutation"	: "Actionable.v2.pl",
+	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.pl",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/Clinomics/Ref/khanlab/Index/bwa/ucsc.hg19.fasta",
