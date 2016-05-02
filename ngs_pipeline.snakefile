@@ -232,7 +232,7 @@ include: NGS_PIPELINE +"/ruleBook/Consolidate.snakefile"
 include: NGS_PIPELINE +"/ruleBook/universal.snakefile"
 include: NGS_PIPELINE +"/ruleBook/haplotypeCaller.snakefile"
 include: NGS_PIPELINE +"/ruleBook/platypus.snakefile"
-
+include: NGS_PIPELINE +"/ruleBook/gatk_RNASeq.snakefile"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -257,16 +257,19 @@ rule Khanlab_Pipeline:
 	params:
 		rulename = "Final",
 		group    = config["group"],
-		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl"
+		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl",
+		mail     = config["mail"],
+		subs     = config["subject"].keys()
 	shell: """
 	#######################
 	find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp {params.group} {{}} \;
-	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
+	find . -type f -user $USER -exec chmod g+r {{}} \; 
+#	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {params.wait4job} ${{Final}}
-#	echo -e "Pipeline finished successfully.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab NGS Pipeline" `whoami`@mail.nih.gov
+	echo -e "Hello,\\n\\n ngs-pipeline finished successfully on {params.subs}.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}
 	#######################
 	"""
 ############

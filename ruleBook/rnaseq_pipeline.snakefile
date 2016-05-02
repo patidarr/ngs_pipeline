@@ -21,7 +21,7 @@ for subject  in config['RNASeq'].keys():
 		ALL_FASTQC += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/tophat-fusion.txt"]
 		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/fusion-catcher.txt"]
-		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
+		RNASEQ_FUSION1 += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
@@ -363,8 +363,8 @@ rule GATK_RNASeq:
 		phase1=config["1000G_phase1"],
 		mills=config["Mills_and_1000G"]
 	output:
-		bam="{base}/{TIME}/{sample}/{sample}.star.final.bam",
-		index="{base}/{TIME}/{sample}/{sample}.star.final.bam.bai",
+		bam="{base}/{TIME}/{sample}/{sample}.star.finalllll.bam",
+		index="{base}/{TIME}/{sample}/{sample}.star.finalllll.bam.bai",
 	version: config["GATK"]
 	params:
 		rulename  = "gatk_R",
@@ -434,7 +434,7 @@ rule Sub_Fusion:
 	input:
 		tophat="{subject}/{TIME}/{sample}/fusion/tophat-fusion.txt",
 		fc="{subject}/{TIME}/{sample}/fusion/fusion-catcher.txt",
-		defuse="{subject}/{TIME}/{sample}/fusion/defuse.filtered.txt",
+		#defuse="{subject}/{TIME}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
 		mitelman  = config["Mitelman"],
 		omim	  = config["omim_fusion"],
@@ -447,7 +447,8 @@ rule Sub_Fusion:
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/{TIME}/Actionable
-	perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |sort >{output}
+	touch {wildcards.subject}/{TIME}/{wildcards.sample}/fusion/defuse.filtered.txt
+	perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {wildcards.subject}/{TIME}/{wildcards.subject}/fusion/defuse.filtered.txt {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |sort >{output}
 	#######################
 	"""
 ############
@@ -464,8 +465,8 @@ rule Actionable_fusion:
 	shell: """
 	#######################
 	cat {input.fusion} |sort |uniq >{output}.tmp
-	grep "#LeftGene" >{output}
-	grep -v "#LeftGene" >>{output}
+	grep "#LeftGene" {output}.tmp >{output}
+	grep -v "#LeftGene" {output}.tmp >>{output}
 	
 	rm -rf {output}.tmp
 	#######################
