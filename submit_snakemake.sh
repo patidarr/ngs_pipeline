@@ -17,19 +17,21 @@ fi
 if [[ ! -z $ngs ]]; then
         export NGS_PIPELINE=$ngs
 fi
+if [[ ! -z $dataDir ]]; then
+        export DATA_DIR=$dataDir
+fi
+if [[ ! -z $workDir ]]; then
+        export WORK_DIR=$workDir
+        SAM_CONFIG=$WORK_DIR/samplesheet.json
+fi
+
 #export TIME=$(date +"%Y%m%d")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
-	module load python/3.4.3
 	module load snakemake/3.5.5.n1
-	export WORK_DIR="/data/khanlab/projects/DNASeq/"
-	export DATA_DIR="/data/khanlab/projects/DATA/"
 	export HOST="biowulf.nih.gov"
 elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
-	module load python/3.4.3
 	module load snakemake/3.5.5
-	export WORK_DIR="/projects/Clinomics/Test_Run2/"
-	export DATA_DIR="/projects/Clinomics/DATA/"
 	export HOST="login01"
 else 
 	echo -e "Host `hostname` is not recognized\n"
@@ -37,15 +39,6 @@ else
 	echo -e "If you would like to use it on another system, you have to change config/config_cluster.json and some hardcoded system dependencies\n";
 	exit;
 fi
-
-if [[ ! -z $dataDir ]]; then 
-	export DATA_DIR=$dataDir
-fi
-if [[ ! -z $workDir ]]; then
-	export WORK_DIR=$workDir
-	SAM_CONFIG=$WORK_DIR/samplesheet.json
-fi
-
 
 
 cd $WORK_DIR
