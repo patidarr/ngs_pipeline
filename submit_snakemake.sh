@@ -18,6 +18,7 @@ fi
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module load python/3.4.3
+	module load snakemake/3.5.5.n1
 	export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
 	export WORK_DIR="/data/khanlab/projects/DNASeq/"
 	export DATA_DIR="/data/khanlab/projects/DATA/"
@@ -29,7 +30,7 @@ if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
 	#module use /home/patidarr/Modules
 	module load python/3.4.3
-	module load snakemake
+	module load snakemake/3.5.5
 	export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
 	export WORK_DIR="/projects/Clinomics/Test_Run3/"
 	export DATA_DIR="/projects/Clinomics/DATA/"
@@ -70,7 +71,7 @@ elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
 	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
 fi
-chmod -R a+rw $WORK_DIR/
+chmod -R 777 $WORK_DIR/.snakemake
 # Summary 
 #  snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --summary
 
