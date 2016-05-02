@@ -351,41 +351,6 @@ rule STAR:
 	#######################
 	"""
 ############
-#       GATK_RNASeq
-############
-############
-#       GATK Best Practices
-############
-rule GATK_RNASeq:
-	input:  bam="{base}/{TIME}/{sample}/{sample}.star.dd.bam",
-		bai="{base}/{TIME}/{sample}/{sample}.star.dd.bam.bai",
-		ref=config["reference"],
-		phase1=config["1000G_phase1"],
-		mills=config["Mills_and_1000G"]
-	output:
-		bam="{base}/{TIME}/{sample}/{sample}.star.finalllll.bam",
-		index="{base}/{TIME}/{sample}/{sample}.star.finalllll.bam.bai",
-	version: config["GATK"]
-	params:
-		rulename  = "gatk_R",
-		batch     = config[config['host']]["job_gatk_RNA"]
-	shell: """
-	#######################
-	module load GATK/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T SplitNCigarReads -R {input.ref} -I {input.bam} -o ${{LOCAL}}/{wildcards.sample}.trim.bam -rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS
-
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T RealignerTargetCreator -nt 10 -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam -o ${{LOCAL}}/{wildcards.sample}.realignment.intervals
-
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T IndelRealigner -R {input.ref} -known {input.phase1} -known {input.mills} -I ${{LOCAL}}/{wildcards.sample}.trim.bam --targetIntervals ${{LOCAL}}/{wildcards.sample}.realignment.intervals -o ${{LOCAL}}/{wildcards.sample}.lr.bam
-
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
-
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
-
-	mv {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.star.final.bai {output.index}
-	######################
-	"""
-############
 # RNASeq Hapcaller
 ############
 rule HapCall_RNASeq:
