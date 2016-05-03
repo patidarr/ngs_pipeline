@@ -401,6 +401,7 @@ rule Sub_Fusion:
 		fc="{subject}/{TIME}/{sample}/fusion/fusion-catcher.txt",
 		#defuse="{subject}/{TIME}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
+		combined  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		mitelman  = config["Mitelman"],
 		omim	  = config["omim_fusion"],
 		TCGA      = config["TCGA_fusion"]
@@ -412,8 +413,8 @@ rule Sub_Fusion:
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/{TIME}/Actionable
-	touch {wildcards.subject}/{TIME}/{wildcards.sample}/fusion/defuse.filtered.txt
-	perl {input.convertor} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {wildcards.subject}/{TIME}/{wildcards.subject}/fusion/defuse.filtered.txt {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |sort >{output}
+	touch ${{LOCAL}}/dummy
+	perl {input.convertor} {input.combined} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} ${{LOCAL}}/dummy {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |awk 'NR<2{{print $0;next}}{{print $0| "sort "}}' >{output}
 	#######################
 	"""
 ############
@@ -430,8 +431,8 @@ rule Actionable_fusion:
 	shell: """
 	#######################
 	cat {input.fusion} |sort |uniq >{output}.tmp
-	grep "#LeftGene" {output}.tmp >{output}
-	grep -v "#LeftGene" {output}.tmp >>{output}
+	grep "LeftGene" {output}.tmp >{output}
+	grep -v "LeftGene" {output}.tmp >>{output}
 	
 	rm -rf {output}.tmp
 	#######################

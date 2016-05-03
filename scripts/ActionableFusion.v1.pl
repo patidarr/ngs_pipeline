@@ -8,32 +8,16 @@ use warnings;
 #    actionable fusions based on some rules.
 #
 ###########################################################
-my $combined       = $ARGV[0];
-my $mitchelman     = $ARGV[1];
-my $omim	   = $ARGV[2];
-my $tcga	   = $ARGV[3];
-my $library        = $ARGV[4];
-my $defuse         = $ARGV[5];
-my $tophat         = $ARGV[6];
-my $fusioncatcher  = $ARGV[7];
-my $destination    = $ARGV[8];
-print "#LeftGene\tRightGene\tChr_Left\tPosition\tChr_Right\tPosition\tSample\tTool\tRefDatabase\tLevel\n";
+my $mitchelman     = $ARGV[0];
+my $omim	   = $ARGV[1];
+my $tcga	   = $ARGV[2];
+my $library        = $ARGV[3];
+my $defuse         = $ARGV[4];
+my $tophat         = $ARGV[5];
+my $fusioncatcher  = $ARGV[6];
+my $destination    = $ARGV[7];
+print "#LeftGene\tRightGene\tChr_Left\tPosition\tChr_Right\tPosition\tSample\tTool\tRefDatabase\n";
 my %REF;
-my %REF_SINGLE;
-unless (open(FH, "$combined")){
-	print STDERR "Can not open the file $combined\n";
-	exit;
-}
-while(<FH>){
-	chomp;
-	my @local =split("\t", $_);
-	$REF_SINGLE{"$local[0]"} = "$local[1]";
-	$REF_SINGLE{"$local[1]"} = "$local[1]";
-}
-close FH;
-        
-        
-                        
 unless (open(FH, "$mitchelman")){
         print STDERR "Can not open the file $mitchelman\n";
         exit;
@@ -43,79 +27,49 @@ while(<FH>){
         my @local =split("\t", $_);
 	$REF{"$local[0]\t$local[1]"} = 'Mitchelman';
 	$REF{"$local[1]\t$local[0]"} = 'Mitchelman';
-	##
-	$REF_SINGLE{"$local[0]"} = 'Mitchelman';
-	$REF_SINGLE{"$local[1]"} = 'Mitchelman';
-	
 }
 close FH;
 unless (open(FH, "$omim")){
 	print STDERR "Can not open the file $omim\n";
 	exit;
 }
-my @omim;
 while(<FH>){
 	chomp;
 	my @local =split("\t", $_);
-	push @omim, $local[0];
-        push @omim, $local[1];
-	##
 	if(exists $REF{"$local[0]\t$local[1]"}){
-		$REF{"$local[0]\t$local[1]"} = $REF{"$local[0]\t$local[1]"}.";Omim";
+		$REF{"$local[0]\t$local[1]"} = $REF{"$local[0]\t$local[1]"}."; Omim";
 	}
 	else{
-		$REF{"$local[0]\t$local[1]"} = "Omim";
+		$REF{"$local[0]\t$local[1]"} = "Omim";	
 	}
 	if (exists $REF{"$local[1]\t$local[0]"}){
-		$REF{"$local[1]\t$local[0]"} = $REF{"$local[1]\t$local[0]"}.";Omim";
+		$REF{"$local[1]\t$local[0]"} = $REF{"$local[1]\t$local[0]"}."; Omim";
 	}
 	else{
 		$REF{"$local[1]\t$local[0]"} = "Omim";
 	}
-}
-@omim = do { my %seen; grep { !$seen{$_}++ } @omim };
-foreach (@omim){
-        if (exists $REF_SINGLE{"$_"}){
-                $REF_SINGLE{"$_"} = $REF_SINGLE{"$_"}.";Omim";
-        }
-        else{
-                $REF_SINGLE{"$_"} = "Omim";
-        }
 }
 close FH;
 unless (open(FH, "$tcga")){
 	print STDERR "Can not open the file $tcga\n";
 	exit;
 }
-my @tcga;
 while(<FH>){
 	chomp;
 	my @local =split("\t", $_);
-	push @tcga, $local[0];
-	push @tcga, $local[1];
-	##	
 	if(exists $REF{"$local[0]\t$local[1]"}){
-		$REF{"$local[0]\t$local[1]"} = $REF{"$local[0]\t$local[1]"}.";TCGA";
+		$REF{"$local[0]\t$local[1]"} = $REF{"$local[0]\t$local[1]"}."; TCGA";
 	}
 	else{
 		$REF{"$local[0]\t$local[1]"} = "TCGA";
 	}
 	if (exists $REF{"$local[1]\t$local[0]"}){
-		$REF{"$local[1]\t$local[0]"} = $REF{"$local[1]\t$local[0]"}.";TCGA";
+		$REF{"$local[1]\t$local[0]"} = $REF{"$local[1]\t$local[0]"}."; TCGA";
 	}
 	else{
 		$REF{"$local[1]\t$local[0]"} = "TCGA";
 	}
 
-}
-@tcga = do { my %seen; grep { !$seen{$_}++ } @tcga };
-foreach (@tcga){
-	if (exists $REF_SINGLE{"$_"}){
-                $REF_SINGLE{"$_"} = $REF_SINGLE{"$_"}.";TCGA";
-        }
-        else{
-                $REF_SINGLE{"$_"} = "TCGA";
-        }
 }
 close FH;
 ###########################################################
@@ -134,15 +88,7 @@ while(<DEFUSE>){
 	if($_ =~ /^cluster_id/){print DEFUSE_OUT "$_\n"; next}	
 	if(exists $REF{"$local[30]\t$local[31]"}){
 		print DEFUSE_OUT "$_\n";
-		print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t".$REF{"$local[30]\t$local[31]"}."\tTier1\n";
-	}
-	elsif(exists $REF_SINGLE{"$local[30]"}){
-		print DEFUSE_OUT "$_\n";
-		print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t".$REF_SINGLE{"$local[30]"}."\tTier2\n";
-	}
-	elsif (exists $REF_SINGLE{"$local[31]"}){
-		print DEFUSE_OUT "$_\n";
-		print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t".$REF_SINGLE{"$local[31]"}."\tTier2\n";
+		print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t".$REF{"$local[30]\t$local[31]"}."\n";
 	}
 }
 close DEFUSE;
@@ -163,17 +109,10 @@ while(<TOP>){
 	if(exists $REF{"$local[1]\t$local[4]"}){
 		$local[3] = $local[3] + 1;
 		$local[6] = $local[6] + 1;	
-		print "$local[1]\t$local[4]\tchr$local[2]\t$local[3]\tchr$local[5]\t$local[6]\t$library\ttophatFusion\t".$REF{"$local[1]\t$local[4]"}."\tTier1\n";
+		print "$local[1]\t$local[4]\tchr$local[2]\t$local[3]\tchr$local[5]\t$local[6]\t$library\ttophatFusion\t".$REF{"$local[1]\t$local[4]"}."\n";
 		print TOPHAT_OUT "$_\n";
 	}
-	elsif(exists $REF_SINGLE{"$local[1]"}){
-		print TOPHAT_OUT "$_\n";
-		print "$local[1]\t$local[4]\tchr$local[2]\t$local[3]\tchr$local[5]\t$local[6]\t$library\ttophatFusion\t".$REF_SINGLE{"$local[1]"}."\tTier2\n";
-	}
-	elsif (exists $REF_SINGLE{"$local[4]"}){
-		print TOPHAT_OUT "$_\n";
-		print "$local[1]\t$local[4]\tchr$local[2]\t$local[3]\tchr$local[5]\t$local[6]\t$library\ttophatFusion\t".$REF_SINGLE{"$local[4]"}."\tTier2\n";
-	}
+
 }
 close TOP;
 close TOPHAT_OUT;
@@ -194,16 +133,10 @@ while(<FC>){
 		my @left  = split(":", $local[8]);
 		my @right = split(":", $local[9]);
 		if(exists $REF{"$local[0]\t$local[1]"}){
-			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t".$REF{"$local[0]\t$local[1]"}."\tTier1\n";
-		}
-		elsif(exists $REF_SINGLE{"$local[0]"}){
-			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t".$REF_SINGLE{"$local[0]"}."\tTier2\n";
-		}
-		elsif(exists $REF_SINGLE{"$local[1]"}){
-			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t".$REF_SINGLE{"$local[1]"}."\tTier2\n";
+			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t".$REF{"$local[0]\t$local[1]"}."\n";
 		}
 		else{
-			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t--\tTier3\n";
+			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t--\n";
 		}
 		print FC_OUT "$_\n";
 	}
