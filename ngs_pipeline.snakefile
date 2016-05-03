@@ -183,6 +183,7 @@ for sample in config['sample_references'].keys():
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.txt"]
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.annotated.txt"]
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.filtered.txt"]
+	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.png"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -233,6 +234,7 @@ include: NGS_PIPELINE +"/ruleBook/universal.snakefile"
 include: NGS_PIPELINE +"/ruleBook/haplotypeCaller.snakefile"
 include: NGS_PIPELINE +"/ruleBook/platypus.snakefile"
 include: NGS_PIPELINE +"/ruleBook/gatk_RNASeq.snakefile"
+include: NGS_PIPELINE +"/ruleBook/ideogram.snakefile"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
