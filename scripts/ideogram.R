@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # 
 # ./ideogram.R -f Example.input -o test.pdf -t "Example"
-# input contains 3 columns (CHR\tBP\tP)
+# input contains 3 columns (CHR\tPOS\tP)
 #
 suppressPackageStartupMessages(library("pracma"))
 suppressPackageStartupMessages(library("optparse"))
@@ -13,14 +13,14 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list))
 file <-opt$f
 if(grepl("png",opt$o)){
-	png(opt$o, width = 1200, height = 500)
+	png(opt$o, width = 1200, height = 500,type=c("cairo"))
 }
 if (grepl("pdf",opt$o)){
-	pdf(opt$o, width=20)
+	pdf(opt$o, width=20,type=c("cairo"))
 }
 title=opt$t
 
-ideogram <- function(x, chr="CHR", bp="BP", p="P", snp="SNP",
+ideogram <- function(x, chr="CHR", bp="POS", p="P", snp="SNP",
 		col=c("gray10", "gray60"), logp=FALSE, ...) {
 	# Check for sensible dataset
 	## Make sure you have chr, bp and p columns.
@@ -31,10 +31,10 @@ ideogram <- function(x, chr="CHR", bp="BP", p="P", snp="SNP",
 	if (!is.numeric(x[[chr]])) stop(paste(chr, "column should be numeric. Do you have 'X', 'Y', 'MT', etc? If so change to numbers and try again."))
 	if (!is.numeric(x[[bp]])) stop(paste(bp, "column should be numeric."))
 	if (!is.numeric(x[[p]])) stop(paste(p, "column should be numeric."))
-	# Create a new data.frame with columns called CHR, BP, and P.
-	d=data.frame(CHR=x[[chr]], BP=x[[bp]], P=x[[p]])
-	d <- subset(d, (is.numeric(CHR) & is.numeric(BP) & is.numeric(P)))
-	d <- d[order(d$CHR, d$BP), ]
+	# Create a new data.frame with columns called CHR, POS, and P.
+	d=data.frame(CHR=x[[chr]], POS=x[[bp]], P=x[[p]])
+	d <- subset(d, (is.numeric(CHR) & is.numeric(POS) & is.numeric(P)))
+	d <- d[order(d$CHR, d$POS), ]
 	#d$logp <- ifelse(logp, yes=-log10(d$P), no=d$P)
 	if (logp) {
 		d$logp <- -log10(d$P)
@@ -56,10 +56,10 @@ ideogram <- function(x, chr="CHR", bp="BP", p="P", snp="SNP",
 	ablines=NULL	
 	for (i in unique(d$index)) {
 		if (i==1) {
-			d[d$index==i, ]$pos=d[d$index==i, ]$BP
+			d[d$index==i, ]$pos=d[d$index==i, ]$POS
 		} else {
-			lastbase=lastbase+tail(subset(d,index==i-1)$BP, 1)
-			d[d$index==i, ]$pos=d[d$index==i, ]$BP+lastbase
+			lastbase=lastbase+tail(subset(d,index==i-1)$POS, 1)
+			d[d$index==i, ]$pos=d[d$index==i, ]$POS+lastbase
 		}
 		ticks = c(ticks, (min(d[d$CHR == i,]$pos) + max(d[d$CHR == i,]$pos))/2 + 1)
 		xmax=max(d[d$CHR == i,]$pos)

@@ -25,7 +25,7 @@ if [[ ! -z $workDir ]]; then
         SAM_CONFIG=$WORK_DIR/samplesheet.json
 fi
 
-#export TIME=$(date +"%Y%m%d")
+NOW=$(date +"%Y%m%d%H")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module load snakemake/3.5.5.n1
@@ -54,12 +54,12 @@ export ACT_DIR="/Actionable/"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 SAM_CONFIG=$WORK_DIR/samplesheet.json
 
-cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${TIME}.stats"
+cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  -k -p -T -j 3000 --stats ngs_pipeline_${NOW}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
-	snakemake $cmd --cluster "sbatch -o log/{params.rulename}.%j.o -e log/{params.rulename}.%j.e {params.batch}" >& ngs_pipeline_${TIME}.log
+	snakemake $cmd --cluster "sbatch -o log/{params.rulename}.%j.o -e log/{params.rulename}.%j.e {params.batch}" >& ngs_pipeline_${NOW}.log
 elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
-	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${TIME}.log
+	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 fi
 chmod -R 777 $WORK_DIR/.snakemake
