@@ -4,7 +4,7 @@
 #
 # Author: Rajesh Patidar
 # 
-# Usually slurm can translate the PBS varibles so no need to initialize the following sbatch vars.
+# Usually slurm can translate the PBS varibles so no need to initialize the sbatch variables.
 set -eo pipefail
 if [[ $time == 'd' ]]; then
 	export TIME="20160415"
