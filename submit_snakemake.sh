@@ -45,10 +45,10 @@ cd $WORK_DIR
 if [ ! -d log ]; then
 	mkdir log
 fi
-if [ ! -d annovar ]; then
-	mkdir annovar
-	touch annovar/AnnotationInput.final.txt
-fi
+#if [ ! -d annovar ]; then
+#	mkdir annovar
+#	touch annovar/AnnotationInput.final.txt
+#fi
 
 export ACT_DIR="/Actionable/"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile

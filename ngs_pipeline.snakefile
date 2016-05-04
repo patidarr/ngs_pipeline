@@ -1096,8 +1096,9 @@ rule FormatInput:
 	shell: """
 	#######################
 	module load annovar/{version}
-	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/allSites
-	perl {params.fAEV} {wildcards.subject}/annotation/allSites annovar/AnnotationInput.final.txt {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt {wildcards.subject}/annotation/AnnotationInput
+	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/AnnotationInput
+	#cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/allSites
+	#perl {params.fAEV} {wildcards.subject}/annotation/allSites annovar/AnnotationInput.final.txt {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt {wildcards.subject}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/annotation/AnnotationInput
 	rm -rf "{wildcards.subject}/annotation/AnnotationInput.pph",
 	#######################
