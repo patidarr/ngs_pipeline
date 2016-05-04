@@ -271,7 +271,7 @@ rule Khanlab_Pipeline:
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {params.wait4job} ${{Final}}
-	echo -e "Hello,\\n\\n ngs-pipeline finished successfully on {params.subs}.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}
+	echo -e "Hello,\\n\\n ngs-pipeline finished successfully on {HOST}. \\n Following samples are processed:\\n {params.subs}.\\n\\n Result is available in {WORK_DIR}. \\n\\n For accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}
 	#######################
 	"""
 ############
