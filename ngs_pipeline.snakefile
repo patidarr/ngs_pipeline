@@ -701,7 +701,7 @@ rule IGV_Session:
 		work_dir =  WORK_DIR
 	shell: """
 	#######################
-	dir=`echo {params.work_dir} | sed -e 's/\/data\/khanlab/K:/g'`
+	dir=`echo {params.work_dir} | sed -e 's/\/data\/khanlab/K:/g' | sed -e 's/\/projects\/Clinomics/Y:/g'`
 	echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" >{output}
 	echo "<Global genome=\\"hg19\\" locus=\\"\\" version=\\"3\\">" >>{output}
 	echo "\t<Resources>" >>{output}
