@@ -272,7 +272,8 @@ rule Khanlab_Pipeline:
 #	cd /data/khanlab/projects/Genotyping/
 #	Final=`sh genotype.sh`
 #	perl {params.wait4job} ${{Final}}
-	ssh {params.host} 'echo -e "Hello,\\n\\n ngs-pipeline finished successfully on {HOST}. \\n Following samples are processed:\\n {params.subs}.\\n\\n Result available in {WORK_DIR}. \\n\\n For accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}'
+#	list=`echo {params.subs} |sed -e 's/ /\\n/g' |sort`
+	ssh {params.host} 'list=`echo {params.subs} |sed -e "s/ /\\n/g" |sort`; echo -e "Hello,\\n\\nngs-pipeline finished successfully on {HOST}. \\nSamples Processed:\\n${{list}}.\\n\\nResult available in {WORK_DIR}. \\n\\nFor accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}'
 	#######################
 	"""
 ############
