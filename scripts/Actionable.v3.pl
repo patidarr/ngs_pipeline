@@ -109,10 +109,9 @@ sub Germline{
 						$level  = "stringent";
 						$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
 					}
-					if ($source =~ /InheritedDiseases/ and $vaf >=0.75){
-						$level  = "stringent";
-						
-					}
+#					if ($source =~ /InheritedDiseases/ and $vaf >=0.75){
+#						$level  = "stringent";						
+#					}
 #					if ($temp[6] =~ /Tumor/ and $vaf >=0.75){
 #						$level  = "stringent";
 #					}
