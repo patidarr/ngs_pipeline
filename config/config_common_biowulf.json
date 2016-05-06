@@ -2,7 +2,7 @@
 	"group"			: "khanlab",
 	"host"			: "biowulf.nih.gov",
 	"mail"			: "-c patidarr@mail.nih.gov",
-	"mails"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
+	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "0.1.19",
 	"samtools_old"		: "0.1.19",
@@ -45,19 +45,19 @@
 	"STAR_ref"              : "/data/Clinomics/Ref/khanlab/Index/STAR_hg19_index",
 	"reference"		: "/data/Clinomics/Ref/khanlab/ucsc.hg19.fasta",
 	"target_intervals"	:{
-		"wholegenome"	: "/data/Clinomics/Ref/khanlab/design/Wholegenome.target.hg19.merged.bed",
-		"seqcap"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
-		"clin.ex.v1"	: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
-		"clin.snv.v1"	: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
-		"clin.cnv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
-		"clin.snv.v2"	: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
-		"rms_capture"	: "/data/Clinomics/Ref/khanlab/design/RMS_Panel.target.hg19.merged.bed",
-		"access" 	: "/data/Clinomics/Ref/khanlab/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
-		"polya"		: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
-		"seqcapez"	: "/data/Clinomics/Ref/khanlab/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed"
+		"wholegenome"		: "/data/Clinomics/Ref/khanlab/design/Wholegenome.target.hg19.merged.bed",
+		"seqcapez.hu.ex.v3"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
+		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
+		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
+		"rms_capture"		: "/data/Clinomics/Ref/khanlab/design/RMS_Panel.target.hg19.merged.bed",
+		"access" 		: "/data/Clinomics/Ref/khanlab/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
+		"polya"			: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
+		"seqcapez.rms.v1"	: "/data/Clinomics/Ref/khanlab/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed"
 	},
 	"failed_exon_params": {
-		"seqcap":{
+		"seqcapez.hu.ex.v3":{
 			"Normal":"20",
 			"Tumor":"20"
 		},
@@ -77,7 +77,7 @@
 			"Normal":"20",
 			"Tumor":"50"
 		},
-		"seqcapez":{
+		"seqcapez.rms.v1":{
 			"Normal":"100",
 			"Tumor":"100"
                 }
