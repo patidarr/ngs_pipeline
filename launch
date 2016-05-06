@@ -105,7 +105,7 @@ else{
 		export TIME="20160415"
                 module load snakemake/3.5.5
                 export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"
-                export WORK_DIR="/projects/Clinomics/Test_Run2/"
+                export WORK_DIR="`pwd`"
                 export DATA_DIR="/projects/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
                 export HOST="login01"

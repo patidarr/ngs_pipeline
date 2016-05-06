@@ -618,15 +618,22 @@ rule CN_LRR:
 
 	perl {input.filter} filter {output.out}.corrected ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
 	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.txt
+	set +eo pipefail
 	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
 
 	head -1 {output.final} >{output.filtered}
-	for gene in ${{geneList}};
-	do
-		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
-	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
-	cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v2.filtered.txt
-	rm -rf {output.out}.temp1 {output.out}.temp
+	if [ -n "${{geneList}}" ]; then
+		for gene in ${{geneList}};
+		do
+			awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
+		done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
+		cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v2.filtered.txt
+		rm -rf {output.out}.temp1 {output.out}.temp
+	else
+		echo "No Gains or Losses Found in this sample" >>{output.filtered}
+		cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v2.filtered.txt
+                rm -rf {output.out}.temp1 {output.out}.temp
+	fi
 	#######################
 	"""
 ############
