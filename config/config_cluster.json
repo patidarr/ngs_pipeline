@@ -17,7 +17,7 @@
 		"job_gatk"       : "--partition=ccr --time=30:00:00 --mem=40G  --cpus-per-task=32 --gres=lscratch:100",
 		"job_gatk_RNA"   : "--partition=ccr --time=30:00:00 --mem=100G  --cpus-per-task=32 --gres=lscratch:100",
 		"job_bam2mpg"    : "--partition=ccr --time=24:00:00 --mem=120G --cpus-per-task=32 --gres=lscratch:100",
-		"job_mutect"     : "--partition=ccr --time=24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:10",
+		"job_mutect"     : "--partition=ccr --time=24:00:00 --mem=10G  --cpus-per-task=10 --gres=lscratch:40",
 		"job_strelka"    : "--partition=ccr --time=10:00:00 --mem=50G  --cpus-per-task=32 --gres=lscratch:20",
 		"job_platypus"   : "--partition=ccr --time=10:00:00 --mem=50G  --cpus-per-task=32 --gres=lscratch:20",
 		"job_addbackann" : "--partition=ccr,quick --time=00:30:00 --mem=2G   --cpus-per-task=1",
