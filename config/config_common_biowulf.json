@@ -2,7 +2,7 @@
 	"group"			: "khanlab",
 	"host"			: "biowulf.nih.gov",
 	"mail"			: "-c patidarr@mail.nih.gov",
-	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
+	"mail"			: "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "0.1.19",
 	"samtools_old"		: "0.1.19",
