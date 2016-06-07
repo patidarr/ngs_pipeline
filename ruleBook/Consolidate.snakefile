@@ -18,6 +18,17 @@ rule QC:
 	python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}
 	#######################
 	"""
+rule QC_Summary_Patient:
+	input : lambda wildcards: SUB_CON_QC[wildcards.subject]
+	output: "{subject}/{TIME}/qc/{subject}.consolidated_QC.txt"
+	params:
+		rulename  = "QC_Sum",
+		batch     = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	cat {input} |sort |uniq >{output}
+	#######################
+	"""
 rule QC_Summary:
 	input : CON_QC
 	output: "Consolidated_QC.txt"
