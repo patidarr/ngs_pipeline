@@ -28,7 +28,7 @@
 		"job_expressed"  : "--partition=b1  --time=24:00:00 --mem=2G   --cpus-per-task=1",
 		"job_tophatPost" : "--partition=b1  --time=50:00:00 --mem=225g --cpus-per-task=32",
 		"job_bwa"        : "--partition=ccr --time=20:00:00 --mem=50G  --cpus-per-task=32 ",
-		"job_cufflinks"  : "--partition=ccr --time=99:00:00 --mem=30g  --cpus-per-task=15",
+		"job_cufflinks"  : "--partition=ccr --time=99:00:00 --mem=50g  --cpus-per-task=30",
 		"job_hotspot"    : "--partition=ccr --time=10:00:00 --mem=50G  --cpus-per-task=20",
 		"job_bedtools"   : "--partition=ccr --time=10:00:00 --mem=30G  --cpus-per-task=10",
 		"job_freebayes"  : "--partition=ccr --time=10:00:00 --mem=50G  --cpus-per-task=32",

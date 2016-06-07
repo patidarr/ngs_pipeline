@@ -19,6 +19,7 @@
 		"rms_capture"		: "/data/Clinomics/Ref/khanlab/design/RMS_Panel.target.hg19.merged.bed",
 		"access" 		: "/data/Clinomics/Ref/khanlab/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
 		"polya"			: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
+		"ribozero"			: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
 		"seqcapez.rms.v1"	: "/data/Clinomics/Ref/khanlab/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed"
 	},
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",

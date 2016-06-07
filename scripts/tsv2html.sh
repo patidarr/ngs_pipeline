@@ -18,7 +18,7 @@ Options:
   --foot   Treat last line as footer, enclosing in <tfoot> and <th> tags. 
 
   --Name   To include in Mail
- 
+  --Diagnosis To include in the mail body  
 Examples:
  
   1. $(basename $0) --Name NCI00001 input.csv
@@ -52,6 +52,10 @@ while true; do
     --name)
       shift
       name="$1"
+      ;;
+    --diagnosis)
+      shift
+      diagnosis="$1"
       ;;
     --help)
       usage
@@ -117,7 +121,7 @@ echo "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www
 <body>
 <p>
 Hello,<br><br>
-     Please check the genotyping result on patient \"$name\"; a cell with <font color=\"red\">red</font> color indicate that corrosponding library might not belong to the patient $name.<br><br>
+     Please check the genotyping result on $diagnosis patient \"$name\"; a cell with <font color=\"red\">red</font> color indicate that corrosponding library might not belong to the patient $name.<br><br>
 </p>
 "
  

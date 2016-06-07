@@ -18,6 +18,7 @@
 		"rms_capture"		: "/projects/Clinomics/Tools/ref/hg19/design/RMS_Panel.target.hg19.merged.bed",
 		"access"		: "/projects/Clinomics/Tools/ref/hg19/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
 		"polya"			: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
+		"ribozero"			: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
 		"seqcapez.rms.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed"
 	},
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",

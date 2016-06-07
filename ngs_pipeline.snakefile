@@ -404,10 +404,11 @@ rule SampleGT:
 		"{subject}/{TIME}/qc/{subject}.genotyping.txt",
 	version: config["R"]
 	params:
-		rulename = "SampleGT",
-		batch    = config[config['host']]["job_covplot"],
-		mail     = config["mail"],
-		host	 = config["host"]
+		rulename 	= "SampleGT",
+		batch    	= config[config['host']]["job_covplot"],
+		mail     	= config["mail"],
+		host	 	= config["host"],
+		diagnosis	= config['Diagnosis'][sample]
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/{TIME}/qc/GT
@@ -430,7 +431,7 @@ rule SampleGT:
 	sed -i 's/Sample_//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
-	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --head {WORK_DIR}/{wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
+	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --diagnosis '{params.diagnosis}' --head {WORK_DIR}/{wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
 	#######################
 	"""
 ############
