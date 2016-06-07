@@ -13,9 +13,11 @@ ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
 TIME=os.environ['TIME']
 if HOST == 'biowulf.nih.gov':
+	configfile: NGS_PIPELINE +"/config/config_common.json"
 	configfile: NGS_PIPELINE +"/config/config_common_biowulf.json"
 	configfile: NGS_PIPELINE +"/config/config_cluster.json"
 elif HOST == 'login01':
+	configfile: NGS_PIPELINE +"/config/config_common.json"
 	configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
 	configfile: NGS_PIPELINE +"/config/config_cluster.json"
 

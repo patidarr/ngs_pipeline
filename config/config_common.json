@@ -1,6 +1,6 @@
 {
 	"mail"			: "-c patidarr@mail.nih.gov",
-	"mail"			: "-c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
+	"mail"			: "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "0.1.19",
 	"samtools_old"		: "0.1.19",
@@ -35,7 +35,7 @@
 	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.pl",
 	"failed_exon_params": {
-		"seqcap":{
+		"seqcapez.hu.ex.v3":{
 			"Normal":"20",
 			"Tumor":"20"
 		},
@@ -55,7 +55,7 @@
 			"Normal":"20",
 			"Tumor":"50"
 		},					      
-		"seqcapez":{				      
+		"seqcapez.rms.v1":{				      
 			"Normal":"100",			      
 			"Tumor":"100"			      
                 }					      
