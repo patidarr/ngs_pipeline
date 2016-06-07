@@ -21,7 +21,7 @@ for subject  in config['RNASeq'].keys():
 		ALL_FASTQC += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/tophat-fusion.txt"]
 		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/fusion-catcher.txt"]
-		RNASEQ_FUSION1 += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
+		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
@@ -68,6 +68,7 @@ rule RNASeq:
 		RNASEQ_BAM,
 		EXPRESSION,
 		RNA_CALLS,
+		RNASEQ_FUSION,
 		expand("{subject}/{TIME}"+ACT_DIR+"{subject}.fusion.actionable.txt", TIME=TIME, subject=config['RNASeq']),
 	output: temp("rnaseqDone")
 	params:
@@ -399,7 +400,7 @@ rule Sub_Fusion:
 	input:
 		tophat="{subject}/{TIME}/{sample}/fusion/tophat-fusion.txt",
 		fc="{subject}/{TIME}/{sample}/fusion/fusion-catcher.txt",
-		#defuse="{subject}/{TIME}/{sample}/fusion/defuse.filtered.txt",
+		defuse="{subject}/{TIME}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
 		combined  = config["annovar_data"]+"geneLists/combinedList_04292016",
 		mitelman  = config["Mitelman"],
@@ -413,8 +414,7 @@ rule Sub_Fusion:
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/{TIME}/Actionable
-	touch ${{LOCAL}}/dummy
-	perl {input.convertor} {input.combined} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} ${{LOCAL}}/dummy {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |awk 'NR<2{{print $0;next}}{{print $0| "sort "}}' >{output}
+	perl {input.convertor} {input.combined} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |awk 'NR<2{{print $0;next}}{{print $0| "sort "}}' >{output}
 	#######################
 	"""
 ############
