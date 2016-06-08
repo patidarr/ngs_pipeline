@@ -1284,16 +1284,17 @@ rule Expressed:
 rule DBinput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
-		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl"
+		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl",
+		tool=NGS_PIPELINE + "/scripts/AddSampleType.pl"
 	output: "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.{group}"
 	params:
 		rulename = "makeDBinput",
 		batch    = config[config['host']]['job_default'],
-		tool	 = NGS_PIPELINE + "/scripts/AddSampleType.pl",
-		hash= config["sample_type"].items(),
+		hash 	 = config["sample_type"].items(),
+		hash1	 = config["sample_captures"].items(),
 	shell: """
 	#######################
-	perl {input.convertor} {input.txtFiles} |perl {params.tool} - "{params.hash}" >{output}
+	perl {input.convertor} {input.txtFiles} |perl {input.tool} - "{params.hash}" "{params.hash1}" >{output}
 	#######################
 	"""
 ############
