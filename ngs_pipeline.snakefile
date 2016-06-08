@@ -411,7 +411,7 @@ rule SampleGT:
 		batch    	= config[config['host']]["job_covplot"],
 		mail     	= config["mail"],
 		host	 	= config["host"],
-		diagnosis	= config['Diagnosis'][sample]
+		diagnosis	= lambda wildcards: config['Diagnosis'][SUBJECT_TO_SAMPLE[wildcards.subject][0]]
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/{TIME}/qc/GT
