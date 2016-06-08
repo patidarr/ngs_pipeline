@@ -121,7 +121,7 @@ echo "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www
 <body>
 <p>
 Hello,<br><br>
-     Please check the genotyping result on $diagnosis patient \"$name\"; a cell with <font color=\"red\">red</font> color indicate that corrosponding library might not belong to the patient $name.<br><br>
+     Please check the genotyping result on <b>$diagnosis</b> patient \"$name\"; a cell with <font color=\"red\">red</font> color indicate that corrosponding library might not belong to the patient $name.<br><br>
 </p>
 "
  
