@@ -111,7 +111,7 @@ for subject in config['subject'].keys():
 #		Add RNASeq only samples to PATIENTS
 ###########################################################################
 for subject in config['RNASeq']:
-	SUBJECT_TO_SAMPLE[subject] += expand("{sample}", sample = config['RNASeq'][subject])
+	SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['RNASeq'][subject])
 for subject  in config['RNASeq'].keys():
         if subject not in PATIENTS:
                 PATIENTS.append(subject)
@@ -407,10 +407,9 @@ rule SampleGT:
 		score=NGS_PIPELINE + "/scripts/scoreGenotyes.pl"
 	output:
 		"{subject}/{TIME}/qc/{subject}.genotyping.txt",
-	version: config["R"]
 	params:
 		rulename 	= "SampleGT",
-		batch    	= config[config['host']]["job_covplot"],
+		batch    	= config[config['host']]["job_default"],
 		mail     	= config["mail"],
 		host	 	= config["host"],
 		diagnosis	= lambda wildcards: config['Diagnosis'][SUBJECT_TO_SAMPLE[wildcards.subject][0]]
