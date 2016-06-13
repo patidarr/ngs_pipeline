@@ -9,7 +9,7 @@ rule QC:
 		bedtools	= config['bedtools'],
 		tool		= NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
 		batch   	= config[config['host']]["job_c_QC"],
-		diagnosis	= config['Diagnosis'][sample]
+		diagnosis	= lambda wildcards: config['Diagnosis'][wildcards.sample]
 	shell:	"""
 	#######################
 	module load python/2.7.9
