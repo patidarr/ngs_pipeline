@@ -276,11 +276,7 @@ rule Khanlab_Pipeline:
 	find . -group $USER -exec chgrp {params.group} {{}} \;
 	find . -type f -user $USER -exec chmod g+r {{}} \; 
 #	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
-#	cd /data/khanlab/projects/Genotyping/
-#	Final=`sh genotype.sh`
-#	perl {params.wait4job} ${{Final}}
-#	list=`echo {params.subs} |sed -e 's/ /\\n/g' |sort`
-#	ssh {params.host} 'list=`echo {params.subs} |sed -e "s/ /\\n/g" |sort`; echo -e "Hello,\\n\\nngs-pipeline finished successfully on {HOST}. \\n\\nSubject(s) Processed:\\n${{list}}\\n\\nResult available in {WORK_DIR}. \\n\\nFor accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}'
+	ssh {params.host} 'list=`echo {params.subs} |sed -e "s/ /\\n/g" |sort`; echo -e "Hello,\\n\\nngs-pipeline finished successfully on {HOST}. \\n\\nSubject(s) Processed:\\n${{list}}\\n\\nResult available in {WORK_DIR}. \\n\\nFor accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}'
 	#######################
 	"""
 ############
