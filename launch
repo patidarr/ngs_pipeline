@@ -45,7 +45,7 @@ if (!$workDir){
 	exit;
 }
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
-	`sbatch --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir --cpus-per-task=1 --partition=ccr --time=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+	`sbatch --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir --cpus-per-task=1 --partition=ccr --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`
 }
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
 	`qsub -W umask=022 -v time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir -l nodes=1:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
