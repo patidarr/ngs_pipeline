@@ -62,4 +62,4 @@ elif [ $HOST == 'login01' ]; then
 	 echo "Host identified as $HOST"
 	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 fi
-chmod -R 777 $WORK_DIR/.snakemake
+chmod 775 $WORK_DIR/.snakemake/*
