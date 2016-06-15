@@ -93,6 +93,7 @@ sub Germline{
 	chomp($head);
 	print "$head\tSample\tSampleType\tCaptureType\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
 	my %Germline;
+	my %judge_tier;
 	while (<$ORI>){
 		chomp;
 		my @temp = split("\t", $_);
@@ -101,20 +102,24 @@ sub Germline{
 		my $site = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
 		$vcf = join "\t", @temp[5..$end];
 		if ($temp[6] =~ /RNASeq/){
-			$Germline{$site} = $temp[7];
+			$Germline{"$site\t$temp[7]"} = $temp[7];
 		}
 		elsif($temp[6] =~ /Normal/){
-			$Germline{$site} = $temp[7];
+			$Germline{"$site\t$temp[7]"} = $temp[7];
 		}
 		# Position is called as germline 
 		# Position is not somatic called!!
 		# in tumor the capture is same as in normal
-		if (exists $Germline{$site} and !exists $DATA{$site} and $Germline{$site} eq $temp[7]){
-			my %level;
+		my %level;
+		$level{"10"} = 'yes';
+		my $source = "";
+		my $vaf = VAF($temp[11], $temp[12]);
+		if ($temp[11] <1){
+			next;
+		}
+		if (exists $Germline{"$site\t$temp[7]"} and !exists $DATA{$site} and $Germline{"$site\t$temp[7]"} eq $temp[7] and $vaf >=0.25){
 			$level{"5"} = 'yes';
-			my $source = "";
 			my @ANN = split("\t", $ANNOTATION{"$site"});
-			my $vaf = VAF($temp[11], $temp[12]);
 			if($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){  # HGMD
                 		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
 					$source = 'HGMD-clinvar';
@@ -144,7 +149,7 @@ sub Germline{
 						$level{"3"} = "yes";
 					}
 					elsif($vaf >=0.75){
-						$level{"3"} = "yes";
+						$level{"3.1"} = "yes";
 					}
 					else{
 						$level{"4"} = "yes";
@@ -158,18 +163,82 @@ sub Germline{
 						$level{"1"} = "yes";
 					}
 					else{
-						$level{"3"} = "yes";
+						$level{"2.1"} = "yes";
 					}
 				}
 			}
-			my @l = sort keys %level;
-			if ($l[0] <=4){
-				print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]\n";
+			my @l = sort { $a <=> $b } keys %level;
+			
+			if ($l[0] <=10){
+				if ($l[0] =~ /^\d$/){
+					print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]\n";
+				}
+				else{ # Variants where tumor/normal or vaf in normal counts
+					$judge_tier{"$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]"} = $l[0];
+#					print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]\n";
+				}
 			}
+		}
+		else{
+#			print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\n";
 		}
 	}
 	close $ORI;
+	my %normal_vaf;
+	my %tumor_vaf;
+	my %germline;
+	foreach my $key (sort keys %judge_tier) {
+		my @temp = split("\t", $key);
+		$germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"} = "$temp[204]";
+		
+		if ($temp[195] eq 'Normal'){
+			$normal_vaf{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"} = "$temp[202]";
+		}
+		if($temp[195] eq 'Tumor'){
+			$tumor_vaf{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"} = "$temp[202]";
+		}
+	}
+	foreach my $key (sort keys %normal_vaf){
+		if (exists $tumor_vaf{$key}){
+			if ($germline{$key} eq 'Tier2.1'){
+				if ($tumor_vaf{$key}/$normal_vaf{$key} >=1.2){
+					$germline{$key} = "Tier2";
+				}
+				else{
+					$germline{$key} = "Tier3";
+				}
+			}
+			elsif($germline{$key} eq 'Tier3.1'){
+				if ($normal_vaf{$key} >=0.75){
+					$germline{$key} = "Tier3";
+				}
+				else{
+					$germline{$key} = "Tier4";	
+				}
+			}
+		}
+		else{
+			if ($germline{$key} eq 'Tier2.1'){
+				$germline{$key} = "Tier3";
+			}
+			elsif($germline{$key} eq 'Tier3.1'){
+				if ($normal_vaf{$key} >=0.75){
+					$germline{$key} = "Tier3";
+				}
+				else{
+					$germline{$key} = "Tier4";
+				}
+			}				
+		}
+	}
+	foreach my $key (sort keys %judge_tier) {
+		my @temp = split("\t", $key);
+		$temp[204] = $germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"};
+		print join("\t", @temp)."\n";
+	}
 }
+
+
 sub Somatic{
 #/data/Clinomics/Ref/annovar/hg19_SomaticActionableSites.txt NCI0276/NCI0276/db/NCI0276.somatic
 	my ($ref, $cgc, $geneList ,$subject, $annotation) = (@_);
@@ -242,6 +311,9 @@ sub Somatic{
 				else{
 					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier3\n";
 				}
+			}
+			else{
+				print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\tOther\tTier4\n";
 			}
 		}
 	}
