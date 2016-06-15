@@ -201,6 +201,7 @@ for sample in config['sample_references'].keys():
 	if sample in config['sample_RNASeq']:
 		somatic = [w.replace('MuTect.annotated','MuTect.annotated.expressed') for w in somatic]
 		somatic = [w.replace('strelka.snvs.annotated','strelka.snvs.annotated.expressed') for w in somatic]
+		somatic = [w.replace('strelka.indels.annotated','strelka.indels.annotated.expressed') for w in somatic]
 	add_to_SUBJECT_ANNO(subject,"somatic",somatic)
 ###########################################################################
 ###########################################################################
@@ -210,10 +211,11 @@ if len(config['sample_RNASeq']) > 0:
 	for Tumor in config['sample_RNASeq']:
 		for RNASample in config['sample_RNASeq'][Tumor]:
 			subject=SAMPLE_TO_SUBJECT[Tumor]
-			RNASeqBam    = subject + "/"+TIME+ "/" + RNASample + "/"+RNASample+".star.final.bam"
+			RNASeqBam    = subject + "/"+TIME+ "/" + RNASample + "/calls/"+RNASample + ".HC_RNASeq.snpEff.txt"
 			expressedPairs[Tumor] = RNASeqBam
 			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.indels.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
@@ -1263,16 +1265,16 @@ rule Expressed:
 	input:
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
 		Mutation="{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.txt",
-		convertor = NGS_PIPELINE + "/scripts/mpileup.pl"
+		convertor = NGS_PIPELINE + "/scripts/ExpressedMutations.pl"
 	output: "{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.expressed.txt"
 	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
-		batch     = config[config['host']]["job_expressed"]
+		batch     = config[config['host']]["job_expressed"],
+		name      = lambda wildcards: config["sample_RNASeq"][wildcards.sample]
 	shell: """
 	#######################
-	module load samtools/{version}
-	perl {input.convertor} {input.Mutation} {input.RNASeq} > {output}
+	perl {input.convertor} {input.Mutation} {input.RNASeq} {params.name} >{output}
 	#######################
 	"""
 ############

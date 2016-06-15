@@ -189,9 +189,8 @@ sub Germline{
 	my %germline;
 	foreach my $key (sort keys %judge_tier) {
 		my @temp = split("\t", $key);
-		$germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"} = "$temp[204]";
-		
 		if ($temp[195] eq 'Normal'){
+			$germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"} = "$temp[204]";
 			$normal_vaf{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"} = "$temp[202]";
 		}
 		if($temp[195] eq 'Tumor'){
@@ -233,8 +232,10 @@ sub Germline{
 	}
 	foreach my $key (sort keys %judge_tier) {
 		my @temp = split("\t", $key);
-		$temp[204] = $germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"};
-		print join("\t", @temp)."\n";
+		if (exists $germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"}){
+			$temp[204] = $germline{"$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]\t$temp[196]"};
+			print join("\t", @temp)."\n";
+		}
 	}
 }
 
