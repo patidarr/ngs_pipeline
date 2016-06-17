@@ -69,7 +69,7 @@
 		},
 		"nbl.panel":{
 			"Normal":"100",
-			"Tumor":"100",
+			"Tumor":"100"
 		}
 	}
 }
