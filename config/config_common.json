@@ -35,9 +35,17 @@
 	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.pl",
 	"failed_exon_params": {
+		"wholegenome":{
+			"Normal":"5",
+			"Tumor":"5"
+		},
 		"seqcapez.hu.ex.v3":{
 			"Normal":"20",
 			"Tumor":"20"
+		},
+		"seqcapez.hu.ex.utr.v1":{
+			"Normal":"20",
+			"Normal":"20"	
 		},
 		"clin.ex.v1": {
 			"Normal":"20",
@@ -54,10 +62,14 @@
 		"clin.snv.v2":{
 			"Normal":"20",
 			"Tumor":"50"
-		},					      
-		"seqcapez.rms.v1":{				      
-			"Normal":"100",			      
-			"Tumor":"100"			      
-                }					      
+		},
+		"seqcapez.rms.v1":{
+			"Normal":"100",
+			"Tumor":"100"
+		},
+		"nbl.panel":{
+			"Normal":"100",
+			"Tumor":"100",
+		}
 	}
 }

@@ -10,7 +10,9 @@
 	"STAR_ref"              : "/projects/Clinomics/Tools/ref/hg19/Index/STAR_hg19_index",
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
 	"target_intervals"	:{
+		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/design/WholeGenome.target.hg19.merged.bed",
 		"seqcapez.hu.ex.v3"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
+		"seqcapez.hu.ex.utr.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_UTR_v1_capture_trimed.target.hg19.merged.bed",
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
 		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
 		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
@@ -18,8 +20,9 @@
 		"rms_capture"		: "/projects/Clinomics/Tools/ref/hg19/design/RMS_Panel.target.hg19.merged.bed",
 		"access"		: "/projects/Clinomics/Tools/ref/hg19/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
 		"polya"			: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
-		"ribozero"			: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
-		"seqcapez.rms.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed"
+		"ribozero"		: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
+		"seqcapez.rms.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed",
+		"nbl.panel"		: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Panel_Neuro.target.hg19.merged.bed"
 	},
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/projects/Clinomics/Tools/ref/hg19/Mills_and_1000G_gold_standard.indels.hg19.vcf",

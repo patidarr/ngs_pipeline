@@ -33,7 +33,7 @@
 		"job_bedtools"   : "--partition=ccr --time=10:00:00 --mem=30G  --cpus-per-task=10",
 		"job_freebayes"  : "--partition=ccr --time=10:00:00 --mem=50G  --cpus-per-task=32",
 		"job_vcf2txt"    : "--partition=ccr,b1 --time=01:00:00 --mem=5G   --cpus-per-task=2",
-		"job_annovar"    : "--partition=ccr --time=20:00:00 --mem=10G  --cpus-per-task=5",
+		"job_annovar"    : "--partition=ccr --time=2-20:00:00 --mem=10G  --cpus-per-task=5",
 		"job_igvtools"   : "--partition=ccr,b1 --time=05:00:00 --mem=10G  --cpus-per-task=1 --gres=lscratch:05",
 		"job_novoalign1" : "--partition=ccr --time=20:00:00 --mem=60G  --nodes=2  --ntasks=3 --exclusive",
 		"job_novoalign"  : "--partition=ccr --time=20:00:00 --mem=60G  --cpus-per-task=32 --gres=lscratch:02",
