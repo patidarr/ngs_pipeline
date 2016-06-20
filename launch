@@ -90,7 +90,7 @@ else{
 		export TIME="20160415"
 		module load snakemake/3.5.5.n1
                 export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
-                export WORK_DIR="/data/khanlab/projects/DNASeq/"
+                export WORK_DIR="`pwd`"
                 export DATA_DIR="/data/khanlab/projects/DATA/"
                 #export DATA_DIR="/data/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
