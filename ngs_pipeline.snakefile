@@ -513,7 +513,7 @@ rule CopyNumber:
 	module load samtools/{version}
 	TotalReads=`samtools view -bh -L {input.interval} {input.bam} |samtools flagstat - |head -1|sed -e 's/\s/\\t/g' |cut -f 1`
 	#TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
-	split -d -l 12000 {input.interval} ${{LOCAL}}/input
+	split -a 5 -d -l 12000 {input.interval} ${{LOCAL}}/input
 	for file in ${{LOCAL}}/input*
 	do
 		sh {input.tool} ${{TotalReads}} ${{file}} {input.bam} ${{file}}.out &
