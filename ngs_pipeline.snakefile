@@ -893,13 +893,12 @@ rule Bam2MPG:
 	vcf-concat ${{LOCAL}}/chr*{wildcards.sample}.*.vcf.gz >${{LOCAL}}/{wildcards.sample}.snps.vcf
 	echo "Restrict to Bed file"
 
-	vcftools --vcf ${{LOCAL}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out {wildcards.sample} --recode --keep-INFO-all
+	vcftools --vcf ${{LOCAL}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out ${{LOCAL}}/{wildcards.sample} --recode --keep-INFO-all
 
-	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf |vcf-sort >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
+	sed -e 's/SAMPLE/{wildcards.sample}/g' ${{LOCAL}}/{wildcards.sample}.recode.vcf |vcf-sort >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
 
 	bgzip {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
 	tabix -f -p vcf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
-	rm -rf {wildcards.sample}.recode.vcf 
 	gunzip -c {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.raw.vcf
 	#######################
 	"""
