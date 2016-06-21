@@ -52,7 +52,7 @@ fi
 export ACT_DIR="/Actionable/"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 
-cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  --ri -k -p -T -j 3000 --stats ngs_pipeline_${NOW}.stats"
+cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  --ri -k -p -T -j 3000 --resources DeFuse=4 --stats ngs_pipeline_${NOW}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
 	echo "Variables are $cmd"

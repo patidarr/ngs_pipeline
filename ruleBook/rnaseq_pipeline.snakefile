@@ -247,6 +247,7 @@ rule DeFuse:
 		"{base}/{TIME}/{sample}/fusion/defuse.filtered.txt",
 		"{base}/{TIME}/{sample}/fusion/defuse.Reads/defuse.done"
 	version: config["defuse"]
+	resources: DeFuse=1
 	params:
 		rulename = "deFuse",
 		batch    = config[config['host']]["job_deFuse"],
