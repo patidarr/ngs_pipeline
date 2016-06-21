@@ -20,14 +20,18 @@ fi
 if [[ ! -z $dataDir ]]; then
         export DATA_DIR=$dataDir
 fi
+
 if [[ ! -z $workDir ]]; then
         export WORK_DIR=$workDir
         SAM_CONFIG=$WORK_DIR/samplesheet.json
 fi
+
+## for samplesheet
 if [[ $sheet == 'samplesheet.json' ]]; then
 	SAM_CONFIG=$WORK_DIR/samplesheet.json
 else
 	SAM_CONFIG=$sheet
+fi
 NOW=$(date +"%Y%m%d%H")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
