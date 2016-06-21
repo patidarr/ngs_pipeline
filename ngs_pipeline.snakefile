@@ -49,7 +49,6 @@ elif [ {HOST} == 'login01' ]
 		THREADS=${{PBS_NUM_PPN}}
 fi
 """)
-
 ###########################################################################
 #
 #			Conversion
@@ -503,7 +502,7 @@ rule FLAGSTAT:
 rule CopyNumber:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
+		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace("target","targetbp"),
 		flagstat="{base}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt",
 		tool=NGS_PIPELINE+ "/scripts/copyNumber.sh"
 	output:
@@ -852,7 +851,7 @@ rule Bam2MPG:
 		bam="{subject}/{TIME}/{sample}/{sample}.novo.final.bam",
 		bai="{subject}/{TIME}/{sample}/{sample}.novo.final.bam.bai",
 		ref=config["reference"],
-		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]]
+		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace("target","targetbp")
 	output:
 		snps="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
 		vcf="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.raw.vcf"
@@ -937,7 +936,7 @@ rule MuTect:
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
 		cosmic=config["cosmic"],
-		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]],
+		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]].replace("target","targetbp")
 	output:
 		vcf="{subject}/{TIME}/{Tumor}/calls/{Tumor}.MuTect.raw.vcf",
 		call_stats="{subject}/{TIME}/{Tumor}/qc/{Tumor}.mutect.call_stats.txt",
@@ -950,7 +949,6 @@ rule MuTect:
 		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4 --min_qscore 20 -rf MappingQuality -mmq 30"
 	shell: """
 	#######################
-	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
 	module load muTect/{version}
 	module load R
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $MUTECT_JAR -T MuTect \
@@ -959,7 +957,7 @@ rule MuTect:
 		--dbsnp {input.dbsnp} \
 		--input_file:normal {input[2]} \
 		--input_file:tumor {input[0]} \
-		--intervals  ${{LOCAL}}/target_intervals.bed \
+		--intervals  {input.interval} \
 		--coverage_file {output.coverage} \
 		--out {output.call_stats} \
 		--vcf {output.vcf}.vcf \
@@ -977,7 +975,7 @@ rule Strelka:
 		lambda wildcards: somaticPairs[wildcards.Tumor],
 		ref=config["reference"],
 		config=config["strelka_config"],
-		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]],
+		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]].replace("target","targetbp")
 	output:
 		snps="{subject}/{TIME}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
 		indels="{subject}/{TIME}/{Tumor}/calls/{Tumor}.strelka.indels.raw.vcf"
@@ -988,15 +986,14 @@ rule Strelka:
 		vcftools = config["vcftools"]
 	shell: """
 	#######################
-	gawk '{{print $1 "\t" $2-10 "\t" $3+10}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
 	module load strelka/{version}
 	configureStrelkaWorkflow.pl --normal={input[2]} --tumor={input[0]}\
 	--ref={input.ref} --config={input.config} --output-dir=${{LOCAL}}/strelka
 	make -j ${{SLURM_CPUS_PER_TASK}} -f ${{LOCAL}}/strelka/Makefile
 	module load vcftools/{params.vcftools}
-	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.snvs.vcf --bed ${{LOCAL}}/target_intervals.bed --out {output.snps} --recode --keep-INFO-all
+	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.snvs.vcf --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
 	mv -f {output.snps}.recode.vcf {output.snps}
-	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.indels.vcf --bed ${{LOCAL}}/target_intervals.bed --out {output.indels} --recode --keep-INFO-all
+	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.indels.vcf --bed {input.interval}  --out {output.indels} --recode --keep-INFO-all
 	mv -f {output.indels}.recode.vcf {output.indels}
 	NORMAL=`basename {input[2]} .bwa.final.bam`
 	sed -i "s/FORMAT\\tNORMAL\\tTUMOR/FORMAT\\t${{NORMAL}}\\t{wildcards.Tumor}/g" {output.snps}

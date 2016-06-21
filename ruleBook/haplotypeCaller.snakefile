@@ -4,7 +4,7 @@ rule HAPCALLER:
 		bai="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.bai",
 		ref=config["reference"],
 		dbsnp=config["dbsnp"],
-		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
+		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace("target", "targetbp"),
 	output:
 		vcf="{subject}/{TIME}/{sample}/calls/{sample}.HC_DNASeq.raw.vcf"
 	version: config["GATK"]
@@ -14,7 +14,6 @@ rule HAPCALLER:
 	shell: """
 	#######################
 	module load GATK/{version}
-	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {input.interval} > ${{LOCAL}}/target_intervals.bed
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -L ${{LOCAL}}/target_intervals.bed -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T HaplotypeCaller -R {input.ref} -I {input.bam} -L {input.interval} -o {output.vcf} --dbsnp {input.dbsnp} -mbq 20 -mmq 30
 	#######################
 	"""

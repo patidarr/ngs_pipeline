@@ -17,7 +17,6 @@
 		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
 		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
 		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
-		"rms_capture"		: "/data/Clinomics/Ref/khanlab/design/RMS_Panel.target.hg19.merged.bed",
 		"access" 		: "/data/Clinomics/Ref/khanlab/design/IlluminaAccessKitRNASeq.target.hg19.merged.bed",
 		"polya"			: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
 		"ribozero"		: "/data/Clinomics/Ref/khanlab/design/RefSeq.target.hg19.merged.bed",
