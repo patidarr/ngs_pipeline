@@ -269,7 +269,9 @@ rule Khanlab_Pipeline:
 		rulename = "Final",
 		group    = config["group"],
 		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl",
-		mail     = config["mail"],
+		sort 	 = NGS_PIPELINE + "/scripts/awk_sort_withHeader.awk",
+		mail 	 = NGS_PIPELINE + "/scripts/tsv2html.final.sh",
+		email     = config["mail"],
 		host     = config["host"],
 		subs     = config["subject"].keys()
 	shell: """
@@ -278,7 +280,9 @@ rule Khanlab_Pipeline:
 	find . -group $USER -exec chgrp {params.group} {{}} \;
 	find . -type f -user $USER -exec chmod g+r {{}} \; 
 #	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
-	ssh {params.host} 'list=`echo {params.subs} |sed -e "s/ /\\n/g" |sort`; echo -e "Hello,\\n\\nngs-pipeline finished successfully on {HOST}. \\n\\nSubject(s) Processed:\\n${{list}}\\n\\nResult available in {WORK_DIR}. \\n\\nFor accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.\\n\\n\\n\\nRegards,\\nKhanLab\\nOncogenomics Section\\nCCR NCI NIH" |mutt -s "Khanlab ngs-pipeline Status" `whoami`@mail.nih.gov {params.mail}'
+	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt |{params.sort} |uniq >{WORK_DIR}/tmpFile.txt
+	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/tmpFile.txt |/usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
+	rm -rf {WORK_DIR}/tmpFile.txt
 	#######################
 	"""
 ############
