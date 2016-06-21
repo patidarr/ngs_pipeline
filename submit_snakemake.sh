@@ -24,7 +24,10 @@ if [[ ! -z $workDir ]]; then
         export WORK_DIR=$workDir
         SAM_CONFIG=$WORK_DIR/samplesheet.json
 fi
-
+if [[ $sheet == 'samplesheet.json' ]]; then
+	SAM_CONFIG=$WORK_DIR/samplesheet.json
+else
+	SAM_CONFIG=$sheet
 NOW=$(date +"%Y%m%d%H")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
@@ -45,21 +48,18 @@ cd $WORK_DIR
 if [ ! -d log ]; then
 	mkdir log
 fi
-#if [ ! -d annovar ]; then
-#	mkdir annovar
-#	touch annovar/AnnotationInput.final.txt
-#fi
 
 export ACT_DIR="/Actionable/"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
-SAM_CONFIG=$WORK_DIR/samplesheet.json
 
 cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobname {params.rulename}.{jobid} --nolock  --ri -k -p -T -j 3000 --stats ngs_pipeline_${NOW}.stats"
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
+	echo "Variables are $cmd"
 	snakemake $cmd --cluster "sbatch -o log/{params.rulename}.%j.o -e log/{params.rulename}.%j.e {params.batch}" >& ngs_pipeline_${NOW}.log
 elif [ $HOST == 'login01' ]; then
-	 echo "Host identified as $HOST"
+	echo "Host identified as $HOST"
+	echo "Variables are $cmd"
 	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 fi
 #chmod 755 $WORK_DIR/.snakemake/*

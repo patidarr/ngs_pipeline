@@ -7,6 +7,7 @@ use Time::Piece;
 my $NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/";
 my $mode = 'd';
 my $dataDir="";
+my $sheet="samplesheet.json";
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	$dataDir="/data/Clinomics/DATA/";
 	$NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/";
@@ -16,12 +17,15 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
 	$NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/";
 }
 my $workDir="";
+my $dryrun;
 my $help;
 GetOptions(
+		'dryrun'	=>\$dryrun,
 		'mode|m=s'      =>\$mode,
 		'datadir|d=s'   =>\$dataDir,
 		'workdir|w=s'   =>\$workDir,
-		'help|h'      =>\$help,
+		'sheet|s=s'   	=>\$sheet,
+		'help|h'      	=>\$help,
 	  )or pod2usage();
 
 $help and pod2usage ();
@@ -44,11 +48,51 @@ if (!$workDir){
 	print STDERR "This is set here specifically to run the dev mode in a test location\n";
 	exit;
 }
+if (!$sheet){
+	print STDERR "Be default it is assumed that samplesheet.json is present in working directory\n";
+	print STDERR "if your samplesheet.json is not present in working directory, please give full path\n";
+	print STDERR "relative paths are not full path\n";
+	exit;
+}
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
-	`sbatch --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir --cpus-per-task=1 --partition=ccr --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+	if ($dryrun){
+		my $cmd = "(
+		export TIME=\"20160415\"
+		module load snakemake/3.5.5.n1
+		export NGS_PIPELINE=$NGS_PIPELINE
+		export WORK_DIR=$workDir
+		export DATA_DIR=$dataDir
+		export ACT_DIR=\"/Actionable/\"
+		export HOST=\"biowulf.nih.gov\"
+		SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+		SAM_CONFIG=$sheet
+		snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r
+		)";
+		exec "$cmd";
+	}
+	else{
+		`sbatch --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet --cpus-per-task=1 --partition=ccr --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+	}
 }
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
-	`qsub -W umask=022 -v time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir -l nodes=1:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+	if ($dryrun){
+		my $cmd= "(
+		export TIME=\"20160415\"
+                module load snakemake/3.5.5
+                export NGS_PIPELINE=$NGS_PIPELINE
+                export WORK_DIR=$workDir
+                export DATA_DIR=$dataDir
+                export ACT_DIR=\"/Actionable/\"
+                export HOST=\"login01\"
+                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+                SAM_CONFIG=$sheet
+                snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r
+		)";
+		exec "$cmd";	
+	}
+	else{
+		`qsub -W umask=022 -v time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet -l nodes=1:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`
+	}
 }
 else{
 	print STDERR "This pipeline is not configured to run on this host `hostname`\n";
@@ -57,7 +101,7 @@ else{
 }
 =head1 SYNOPSIS
 
- launch -mode d -datadir /projects/Clinomics/DATA/ -workdir /projects/Clinomics/Test_Run2
+ launch -mode d -datadir /projects/Clinomics/DATA/ -workdir /projects/Clinomics/Test_Run2 -s /projects/Clinomics/Test_Run2/SampleSheets/samplesheet.json
  ###############################################################
  Arguments: 
 
@@ -72,11 +116,16 @@ else{
 			  -datadir "/data/Clinomics/testData/"
 
 	-w, -workdir	Working directory where all the results will be stored. there are defaults to be used specific to host.
+	-s, -sheet 	A json file downloded from  https://fr-s-bsg-onc-d.ncifcrf.gov/onco.sandbox1/public/viewPatients/null/all/1 
+			this dictates how the pipeline will ran.
+				default name is samplesheet.json in working directory.
+				if present somewhere else please give full path.
  ##############################################################
 
 	##########################################
 	#
-	#	It is assumed that workdir contains the samplesheet.json 
+	#	It is assumed that workdir contains the samplesheet.json
+	#		if not the case use -s <full path of samplesheet.json>
 	#
 	##########################################
 	#
