@@ -102,7 +102,7 @@ echo "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www
 	padding: 5px;
 	border-collapse: collapse; 
 	border: 1px solid #000000;
-	width: 100%;
+	width: 30%;
 }
 #main td {
 	border: 1px solid #000000;
@@ -170,7 +170,7 @@ biowulf.nih.gov(/data/khanlab) is mapped as K <br>
 biowulf.nih.gov(/data/Clinomics) is mapped as V <br>
 login01 aka TGen Server(/projects/Clinomics) is mapped as Y<br><br>
 
-If you ran pipeline on another location, igv session file can not be loaded in IGV.</p><br><br>
+If you ran pipeline at another location, igv session file cannot be loaded in IGV.</p><br><br>
 
 <p>Regards,<br>
 KhanLab<br>
