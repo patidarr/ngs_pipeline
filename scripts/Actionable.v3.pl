@@ -94,6 +94,8 @@ sub Germline{
 	print "$head\tSample\tSampleType\tCaptureType\tCaller\tQUAL\tFS\tTotalReads\tAltReads\tVAF\tSource\tLevel\n";
 	my %Germline;
 	my %judge_tier;
+	my $typeOfSamples =`cut -f7 $germline|sort|uniq|wc -l`;
+	chop $typeOfSamples;
 	while (<$ORI>){
 		chomp;
 		my @temp = split("\t", $_);
@@ -107,6 +109,9 @@ sub Germline{
 		elsif($temp[6] =~ /Normal/){
 			$Germline{"$site\t$temp[7]"} = $temp[7];
 		}
+		elsif($typeOfSamples eq '1'){
+			$Germline{"$site\t$temp[7]"} = $temp[7];
+		}
 		# Position is called as germline 
 		# Position is not somatic called!!
 		# in tumor the capture is same as in normal
@@ -117,6 +122,7 @@ sub Germline{
 		if ($temp[11] <1){
 			next;
 		}
+#		if (exists $Germline{"$site\t$temp[7]"} and !exists $DATA{$site} and $Germline{"$site\t$temp[7]"} eq $temp[7] and $vaf >=0.25){
 		if (exists $Germline{"$site\t$temp[7]"} and !exists $DATA{$site} and $Germline{"$site\t$temp[7]"} eq $temp[7] and $vaf >=0.25){
 			$level{"5"} = 'yes';
 			my @ANN = split("\t", $ANNOTATION{"$site"});
@@ -169,7 +175,7 @@ sub Germline{
 			}
 			my @l = sort { $a <=> $b } keys %level;
 			
-			if ($l[0] <=10){
+			if ($l[0] <=4){
 				if ($l[0] =~ /^\d$/){
 					print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]\n";
 				}
