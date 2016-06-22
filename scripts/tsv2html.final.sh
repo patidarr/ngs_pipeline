@@ -168,7 +168,7 @@ Result available in <b>$location</b>.
 <p>For IGV sessions to work in igv:<br>
 biowulf.nih.gov(/data/khanlab) is mapped as K <br>
 biowulf.nih.gov(/data/Clinomics) is mapped as V <br>
-login01 aks TGen Server(/projects/Clinomics) is mapped as Y<br><br>
+login01 aka TGen Server(/projects/Clinomics) is mapped as Y<br><br>
 
 If you ran pipeline on another location, igv session file can not be loaded in IGV.</p><br><br>
 
