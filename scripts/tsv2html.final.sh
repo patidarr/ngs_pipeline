@@ -163,9 +163,15 @@ awk -F "$d" -v last=$last $head $foot '
 ' <<< "$data"
 echo "
 <br><br>
-Result available in $location.
+Result available in <b>$location</b>.
 <br>
-<p>For accessing results from Windows, please make sure that the biowulf(khanlab) is mapped as K, TGen(login01) is mapped as Y. If you ran pipeline on another location, igv session file can not be loaded in IGV.</p>
+<p>For IGV sessions to work in igv:<br>
+biowulf.nih.gov(/data/khanlab) is mapped as K <br>
+biowulf.nih.gov(/data/Clinomics) is mapped as V <br>
+login01 aks TGen Server(/projects/Clinomics) is mapped as Y<br><br>
+
+If you ran pipeline on another location, igv session file can not be loaded in IGV.</p><br><br>
+
 <p>Regards,<br>
 KhanLab<br>
 Oncogenomics Section<br>

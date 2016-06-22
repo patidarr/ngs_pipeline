@@ -119,7 +119,7 @@ ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".for
 ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/BamQC/qualimapReport.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+#ALL_QC     += ["{subject}/{TIME}/{sample}/qc/BamQC/qualimapReport.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.depth_per_base".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.failExons".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.failGenes".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -279,7 +279,7 @@ rule Khanlab_Pipeline:
 	find . -group $USER -exec chgrp {params.group} {{}} \;
 	find . -type f -user $USER -exec chmod g+r {{}} \; 
 #	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwxs {{}} \; \)
-	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt |{params.sort} |uniq >{WORK_DIR}/tmpFile.txt
+	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt |sed -e '/^$/d' |{params.sort} |uniq >{WORK_DIR}/tmpFile.txt
 	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/tmpFile.txt |/usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
 	rm -rf {WORK_DIR}/tmpFile.txt
 	#######################
@@ -718,7 +718,7 @@ rule IGV_Session:
 		work_dir =  WORK_DIR
 	shell: """
 	#######################
-	dir=`echo {params.work_dir} | sed -e 's/\/data\/khanlab/K:/g' | sed -e 's/\/projects\/Clinomics/Y:/g'`
+	dir=`echo {params.work_dir} | sed -e 's/\/data\/khanlab/K:/g' | sed -e 's/\/projects\/Clinomics/Y:/g' |sed -e 's/\/data\/Clinomics/V:/g'`
 	echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" >{output}
 	echo "<Global genome=\\"hg19\\" locus=\\"\\" version=\\"3\\">" >>{output}
 	echo "\t<Resources>" >>{output}

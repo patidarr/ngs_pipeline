@@ -26,7 +26,7 @@ rule QC_Summary_Patient:
 		batch     = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	cat {input} |sort |uniq >{output}
+	cat {input} |sort |uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""
 rule QC_Summary:
@@ -37,6 +37,6 @@ rule QC_Summary:
 		batch	  = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	cat {input} |sort |uniq >{output}
+	cat {input} |sort |uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""
