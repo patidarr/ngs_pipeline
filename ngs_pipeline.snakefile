@@ -154,16 +154,6 @@ def add_to_SUBJECT_ANNO(subject, category, file_list):
 SUBJECT_VCFS = {}
 COPY_NUMBER=[]
 SOMATIC =[]
-#for subject in SUBS:
-#	local  = []
-#	local.extend([(subject+"/"+subject+"/calls/"+subject+".hapCaller.snpEff.txt"),
-#		      (subject+"/"+subject+"/calls/"+subject+".platypus.snpEff.txt"),
-#		      (subject+"/"+subject+"/calls/"+subject+".bam2mpg.snpEff.txt")])
-#	if subject not in SUBJECT_VCFS:
-#		SUBJECT_VCFS[subject] = local
-#	germline = [w.replace('snpEff','annotated') for w in local]
-#	add_to_SUBJECT_ANNO(subject,"germline",germline)
-
 for subject in config['subject']:
 	local  = []
 	for sample in config['subject'][subject]:
@@ -172,8 +162,14 @@ for subject in config['subject']:
 			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
-	germline = [w.replace('snpEff','annotated') for w in local]
-	add_to_SUBJECT_ANNO(subject,"germline",germline)
+	if len(config['subject'][subject]) == 1:
+		if config['sample_type'][sample] == 'Tumor':
+			germline = [w.replace('snpEff','annotated') for w in local]
+			add_to_SUBJECT_ANNO(subject,"variants",germline)
+	else:
+		germline = [w.replace('snpEff','annotated') for w in local]
+		add_to_SUBJECT_ANNO(subject,"variants",germline)	
+	
 	
 
 for sample in config['sample_references'].keys():
@@ -1374,6 +1370,34 @@ rule Actionable_RNAseq:
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
 		rnaseq="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.rnaseq.actionable.txt",
+	params:
+		rulename  = "ActionableMutations",
+		batch    = config[config['host']]['job_default']
+	shell: """
+	#######################
+	touch {input.rnaseq}.dummy
+	perl {input.convertor} rnaseq {input.rnaseq}.dummy {input.rnaseq} {input.annotation} {input.combinedList} {input.hotspot} > {output.rnaseq}.gl
+	perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.combinedList}  {input.rnaseq} {input.annotation} >{output.rnaseq}.som
+	perl {input.combine} {output.rnaseq}.gl {output.rnaseq}.som  >{output.rnaseq}
+	rm -rf {output.rnaseq}.gl {output.rnaseq}.som {input.rnaseq}.dummy
+	#######################
+	"""
+############
+#       Actionable
+############
+rule Actionable_Variants:
+	input:
+		rnaseq    ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.variants",
+		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
+		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
+		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
+		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
+		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
+		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
+	output:
+		rnaseq="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.variants.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
