@@ -154,6 +154,21 @@ def add_to_SUBJECT_ANNO(subject, category, file_list):
 SUBJECT_VCFS = {}
 COPY_NUMBER=[]
 SOMATIC =[]
+###########################################################################
+# This is to find out if we need to make variants db file or not.
+ACT_TYPE =[]
+for subject in config['subject'].keys():
+	normal = None
+	tumor  = None
+	for sample in config['subject'][subject]:
+		if config['sample_type'][sample] == 'Tumor':
+			tumor = 'yes'
+		elif config['sample_type'][sample] == 'Normal':
+			normal = 'yes'
+	if tumor =='yes' and normal == None:
+		print(subject,"we got it")
+		ACT_TYPE +=[subject]
+###########################################################################
 for subject in config['subject']:
 	local  = []
 	for sample in config['subject'][subject]:
@@ -162,13 +177,12 @@ for subject in config['subject']:
 			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
-	if len(config['subject'][subject]) == 1:
-		if config['sample_type'][sample] == 'Tumor':
-			germline = [w.replace('snpEff','annotated') for w in local]
-			add_to_SUBJECT_ANNO(subject,"variants",germline)
+	if subject in ACT_TYPE:
+		germline = [w.replace('snpEff','annotated') for w in local]
+		add_to_SUBJECT_ANNO(subject,"variants",germline)
 	else:
 		germline = [w.replace('snpEff','annotated') for w in local]
-		add_to_SUBJECT_ANNO(subject,"variants",germline)	
+		add_to_SUBJECT_ANNO(subject,"germline",germline)	
 	
 	
 
