@@ -44,7 +44,6 @@ foreach my $file(@ARGV){
 			$index_fs   = first { $line[$_] eq 'QUAL' } 0..$#line;	
 			for (my $i=$last_index_of_annotation+5; $i<$#line; $i+=5){
 				my $tmp = $line[$i];
-				$tmp =~ s/Sample_//;
 				$tmp =~ s/.GT//;
 				$samples{$i} = $tmp;
 			}

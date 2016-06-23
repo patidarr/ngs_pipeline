@@ -306,6 +306,9 @@ sub Somatic{
 		my $key = join "\t", @temp[0..4];
 		$val = "$temp[0]\t$temp[1]\t$temp[2]";
 		$vcf = join "\t", @temp[5..$end];
+		if ($temp[11] <1){
+			next;
+		}
 		if (exists $DATA{$val}){
 			print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$DATA{$val}\tTier1\n";
 		}

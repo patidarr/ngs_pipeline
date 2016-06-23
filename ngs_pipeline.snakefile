@@ -1348,6 +1348,7 @@ rule Actionable_Germline:
 	if [ -e {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
 	then
 		perl {input.convertor} germline {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.combinedList} {input.hotspot} > {output.germline}
+	
 	else
 		touch {input.germline}.dummy
 		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.combinedList} {input.hotspot} > {output.germline}.gl
