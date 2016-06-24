@@ -21,9 +21,6 @@ while(<IN2>){
 	my @line = split("\t",$_);
 	$Expressed{join("\t",@line[0..4])} = join("\t",@line[9..13]);
 }
-foreach (sort keys %Expressed) {
-#	print "$_ : $Expressed{$_}\n";
-}
 
 while(<IN1>){
 	chomp;
@@ -41,13 +38,12 @@ while(<IN1>){
 				print "$_\t$info\n";
 			}
 			else{
-				print "$_\tNA\tNA\tNA\tNA\tNA\n";
+				print "$_\t0\t0\t0\t0\t0\n";
 					
 			}
 		}
 	}
 }
-
 sub search{
 	my ($chr, $start, $end) = (@_);
 	foreach my $indel (keys %Expressed){
