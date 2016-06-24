@@ -1,0 +1,149 @@
+#
+# Configuration file for defuse
+#
+# At a minimum, replace all values enclosed by []
+#
+# For example:
+# source_directory = /path/to/defuse
+#
+
+ensembl_version                             = 69
+ensembl_genome_version                      = GRCh37
+ucsc_genome_version                         = hg19
+
+# Directory where the defuse code was unpacked
+source_directory                            = /apps/defuse/0.7.0
+
+# Directory where you want your dataset
+dataset_directory                           = /apps/defuse/DATA/0.7.0
+
+# Input genome and gene models
+gene_models                                 = $(dataset_directory)/Homo_sapiens.$(ensembl_genome_version).$(ensembl_version).gtf
+genome_fasta                                = $(dataset_directory)/Homo_sapiens.$(ensembl_genome_version).$(ensembl_version).dna.chromosomes.fa
+
+# Repeat table from ucsc genome browser
+repeats_filename                            = $(dataset_directory)/repeats.txt
+
+# EST info downloaded from ucsc genome browser
+est_fasta                                   = $(dataset_directory)/est.fa
+est_alignments                              = $(dataset_directory)/intronEst.txt
+
+# Unigene clusters downloaded from ncbi
+unigene_fasta                               = $(dataset_directory)/Hs.seq.uniq
+
+# Paths to external tools
+samtools_bin                                = /apps/samtools/1.2-157-g0c5617e/bin/samtools
+bowtie_bin                                  = /apps/bowtie/1.1.1/bowtie
+bowtie_build_bin                            = /apps/bowtie/1.1.1/bowtie-build
+blat_bin                                    = /apps/blat/20150224/blat
+fatotwobit_bin                              = /apps/faToTwoBit/20150224/faToTwoBit
+r_bin                                       = /apps/R/3.2.0_png/bin/R
+rscript_bin                                 = /apps/R/3.2.0_png/bin/Rscript
+gmap_bin                                    = /apps/GMAP/2015-12-31/bin/gmap
+gmap_build_bin                              = /apps/GMAP/2015-12-31/bin/gmap_build
+
+# Directory where you want your dataset
+gmap_index_directory                        = $(dataset_directory)/gmap
+
+# Dataset files
+dataset_prefix                              = $(dataset_directory)/defuse
+chromosome_prefix                           = $(dataset_prefix).dna.chromosomes
+exons_fasta                                 = $(dataset_prefix).exons.fa
+cds_fasta                                   = $(dataset_prefix).cds.fa
+cdna_regions                                = $(dataset_prefix).cdna.regions
+cdna_fasta                                  = $(dataset_prefix).cdna.fa
+reference_fasta                             = $(dataset_prefix).reference.fa
+rrna_fasta                                  = $(dataset_prefix).rrna.fa
+ig_gene_list                                = $(dataset_prefix).ig.gene.list
+repeats_regions                             = $(dataset_directory)/repeats.regions
+est_split_fasta1                            = $(dataset_directory)/est.1.fa
+est_split_fasta2                            = $(dataset_directory)/est.2.fa
+est_split_fasta3                            = $(dataset_directory)/est.3.fa
+est_split_fasta4                            = $(dataset_directory)/est.4.fa
+est_split_fasta5                            = $(dataset_directory)/est.5.fa
+est_split_fasta6                            = $(dataset_directory)/est.6.fa
+est_split_fasta7                            = $(dataset_directory)/est.7.fa
+est_split_fasta8                            = $(dataset_directory)/est.8.fa
+est_split_fasta9                            = $(dataset_directory)/est.9.fa
+
+# Fasta files with bowtie indices for prefiltering reads for concordantly mapping pairs
+prefilter1                                  = $(unigene_fasta)
+
+# deFuse scripts and tools
+scripts_directory                           = $(source_directory)/scripts
+tools_directory                             = $(source_directory)/tools
+data_directory                              = $(source_directory)/data
+
+# Bowtie parameters
+bowtie_threads                              = 1
+bowtie_quals                                = --phred33-quals
+bowtie_params                               = --chunkmbs 200
+max_insert_size                             = 500
+
+# Parameters for building the dataset
+chromosomes                                 = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y,MT
+mt_chromosome                               = MT
+gene_biotypes                               = IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,processed_transcript,protein_coding
+ig_gene_biotypes                            = IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,IG_pseudogene
+rrna_gene_biotypes                          = Mt_rRNA,rRNA,rRNA_pseudogene
+
+# Blat sequences per job
+num_blat_sequences                          = 10000
+
+# Minimum gene fusion range
+dna_concordant_length                       = 2000
+
+# Trim length for discordant reads (split reads are not trimmed)
+discord_read_trim                           = 50
+
+# Calculate extra annotations, fusion splice index and interrupted index
+calculate_extra_annotations                 = no
+
+# Filtering parameters
+clustering_precision                        = 0.95
+span_count_threshold                        = 5
+percent_identity_threshold                  = 0.90
+split_min_anchor                            = 4
+splice_bias                                 = 10
+positive_controls                           = $(data_directory)/controls.txt
+probability_threshold                       = 0.50
+
+# Use multiple exon transcripts for stats calculations (yes/no)
+# should be enabled for very small libraries
+multi_exon_transcripts_stats                = yes 
+
+# Position density when calculating covariance
+covariance_sampling_density                 = 0.01
+
+# Maximum number of alignments for a read pair
+# Pairs with more alignments are filtered
+max_paired_alignments                       = 10
+
+# Number of reads for each job in split
+reads_per_job                               = 1000000
+
+# If you have command line 'mail' and wish to be notified
+mailto                                      = 
+
+# Remove temp files
+remove_job_files                            = yes
+remove_job_temp_files                       = yes
+
+# Qsub parameters
+# The `qsub_params` string will be evaluated using perl `eval` with
+# the following variables available:
+#  - `job_mem`: job memory in bytes
+#  - `job_mem_kb`: job memory in kilobytes
+#  - `job_mem_mb`: job memory in megabytes
+#  - `job_mem_gb`: job memory in gigabytes
+# The evaluated string will be added to the qsub command line
+# examples:
+#  SGE:
+# qsub_params                                 = "-V -l mem_free=${job_mem_gb}G"
+#  LSF:
+# qsub_params                                 = "-q all -R 'select[mem>$job_mem_mb] rusage[mem=$job_mem_mb]'"
+#  PBS:
+# qsub_params                                 = "-l mem=$job_mem_formatted"
+qsub_params                                 = ""
+
+
