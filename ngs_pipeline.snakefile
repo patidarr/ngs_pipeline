@@ -989,7 +989,7 @@ rule Strelka:
 	input:
 		lambda wildcards: somaticPairs[wildcards.Tumor],
 		ref=config["reference"],
-		config=config["strelka_config"],
+		config=NGS_PIPELINE + "/Tools_config/"+config["strelka_config"],
 		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]].replace("target","targetbp")
 	output:
 		snps="{subject}/{TIME}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
@@ -1071,7 +1071,7 @@ rule SNPEff:
 	input:
 		vcf="{subject}/{TIME}/calls/{base}.raw.vcf",
 		ref=config["reference"],
-		snpEff_config=config["snpEff_config"],
+		snpEff_config=NGS_PIPELINE + "/Tools_config/"+config["snpEff_config"],
 	output:
 		eff="{subject}/{TIME}/calls/{base}.raw.snpEff.vcf"
 	version: config["snpEff"]

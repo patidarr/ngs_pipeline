@@ -241,7 +241,7 @@ rule FUSION_CATCHER:
 ############
 rule DeFuse:
 	input: R=lambda wildcards: FQ[wildcards.sample],
-		config=config["defuse_config"],
+		config=NGS_PIPELINE + "/Tools_config/"+config["defuse_config"],
 	output:
 		"{base}/{TIME}/{sample}/fusion/defuse.raw.txt",
 		"{base}/{TIME}/{sample}/fusion/defuse.filtered.txt",
