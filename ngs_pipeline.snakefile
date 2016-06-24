@@ -989,7 +989,6 @@ rule Strelka:
 	input:
 		lambda wildcards: somaticPairs[wildcards.Tumor],
 		ref=config["reference"],
-		config=NGS_PIPELINE + "/Tools_config/"+config["strelka_config"],
 		interval=lambda wildcards: config['target_intervals'][pairedCapture[wildcards.Tumor]].replace("target","targetbp")
 	output:
 		snps="{subject}/{TIME}/{Tumor}/calls/{Tumor}.strelka.snvs.raw.vcf",
@@ -998,12 +997,13 @@ rule Strelka:
 	params:
 		rulename = "Strelka",
 		batch    = config[config['host']]["job_strelka"],
+		config=NGS_PIPELINE + "/Tools_config/"+config["strelka_config"],
 		vcftools = config["vcftools"]
 	shell: """
 	#######################
 	module load strelka/{version}
 	configureStrelkaWorkflow.pl --normal={input[2]} --tumor={input[0]}\
-	--ref={input.ref} --config={input.config} --output-dir=${{LOCAL}}/strelka
+	--ref={input.ref} --config={params.config} --output-dir=${{LOCAL}}/strelka
 	make -j ${{SLURM_CPUS_PER_TASK}} -f ${{LOCAL}}/strelka/Makefile
 	module load vcftools/{params.vcftools}
 	vcftools --vcf ${{LOCAL}}/strelka/results/passed.somatic.snvs.vcf --bed {input.interval} --out {output.snps} --recode --keep-INFO-all
@@ -1071,7 +1071,6 @@ rule SNPEff:
 	input:
 		vcf="{subject}/{TIME}/calls/{base}.raw.vcf",
 		ref=config["reference"],
-		snpEff_config=NGS_PIPELINE + "/Tools_config/"+config["snpEff_config"],
 	output:
 		eff="{subject}/{TIME}/calls/{base}.raw.snpEff.vcf"
 	version: config["snpEff"]
@@ -1079,11 +1078,12 @@ rule SNPEff:
 		rulename      ="snpEff",
 		batch	      =config[config['host']]["job_snpeff"],
 		snpEff_genome =config["snpEff_genome"],
+		snpEff_config=NGS_PIPELINE + "/Tools_config/"+config["snpEff_config"],
 		annovar       =config["annovar"]
 	shell: """
 	#######################
 	module load snpEff/{version}
-	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $SNPEFF_JARPATH/SnpSift.jar dbnsfp -c {input.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar $SNPEFF_JARPATH/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $SNPEFF_JARPATH/SnpSift.jar dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{MEM}}g -jar $SNPEFF_JARPATH/snpEff.jar -t -canon {params.snpEff_genome} > {output.eff}
 	#######################
 	"""
 ############

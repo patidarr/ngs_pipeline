@@ -241,7 +241,6 @@ rule FUSION_CATCHER:
 ############
 rule DeFuse:
 	input: R=lambda wildcards: FQ[wildcards.sample],
-		config=NGS_PIPELINE + "/Tools_config/"+config["defuse_config"],
 	output:
 		"{base}/{TIME}/{sample}/fusion/defuse.raw.txt",
 		"{base}/{TIME}/{sample}/fusion/defuse.filtered.txt",
@@ -251,6 +250,7 @@ rule DeFuse:
 	params:
 		rulename = "deFuse",
 		batch    = config[config['host']]["job_deFuse"],
+		defuse_config=NGS_PIPELINE + "/Tools_config/"+config["defuse_config"],
 		parallel = NGS_PIPELINE + "/scripts/parallel"
 	shell: """
 	#######################
@@ -262,7 +262,7 @@ rule DeFuse:
 	gunzip -c {input.R[0]} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq &
 	gunzip -c {input.R[1]} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq &
 	wait
-	defuse.pl -c {input.config} \
+	defuse.pl -c {params.defuse_config} \
 		-1 {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq\
 		-2 {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq\
 		-p ${{THREADS}} \
@@ -274,7 +274,7 @@ rule DeFuse:
 
 	for ID in `cut -f1 {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.filtered.txt|grep -v cluster_id`;
 	do
-		echo "get_reads.pl -c {input.config} -o {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt"
+		echo "get_reads.pl -c {params.defuse_config} -o {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt"
 	done >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm
 	cat {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm | {params.parallel} -j ${{THREADS}} --no-notice
 	touch {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/defuse.done
