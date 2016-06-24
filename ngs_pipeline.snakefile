@@ -157,6 +157,7 @@ SOMATIC =[]
 ###########################################################################
 # This is to find out if we need to make variants db file or not.
 ACT_TYPE =[]
+DECIDE_GL={}
 for subject in config['subject'].keys():
 	normal = None
 	tumor  = None
@@ -166,8 +167,12 @@ for subject in config['subject'].keys():
 		elif config['sample_type'][sample] == 'Normal':
 			normal = 'yes'
 	if tumor =='yes' and normal == None:
-		print(subject,"we got it")
 		ACT_TYPE +=[subject]
+		DECIDE_GL[subject] = 'both'
+	elif tumor =='yes' and normal =='yes':
+		DECIDE_GL[subject] = 'gl_only'
+	elif tumor == None and normal =='yes':
+		DECIDE_GL[subject] = 'gl_only'
 ###########################################################################
 for subject in config['subject']:
 	local  = []
@@ -1351,14 +1356,21 @@ rule Actionable_Germline:
 	output:
 		germline="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.germline.actionable.txt",
 	params:
-		rulename  = "ActionableMutations",
-		batch    = config[config['host']]['job_default']
+		rulename = "ActionableMutations",
+		batch    = config[config['host']]['job_default'],
+		status   = lambda wildcards: DECIDE_GL[wildcards.subject]
 	shell: """
 	#######################
-	if [ -e {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
-	then
-		perl {input.convertor} germline {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.combinedList} {input.hotspot} > {output.germline}
-	
+	if [ {params.status} == 'gl_only' ]
+		if [ -e {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic ]
+		then
+			perl {input.convertor} germline {wildcards.subject}/{TIME}/{wildcards.subject}/db/{wildcards.subject}.somatic {input.germline} {input.annotation} {input.combinedList} {input.hotspot} > {output.germline}
+		else
+		then
+			touch {input.germline}.dummy
+			perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.combinedList} {input.hotspot} >{output.germline}
+			rm -rf {input.germline}.dummy
+		fi
 	else
 		touch {input.germline}.dummy
 		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.combinedList} {input.hotspot} > {output.germline}.gl
