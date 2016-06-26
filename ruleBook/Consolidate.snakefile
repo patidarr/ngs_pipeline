@@ -23,10 +23,11 @@ rule QC_Summary_Patient:
 	output: "{subject}/{TIME}/qc/{subject}.consolidated_QC.txt"
 	params:
 		rulename  = "QC_Sum",
+		tools     = NGS_PIPELINE+ "/scripts/awk_sort_withHeader.awk",
 		batch     = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	cat {input} |sort |uniq |sed -e '/^$/d'>{output}
+	cat {input} |{params.tools} |uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""
 rule QC_Summary:
@@ -34,9 +35,11 @@ rule QC_Summary:
 	output: "Consolidated_QC.txt"
 	params:
 		rulename  = "QC_Sum",
+		tools	  = NGS_PIPELINE+ "/scripts/awk_sort_withHeader.awk",
 		batch	  = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	cat {input} |sort |uniq |sed -e '/^$/d'>{output}
+	touch {output}
+	cat {input} {output} |{params.tools} |uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""
