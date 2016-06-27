@@ -255,31 +255,30 @@ rule DeFuse:
 	shell: """
 	#######################
 	module load defuse/{version}
-	export TMPDIR="{wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/R"
-	export TMP="{wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/R"
-	export TEMP="{wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/R"
+	export TMPDIR="${{LOCAL}}/temp/R"
+	export TMP="${{LOCAL}}/temp/R"
+	export TEMP="${{LOCAL}}/temp/R"
 
-	gunzip -c {input.R[0]} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq &
-	gunzip -c {input.R[1]} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq &
+	gunzip -c {input.R[0]} >${{LOCAL}}/{wildcards.sample}_R1.fastq &
+	gunzip -c {input.R[1]} >${{LOCAL}}/{wildcards.sample}_R2.fastq &
 	wait
 	defuse.pl -c {params.defuse_config} \
-		-1 {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq\
-		-2 {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq\
+		-1 ${{LOCAL}}/{wildcards.sample}_R1.fastq\
+		-2 ${{LOCAL}}/{wildcards.sample}_R2.fastq\
 		-p ${{THREADS}} \
 		-n {wildcards.sample}\
-		-o {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp\
+		-o ${{LOCAL}}/defuse\
 		-s direct
-	cp {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/results.filtered.tsv  {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.filtered.txt
-	cp {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/results.tsv           {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.raw.txt
-
+	cp ${{LOCAL}}/defuse/results.filtered.tsv  {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.filtered.txt
+	cp ${{LOCAL}}/defuse/results.tsv           {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.raw.txt
+	
 	for ID in `cut -f1 {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.filtered.txt|grep -v cluster_id`;
 	do
-		echo "get_reads.pl -c {params.defuse_config} -o {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp/ -i ${{ID}} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt"
+		echo "get_reads.pl -c {params.defuse_config} -o ${{LOCAL}}/defuse/ -i ${{ID}} >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/${{ID}}.txt"
 	done >{wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm
 	cat {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm | {params.parallel} -j ${{THREADS}} --no-notice
 	touch {wildcards.base}/{TIME}/{wildcards.sample}/fusion/defuse.Reads/defuse.done
-	rm -rf {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R1.fastq {wildcards.base}/{TIME}/{wildcards.sample}/fusion/{wildcards.sample}_R2.fastq
-	rm -rf {wildcards.base}/{TIME}/{wildcards.sample}/fusion/temp {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm
+	rm -rf ${{LOCAL}}/defuse {wildcards.base}/{TIME}/{wildcards.sample}/fusion/cmd.swarm
 	#######################
 	"""
 ############
