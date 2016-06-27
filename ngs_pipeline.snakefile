@@ -131,7 +131,7 @@ ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.consolidated_QC.txt", TIME=T
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/annotation/{subject}.Annotations.coding.rare.txt", subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
@@ -1114,8 +1114,8 @@ rule FormatInput:
 		txtFiles=lambda wildcards: SUBJECT_VCFS[wildcards.subject],
 		convertor= NGS_PIPELINE + "/scripts/MakeAnnotationInputs.pl"
 	output:
-		temp("{subject}/annotation/AnnotationInput.anno"),
-		temp("{subject}/annotation/AnnotationInput.sift")
+		temp("{subject}/{TIME}/annotation/AnnotationInput.anno"),
+		temp("{subject}/{TIME}/annotation/AnnotationInput.sift")
 	version: config["annovar"]
 	params:
 		rulename   = "FormatInput",
@@ -1124,11 +1124,9 @@ rule FormatInput:
 	shell: """
 	#######################
 	module load annovar/{version}
-	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/AnnotationInput
-	#cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/annotation/allSites
-	#perl {params.fAEV} {wildcards.subject}/annotation/allSites annovar/AnnotationInput.final.txt {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt {wildcards.subject}/annotation/AnnotationInput
-	perl {input.convertor} {wildcards.subject}/annotation/AnnotationInput
-	rm -rf "{wildcards.subject}/annotation/AnnotationInput.pph",
+	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
+	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/AnnotationInput
+	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph",
 	#######################
 	"""
 ############
@@ -1136,11 +1134,11 @@ rule FormatInput:
 ############
 rule Annotation:
 	input:
-		"{subject}/annotation/AnnotationInput.anno",
+		"{subject}/{TIME}/annotation/AnnotationInput.anno",
 		TableAnnovar=NGS_PIPELINE + "/scripts/TableAnno.sh",
 		custom     =NGS_PIPELINE + "/scripts/addAnnotation.pl"
 	output:
-		temp("{subject}/annotation/AnnotationInput.docm")
+		temp("{subject}/{TIME}/annotation/AnnotationInput.docm")
 	version: config["annovar"]
 	params:
 		rulename   = "Annotation",
@@ -1150,7 +1148,7 @@ rule Annotation:
 	shell: """
 	#######################
 	module load annovar/{version}
-	sh {input.TableAnnovar} {wildcards.subject}/annotation AnnotationInput {input.custom} {params.RefData}
+	sh {input.TableAnnovar} {wildcards.subject}/{TIME}/annotation AnnotationInput {input.custom} {params.RefData}
 	#######################
 	"""
 ############
@@ -1158,10 +1156,10 @@ rule Annotation:
 ############
 rule SIFT:
 	input:
-		sift="{subject}/annotation/AnnotationInput.sift",
+		sift="{subject}/{TIME}/annotation/AnnotationInput.sift",
 		convertor  = NGS_PIPELINE + "/scripts/ParseSIFT.pl"
 	output:
-		temp("{subject}/annotation/AnnotationInput.sift.out")
+		temp("{subject}/{TIME}/annotation/AnnotationInput.sift.out")
 	version: config["SIFT"]
 	params:
 		rulename   = "SIFT",
@@ -1187,9 +1185,9 @@ rule SIFT:
 ############
 rule PPH2:
 	input:
-		pph="{subject}/annotation/AnnotationInput.pph",
+		pph="{subject}/{TIME}/annotation/AnnotationInput.pph",
 		convertor  = NGS_PIPELINE + "/scripts/ParsePPH2.pl"
-	output: "{subject}/annotation/AnnotationInput.pph2.out"
+	output: "{subject}/{TIME}/annotation/AnnotationInput.pph2.out"
 	version: config["polyphen2"]
 	params:
 		rulename   = "PPH2",
@@ -1199,12 +1197,12 @@ rule PPH2:
 	module load polyphen2/{version}
 	if [ -s {input.pph} ]; then
 		mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph}
-		pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
-		perl {input.convertor}  {wildcards.subject}/annotation/AnnotationInput.pph2.intermediate.txt >{output}
+		pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
+		perl {input.convertor}  {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph2.intermediate.txt >{output}
 	else
 		touch {output}
 	fi
-	rm -rf {wildcards.subject}/annotation/AnnotationInput.pph.inter*
+	rm -rf {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph.inter*
 	#######################
 	"""
 ############
@@ -1212,14 +1210,14 @@ rule PPH2:
 ############
 rule CombineAnnotation:
 	input:
-		anno="{subject}/annotation/AnnotationInput.docm",
-		sift="{subject}/annotation/AnnotationInput.sift.out",
+		anno="{subject}/{TIME}/annotation/AnnotationInput.docm",
+		sift="{subject}/{TIME}/annotation/AnnotationInput.sift.out",
 		convertor  = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
 		geneanno   = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
 		filter     = NGS_PIPELINE + "/scripts/filterVariants.pl",
 		coding     = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
 		blacklisted      = config["annovar_data"]+ "hg19_blacklistedSites.txt"
-	output: "{subject}/annotation/{subject}.Annotations.coding.rare.txt"
+	output: "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt"
 	version: "1.0"
 	params:
 		rulename   = "combine",
@@ -1227,31 +1225,31 @@ rule CombineAnnotation:
 		dataDir    = config["annovar_data"]
 	shell: """
 	#######################
-	echo "{wildcards.subject}/annotation/AnnotationInput
-{wildcards.subject}/annotation/AnnotationInput.anno.gene
-{wildcards.subject}/annotation/AnnotationInput.anno.exac.3
-{wildcards.subject}/annotation/AnnotationInput.anno.clinseq
-{wildcards.subject}/annotation/AnnotationInput.anno.cadd
-{wildcards.subject}/annotation/AnnotationInput.sift.out
-{wildcards.subject}/annotation/AnnotationInput.clinvar
-{wildcards.subject}/annotation/AnnotationInput.anno.cosmic
-{wildcards.subject}/annotation/AnnotationInput.hgmd
-{wildcards.subject}/annotation/AnnotationInput.match
-{wildcards.subject}/annotation/AnnotationInput.docm
-{wildcards.subject}/annotation/AnnotationInput.candl
-{wildcards.subject}/annotation/AnnotationInput.tcc
-{wildcards.subject}/annotation/AnnotationInput.mcg
-{wildcards.subject}/annotation/AnnotationInput.civic
-{wildcards.subject}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/annotation/list
-	perl {input.convertor} {wildcards.subject}/annotation/list >{output}
-	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output} >>{wildcards.subject}/annotation/AnnotationInput.annotations.final.txt
-	perl {input.coding} {wildcards.subject}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 |sort -n |uniq >{output}.all
+	echo "{wildcards.subject}/{TIME}/annotation/AnnotationInput
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.gene
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.exac.3
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.clinseq
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.cadd
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.sift.out
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.clinvar
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.cosmic
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.hgmd
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.match
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.docm
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.candl
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.tcc
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.mcg
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.civic
+{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/{TIME}/annotation/list
+	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/list >{output}
+	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output} >>{wildcards.subject}/{TIME}/annotation/AnnotationInput.annotations.final.txt
+	perl {input.coding} {wildcards.subject}/{TIME}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 |sort -n |uniq >{output}.all
 	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output}.all >{output}
 	grep -v -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output}.all >>{output}
-	rm -rf {output}.all {wildcards.subject}/annotation/list
+	rm -rf {output}.all {wildcards.subject}/{TIME}/annotation/list
 	
 
-	rm -rf {wildcards.subject}/annotation/AnnotationInput.pph {wildcards.subject}/annotation/AnnotationInput.anno.* {wildcards.subject}/annotation/AnnotationInput.hgmd {wildcards.subject}/annotation/AnnotationInput.match {wildcards.subject}/annotation/AnnotationInput.candl {wildcards.subject}/annotation/AnnotationInput.tcc {wildcards.subject}/annotation/AnnotationInput.mcg {wildcards.subject}/annotation/AnnotationInput.civic {wildcards.subject}/annotation/AnnotationInput.anno.pcg {wildcards.subject}/annotation/AnnotationInput.clinvar {wildcards.subject}/annotation/AnnotationInput {wildcards.subject}/annotation/allSites {wildcards.subject}/annotation/AnnotationInput.sift.sift_predictions.tsv
+	rm -rf {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph {wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.* {wildcards.subject}/{TIME}/annotation/AnnotationInput.hgmd {wildcards.subject}/{TIME}/annotation/AnnotationInput.match {wildcards.subject}/{TIME}/annotation/AnnotationInput.candl {wildcards.subject}/{TIME}/annotation/AnnotationInput.tcc {wildcards.subject}/{TIME}/annotation/AnnotationInput.mcg {wildcards.subject}/{TIME}/annotation/AnnotationInput.civic {wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.pcg {wildcards.subject}/{TIME}/annotation/AnnotationInput.clinvar {wildcards.subject}/{TIME}/annotation/AnnotationInput {wildcards.subject}/{TIME}/annotation/allSites {wildcards.subject}/{TIME}/annotation/AnnotationInput.sift.sift_predictions.tsv
 	#######################
 	"""
 ############
@@ -1260,7 +1258,7 @@ rule CombineAnnotation:
 rule AttachAnnotation:
 	input:
 		txt="{subject}/{TIME}/{base1}/calls/{base}.snpEff.txt",
-		ref="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		ref="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		convertor  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl"
 	output:
 		txt="{subject}/{TIME}/{base1}/calls/{base}.annotated.txt"
@@ -1323,7 +1321,7 @@ rule DBinput:
 rule Actionable_Somatic:
 	input:
 		somatic       = "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.somatic",
-		annotation    = "{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile       = config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
@@ -1345,7 +1343,7 @@ rule Actionable_Somatic:
 rule Actionable_Germline:
 	input:
 		germline  ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.germline",
-		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
@@ -1386,7 +1384,7 @@ rule Actionable_Germline:
 rule Actionable_RNAseq:
 	input:
 		rnaseq    ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.rnaseq",
-		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
@@ -1414,7 +1412,7 @@ rule Actionable_RNAseq:
 rule Actionable_Variants:
 	input:
 		rnaseq    ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.variants",
-		annotation="{subject}/annotation/{subject}.Annotations.coding.rare.txt",
+		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
