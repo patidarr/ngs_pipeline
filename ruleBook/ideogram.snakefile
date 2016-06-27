@@ -21,7 +21,7 @@ rule Ideogram:
 	grep -v Failed {input.cnFile} |awk '{{OFS="\\t"}};{{print $1,$2,$3,$7,"-"}}' >${{LOCAL}}/{wildcards.Tumor}
 
 	echo -e "CHR\\tPOS\\tP"  >${{LOCAL}}/{wildcards.Tumor}.temp
-	grep -v Failed {input.cnFile} |grep -v "Chr" |sed -e 's/chr//g'|sed -e 's/X/23/g'|sed -e 's/Y/24/g' |sort -n|awk '{{OFS="\\t"}};{{print $1,($2+$3/2),$7}}' >>${{LOCAL}}/{wildcards.Tumor}.temp
+	grep -v Failed {input.cnFile} |awk '{{OFS="\\t"}};{{print $1,($2+$3/2),$7}}'|grep -v "Chr" |sed -e 's/chr//g'|sed -e 's/X/23/g'|sed -e 's/Y/24/g' ' >>${{LOCAL}}/{wildcards.Tumor}.temp
 	
 	{input.plot} -f ${{LOCAL}}/{wildcards.Tumor}.temp -o {output.v1} -t "{wildcards.Tumor}"
 	
@@ -31,7 +31,7 @@ rule Ideogram:
 
 
 	echo -e "CHR\\tPOS\\tP"  >${{LOCAL}}/{wildcards.Tumor}.sorted.moving.bed.temp
-	cat ${{LOCAL}}/{wildcards.Tumor}.sorted.moving.bed |sed -e 's/chr//g'|sed -e 's/X/23/g'|sed -e 's/Y/24/g' |sort -n|awk '{{OFS="\\t"}};{{print $1,($2+$3/2),$4}}'>>${{LOCAL}}/{wildcards.Tumor}.sorted.moving.bed.temp
+	cat ${{LOCAL}}/{wildcards.Tumor}.sorted.moving.bed |awk '{{OFS="\\t"}};{{print $1,($2+$3/2),$4}} | sed -e 's/chr//g'|sed -e 's/X/23/g'|sed -e 's/Y/24/g' '>>${{LOCAL}}/{wildcards.Tumor}.sorted.moving.bed.temp
 	{input.plot} -f ${{LOCAL}}/{wildcards.Tumor}.sorted.moving.bed.temp -o {output.v2} -t "{wildcards.Tumor}"
 	cp {output.v1} {output.v2} {wildcards.subject}/{TIME}{ACT_DIR}/
 	#######################
