@@ -181,6 +181,24 @@ for subject in config['subject'].keys():
 		elif tumor == None and normal =='yes':
 			DECIDE_GL[subject] = 'gl_only'
 ###########################################################################
+# To make union somatic file for every library. 
+#	This includes logic to get files based on sample_ref and sample_rnaseq
+UNION_SOM_MUT={}
+UNION_SOM_MUT_LIST =[]
+for sample in config['sample_references'].keys():
+	subject=SAMPLE_TO_SUBJECT[sample]
+	local =[(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"),
+		(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"),
+		(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt")]
+	if sample in config['sample_RNASeq'].keys():
+		local = [w.replace('annotated','annotated.expressed') for w in local]
+	UNION_SOM_MUT[sample] = local
+	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
+
+
+
+print(UNION_SOM_MUT_LIST)
+##########################################################################
 # To create lists to be filled in SUBJECT_ANNO
 for subject in config['subject']:
 	local  = []
@@ -263,6 +281,7 @@ include: NGS_PIPELINE +"/ruleBook/platypus.snakefile"
 include: NGS_PIPELINE +"/ruleBook/gatk_RNASeq.snakefile"
 include: NGS_PIPELINE +"/ruleBook/ideogram.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Actionable.snakefile"
+include: NGS_PIPELINE +"/ruleBook/UnionSomaticMutations.snakefile"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -282,7 +301,8 @@ rule Khanlab_Pipeline:
 		ALL_FASTQC,
 		varFiles,
 		DBFiles,
-		ActionableFiles
+		ActionableFiles,
+		UNION_SOM_MUT_LIST
 	version: "1.0"
 	params:
 		rulename = "Final",
