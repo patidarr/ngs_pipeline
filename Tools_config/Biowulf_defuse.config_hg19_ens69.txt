@@ -37,8 +37,8 @@ bowtie_bin                                  = /usr/local/apps/bowtie/1.1.1/bowti
 bowtie_build_bin                            = /usr/local/apps/bowtie/1.1.1/bowtie-build
 blat_bin                                    = /usr/local/apps/blat/3.5/blat
 fatotwobit_bin                              = /usr/local/apps/blat/3.5/faToTwoBit
-r_bin                                       = /usr/local/apps/R/gcc_4.4.7/3.2.0/bin/R
-rscript_bin                                 = /usr/local/apps/R/gcc_4.4.7/3.2.0/bin/Rscript
+r_bin                                       = /usr/local/apps/R/gcc_4.4.7/3.2.2/bin/R
+rscript_bin                                 = /usr/local/apps/R/gcc_4.4.7/3.2.2/bin/Rscript
 gmap_bin                                    = /usr/local/apps/gmap-gsnap/2015-09-29/bin/gmap
 gmap_build_bin                              = /usr/local/apps/gmap-gsnap/2015-09-29/bin/gmap_build
 
