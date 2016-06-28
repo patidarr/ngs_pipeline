@@ -5,7 +5,6 @@ import json
 from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 # Snakemake Base location
-
 NGS_PIPELINE=os.environ['NGS_PIPELINE']
 WORK_DIR=os.environ['WORK_DIR']
 DATA_DIR=os.environ['DATA_DIR']
@@ -63,6 +62,16 @@ for subject,samples in config['subject'].items():
 	for sample in samples:
 		SAMPLE_TO_SUBJECT[sample]=subject
 ###########################################################################
+#make dictionary containing fastq file locations.
+# Die if a library is ran twice or more.
+FQ={}
+for sample in config['library'].keys():
+	for fq in config['library'][sample]:
+		if len(config['library'][sample]) == 1:
+			FQ[sample] =[DATA_DIR+fq+"/"+fq+"_R1.fastq.gz", DATA_DIR+fq+"/"+fq+"_R2.fastq.gz"]
+		else:
+			exit()
+###########################################################################
 ####
 #### Targets
 ####
@@ -80,16 +89,7 @@ SAMPLES =[]
 somaticPairs = {}
 somaticCopy = {}
 pairedCapture = {}
-FQ={}
-
-#for sub in config["subject"]:
-for sample in config['library'].keys():
-	for fq in config['library'][sample]:
-		if len(config['library'][sample]) == 1:
-			FQ[sample] =[DATA_DIR+fq+"/"+fq+"_R1.fastq.gz", DATA_DIR+fq+"/"+fq+"_R2.fastq.gz"]
-		else:
-			exit()
-
+# Inputs for the targets, where direct list can not be used.
 for subject in config['subject'].keys():
 	SUBS.append(subject)
 	PATIENTS.append(subject)
@@ -115,6 +115,7 @@ for subject  in config['RNASeq'].keys():
         if subject not in PATIENTS:
                 PATIENTS.append(subject)
 ###########################################################################
+# Many of the targets.
 ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -144,6 +145,7 @@ if len(config['sample_references']) > 0:
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
 ###########################################################################
+# This is to make list of DB file list. (germline, variants, somatic, rnaseq)
 SUBJECT_ANNO = dict([(key, {}) for key in PATIENTS])
 def add_to_SUBJECT_ANNO(subject, category, file_list):
 	if category not in SUBJECT_ANNO[subject]:
@@ -155,7 +157,7 @@ SUBJECT_VCFS = {}
 COPY_NUMBER=[]
 SOMATIC =[]
 ###########################################################################
-# This is to find out if we need to make variants db file or not.
+# This is to find out if we need to make variants db file or germline file.
 ACT_TYPE =[]
 DECIDE_GL={}
 for subject in config['subject'].keys():
@@ -179,6 +181,7 @@ for subject in config['subject'].keys():
 		elif tumor == None and normal =='yes':
 			DECIDE_GL[subject] = 'gl_only'
 ###########################################################################
+# To create lists to be filled in SUBJECT_ANNO
 for subject in config['subject']:
 	local  = []
 	for sample in config['subject'][subject]:
@@ -193,9 +196,6 @@ for subject in config['subject']:
 	else:
 		germline = [w.replace('snpEff','annotated') for w in local]
 		add_to_SUBJECT_ANNO(subject,"germline",germline)	
-	
-	
-
 for sample in config['sample_references'].keys():
 	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
@@ -215,7 +215,6 @@ for sample in config['sample_references'].keys():
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
 	if subject in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject].extend(local)
-
 	somatic = [w.replace('snpEff','annotated') for w in local]
 	if sample in config['sample_RNASeq']:
 		somatic = [w.replace('MuTect.annotated','MuTect.annotated.expressed') for w in somatic]
@@ -224,6 +223,7 @@ for sample in config['sample_references'].keys():
 	add_to_SUBJECT_ANNO(subject,"somatic",somatic)
 ###########################################################################
 ###########################################################################
+# Expressed Mutations
 ALL_EXPRESSED =[]
 expressedPairs = {}
 if len(config['sample_RNASeq']) > 0:
@@ -248,10 +248,9 @@ for subject in SUBJECT_ANNO.keys():
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
-localrules: Khanlab_Pipeline,
-#RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Circos, CoveragePlot, BoxPlot_Hotspot
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Circos, CoveragePlot, BoxPlot_Hotspot
 ###########################################################################
-#                               RNASeq Rules                              #
+#                               Rule Book				  #
 ###########################################################################
 include: NGS_PIPELINE +"/ruleBook/rnaseq_pipeline.snakefile"
 include: NGS_PIPELINE +"/ruleBook/readDepth.snakefile"
