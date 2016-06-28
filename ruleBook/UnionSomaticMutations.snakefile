@@ -1,7 +1,6 @@
 ############
 #       Union Somatic Calls
 ############
-print(UNION_SOM_MUT)
 rule UnionSomaticCalls:
 	input:
 		Files=lambda wildcards: UNION_SOM_MUT[wildcards.sample]

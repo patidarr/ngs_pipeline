@@ -27,7 +27,6 @@ foreach my $file(@ARGV){
 			$CALLS{$key} = "$_\tCaller";
 			next
 		}
-		my $key  = "$line[0]\t$line[1]\t$line[2]\t$line[3]\t$line[4]";
 		$CALLS{$key} = "$_\t$a[1]";
 	}
 	close FH;

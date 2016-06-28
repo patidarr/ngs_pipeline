@@ -133,6 +133,7 @@ ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME,
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
+ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.config.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
@@ -194,10 +195,6 @@ for sample in config['sample_references'].keys():
 		local = [w.replace('annotated','annotated.expressed') for w in local]
 	UNION_SOM_MUT[sample] = local
 	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
-
-
-
-print(UNION_SOM_MUT_LIST)
 ##########################################################################
 # To create lists to be filled in SUBJECT_ANNO
 for subject in config['subject']:
@@ -324,6 +321,21 @@ rule Khanlab_Pipeline:
 	rm -rf {WORK_DIR}/tmpFile.txt
 	#######################
 	"""
+############
+# Print Config to a file
+############
+rule makeConfig:
+	output:	"{subject}/{TIME}/qc/{subject}.config.txt" 
+	params:
+		rulename = "configPrint",
+		batch    = config[config['host']]["job_default"],
+		hash     = json.dumps(config)
+	shell: """
+	#######################
+	echo '{params.hash}'  >{output}
+	#######################
+	"""
+	
 ############
 #	FASTQC
 ############
