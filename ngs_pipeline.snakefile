@@ -329,7 +329,7 @@ rule makeConfig:
 	params:
 		rulename = "configPrint",
 		batch    = config[config['host']]["job_default"],
-		hash     = json.dumps(config)
+		hash     = json.dumps(config, sort_keys=True)
 	shell: """
 	#######################
 	echo '{params.hash}'  >{output}
