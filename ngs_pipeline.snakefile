@@ -314,6 +314,7 @@ rule Khanlab_Pipeline:
 	find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp {params.group} {{}} \;
 	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
+	find . -type d -user $USER -exec chmod g-s {{}} \;
 	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt |sed -e '/^$/d' |{params.sort} |uniq >{WORK_DIR}/tmpFile.txt
 	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/tmpFile.txt |/usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
 	rm -rf {WORK_DIR}/tmpFile.txt
