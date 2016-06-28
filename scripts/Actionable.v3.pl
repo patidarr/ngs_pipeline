@@ -112,6 +112,16 @@ sub Germline{
 		elsif($typeOfSamples eq '1'){
 			$Germline{"$site\t$temp[7]"} = $temp[7];
 		}
+	}
+	close $ORI;
+	$ORI =OpneFH($germline);
+	while (<$ORI>){
+                chomp;
+                my @temp = split("\t", $_);
+                my $vcf;
+                my $end = @temp - 1 ;
+                my $site = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
+                $vcf = join "\t", @temp[5..$end];
 		# Position is called as germline 
 		# Position is not somatic called!!
 		# in tumor the capture is same as in normal
