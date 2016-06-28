@@ -166,21 +166,19 @@ for subject in config['subject'].keys():
 	tumor  = None
 	pair   = None
 	for sample in config['subject'][subject]:
-		tumor = 'yes'
 		if config['sample_type'][sample] == 'Tumor':
+			tumor = 'yes'
 			if sample in config['sample_references'].keys():
 				pair  = 'yes'
 		elif config['sample_type'][sample] == 'Normal':
 			normal = 'yes'
 	if pair =='yes':
 		DECIDE_GL[subject] = 'both'
-	else:
-		if tumor =='yes' and normal == None:
+	elif pair == None:
+		if tumor == None and normal =='yes':
+			DECIDE_GL[subject] = 'gl_only'
+		else:
 			ACT_TYPE +=[subject]
-		elif tumor =='yes' and normal =='yes':
-			DECIDE_GL[subject] = 'gl_only'
-		elif tumor == None and normal =='yes':
-			DECIDE_GL[subject] = 'gl_only'
 ###########################################################################
 # To make union somatic file for every library. 
 #	This includes logic to get files based on sample_ref and sample_rnaseq
