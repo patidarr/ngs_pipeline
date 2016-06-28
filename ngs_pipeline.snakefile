@@ -161,18 +161,23 @@ DECIDE_GL={}
 for subject in config['subject'].keys():
 	normal = None
 	tumor  = None
+	pair   = None
 	for sample in config['subject'][subject]:
+		tumor = 'yes'
 		if config['sample_type'][sample] == 'Tumor':
-			tumor = 'yes'
+			if sample in config['sample_references'].keys():
+				pair  = 'yes'
 		elif config['sample_type'][sample] == 'Normal':
 			normal = 'yes'
-	if tumor =='yes' and normal == None:
-		ACT_TYPE +=[subject]
+	if pair =='yes':
 		DECIDE_GL[subject] = 'both'
-	elif tumor =='yes' and normal =='yes':
-		DECIDE_GL[subject] = 'gl_only'
-	elif tumor == None and normal =='yes':
-		DECIDE_GL[subject] = 'gl_only'
+	else:
+		if tumor =='yes' and normal == None:
+			ACT_TYPE +=[subject]
+		elif tumor =='yes' and normal =='yes':
+			DECIDE_GL[subject] = 'gl_only'
+		elif tumor == None and normal =='yes':
+			DECIDE_GL[subject] = 'gl_only'
 ###########################################################################
 for subject in config['subject']:
 	local  = []
