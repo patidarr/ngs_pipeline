@@ -1314,8 +1314,7 @@ rule Expressed:
 	input:
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
 		Mutation="{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.txt",
-		convertor = NGS_PIPELINE + "/scripts/ExpressedMutations.pl",
-		convertor1 = NGS_PIPELINE + "/scripts/mpileup.pl"
+		convertor = NGS_PIPELINE + "/scripts/mpileup.pl"
 	output: "{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.expressed.txt"
 	version: config["samtools"]
 	params:
@@ -1324,12 +1323,8 @@ rule Expressed:
 		name      = lambda wildcards: config["sample_RNASeq"][wildcards.sample]
 	shell: """
 	#######################
-	if [ {output} == 'indels' ]
-	then
-		perl {input.convertor} {input.Mutation} {input.RNASeq} {params.name} >{output}
-	else
-		perl {input.convertor1} {input.Mutation} {wildcards.subject}/{TIME}/{params.name}/{params.name}.star.final.bam >{output}	
-	fi
+	module load samtools/{version}
+	perl {input.convertor} {input.Mutation} {wildcards.subject}/{TIME}/{params.name}/{params.name}.star.final.bam {input.RNASeq} >{output}	
 	#######################
 	"""
 ############
