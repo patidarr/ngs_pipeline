@@ -4,18 +4,26 @@ use strict;
 use Getopt::Long;
 use Pod::Usage;
 use Time::Piece;
-my $NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/";
+my $NGS_PIPELINE;
 my $mode = 'd';
 my $dataDir="";
 my $sheet="samplesheet.json";
+if (`dirname $0` =~ /\./){
+	$NGS_PIPELINE = `pwd`;
+	chomp $NGS_PIPELINE;
+}
+else{
+	$NGS_PIPELINE = `dirname $0`;
+	chomp $NGS_PIPELINE;
+}
+
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
-	$dataDir="/data/Clinomics/DATA/";
-	$NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/";
+	$dataDir="/data/khanlab/projects/DATA/";
 }
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
 	$dataDir="/projects/Clinomics/DATA/";
-	$NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/";
 }
+
 my $workDir="";
 my $dryrun;
 my $help;
