@@ -845,7 +845,7 @@ rule Picard_MarkDup:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JAR MarkDuplicates AS=true M={output.metrics} I={input.bam} O={output.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT
 	module load samtools/{params.samtools}
 	samtools index {output.bam}
-	######################
+	#######################
 	"""
 ############
 # copy novo bam to novo.final bam
@@ -892,7 +892,7 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 	mv -f {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
-	######################
+	#######################
 	"""
 ############
 #	Bam2MPG
