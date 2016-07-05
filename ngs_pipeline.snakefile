@@ -68,7 +68,13 @@ FQ={}
 for sample in config['library'].keys():
 	for fq in config['library'][sample]:
 		if len(config['library'][sample]) == 1:
-			FQ[sample] =[DATA_DIR+fq+"/"+fq+"_R1.fastq.gz", DATA_DIR+fq+"/"+fq+"_R2.fastq.gz"]
+			if os.path.isfile(DATA_DIR+fq+"/"+fq+"_R1.fastq.gz"):
+				FQ[sample] =[DATA_DIR+fq+"/"+fq+"_R1.fastq.gz", DATA_DIR+fq+"/"+fq+"_R2.fastq.gz"]
+			elif os.path.isfile(DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R1.fastq.gz"):
+				FQ[sample] =[DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R1.fastq.gz", DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R2.fastq.gz"]
+			else:
+				print("can not locate fastq file for sample", fq)
+	  			exit()
 		else:
 			exit()
 ###########################################################################
