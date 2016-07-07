@@ -1,6 +1,12 @@
 #! /usr/local/bin/perl
 use strict;
 use warnings;
+use 5.010;
+use List::MoreUtils qw(first_index);
+local $SIG{__WARN__} = sub {
+	my $message =shift;
+	die $message;
+};
 my $hs      =`/bin/grep \"^$ARGV[0]\" $ARGV[1] |cut -f 21,22`;
 chomp $hs;
 my $in_file =$ARGV[2];

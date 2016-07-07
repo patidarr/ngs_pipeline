@@ -1,7 +1,12 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-
+use 5.010;
+use List::MoreUtils qw(first_index);
+local $SIG{__WARN__} = sub {
+	my $message =shift;
+	die $message;
+};
 #full path of coverage file
 my $COV_FILE = $ARGV[0];
 my $tmp = `basename $COV_FILE ".depth_per_base"`;

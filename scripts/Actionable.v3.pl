@@ -2,6 +2,12 @@
 use strict;
 use warnings;
 use List::Util qw(first);
+use 5.010;
+use List::MoreUtils qw(first_index);
+local $SIG{__WARN__} = sub {
+	my $message =shift;
+	die $message;
+};
 my $index_of_clinvar=57; # This does not include chr/alt, Func_RefGene==0
 my $index_of_ACMG=182; 
 my $index_of_HGMD=64;

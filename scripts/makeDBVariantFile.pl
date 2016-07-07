@@ -3,6 +3,12 @@ use strict;
 use warnings;
 use File::Basename;
 use List::Util qw(first);
+use 5.010;
+use List::MoreUtils qw(first_index);
+local $SIG{__WARN__} = sub {
+	my $message =shift;
+	die $message;
+};
 #
 # Author Rajesh Patidar rajbtpatidar@gmail.com
 # This script takes the Patient ID and make a table of all the variants in the following format to be loaded to the database
@@ -44,7 +50,7 @@ foreach my $file(@ARGV){
 			$index_fs   = first { $line[$_] eq 'QUAL' } 0..$#line;	
 			for (my $i=$last_index_of_annotation+5; $i<$#line; $i+=5){
 				my $tmp = $line[$i];
-				$tmp =~ s/.GT//;
+				$tmp =~ s/\.GT//;
 				$samples{$i} = $tmp;
 			}
 			next;

@@ -1,6 +1,12 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use 5.010;
+use List::MoreUtils qw(first_index);
+local $SIG{__WARN__} = sub {
+	my $message =shift;
+	die $message;
+};
 my $file = $ARGV[0];
 
 ########
