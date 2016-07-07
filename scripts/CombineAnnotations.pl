@@ -2,6 +2,11 @@
 use strict;
 use warnings;
 use List::Util qw(sum);
+use 5.010;
+local $SIG{__WARN__} = sub {
+        my $message =shift;
+        die $message;
+};
 ###################################
 # Author: Rajesh Patidar (rajbtpatidar@gmail.com)
 # Combine annotations 

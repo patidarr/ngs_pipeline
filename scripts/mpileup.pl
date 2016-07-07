@@ -2,6 +2,11 @@
 use strict;
 use warnings;
 use File::Basename;
+use 5.010;
+local $SIG{__WARN__} = sub {
+        my $message =shift;
+        die $message;
+};
 my $FILE = $ARGV[0]; # Vcf like file Name
 my $BAM  = $ARGV[1];
 my $RNA  = $ARGV[2]; #RNASeq Result

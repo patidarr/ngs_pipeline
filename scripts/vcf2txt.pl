@@ -3,6 +3,11 @@ use warnings;
 use strict;
 use File::Basename;
 use List::Util qw(first);
+use 5.010;
+local $SIG{__WARN__} = sub {
+        my $message =shift;
+        die $message;
+};
 #####################################################
 # Version: v0.1
 # Author: Rajesh Patidar rajbtpatidar@gmail.com

@@ -1203,6 +1203,7 @@ rule SIFT:
 	output:
 		temp("{subject}/{TIME}/annotation/AnnotationInput.sift.out")
 	version: config["SIFT"]
+	resources: SIFT=1
 	params:
 		rulename   = "SIFT",
 		batch      = config[config['host']]["job_SIFT"],

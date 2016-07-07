@@ -1,6 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use 5.010;
+local $SIG{__WARN__} = sub {
+        my $message =shift;
+        die $message;
+};
 open(ANN_FH, "$ARGV[0]");
 my %ANNOVAR;
 while(<ANN_FH>){

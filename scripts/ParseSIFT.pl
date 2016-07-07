@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-
+use 5.010;
+local $SIG{__WARN__} = sub {
+        my $message =shift;
+        die $message;
+};
 
 unless (open(FH, $ARGV[0])){
 	print STDERR "Can not find file $ARGV[0]";
