@@ -27,7 +27,7 @@ def make_dictionary(file_array):
 				coverage=each_gene_list[8]
 				FPKM=each_gene_list[9]
 				
-				log2_FPKM=math.log(float(FPKM)+0.01)/math.log(2)
+				log2_FPKM=math.log(float(FPKM)+1)/math.log(2)
 				
 				if entry_name not in cufflinks_dict:
 					cufflinks_dict[entry_name]=entry_name+"\t"+Gene_ID+"\t"+Gene_Name+"\t"+tss_id+"\t"+locus+"\t"+str("%.4f" % log2_FPKM)
