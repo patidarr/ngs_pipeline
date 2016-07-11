@@ -32,18 +32,15 @@
 	"defuse_config"         : "TGen_defuse.config_hg19_ens69.txt",
 	"genotypeBed"		: "/projects/Clinomics/ref/annovar/1000gSites4genotyping.bed",
 	"hotspot_intervals"	: "/projects/Clinomics/ref/annovar/hg19_Hotspot.07.07.15.bed",
-	"refSeq_bed"		: "/projects/Clinomics/Tools/ref/hg19/refseq/modify_gtf_v2_sorted_RefSeq.bed",
-	"Note"			: "defuse is using data from fdb; should change it to make uniform structure",
 	"tophat_post_ref"	: "/projects/Clinomics/Tools/ref/hg19/Tophat_post",
 	"TCGA_fusion"		: "/projects/Clinomics/Tools/ref/hg19/fusion/TCGA.fusion",
 	"omim_fusion" 		: "/projects/Clinomics/Tools/ref/hg19/fusion/omim.fusions.txt",
 	"Mitelman"		: "/projects/Clinomics/Tools/ref/hg19/fusion/Mitelman/gene_pairs_list",
 	"exon_Bed_UCSC"		: "/projects/Clinomics/Tools/ref/hg19/hg19_UCSC.bed",
 	"exon_Bed_ENS"		: "/projects/Clinomics/Tools/ref/hg19/hg19_ENSEMBL.bed",
-	"coding_bed"		: "/projects/Clinomics/Tools/ref/hg19/design/hg19_ExomeCaptureRegion.merged.bed",
 	"gene_coord"		: "/projects/Clinomics/Tools/ref/hg19/gene_coordinates.txt",
 	"GTF"			: {
-				"ENS" : "/projects/Clinomics/Tools/ref/hg19/Homo_sapiens.GRCh37.71.gtf",
-				"UCSC": "/projects/Clinomics/Tools/ref/hg19/Homo_sapiens.hg19.032013.gtf"
+				"ENS" : "/projects/Clinomics/Tools/ref/hg19/GTF/06302016_ensembl.gtf",
+				"UCSC": "/projects/Clinomics/Tools/ref/hg19/GTF/06302016_refseq.gtf"
 	}
 }

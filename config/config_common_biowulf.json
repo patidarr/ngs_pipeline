@@ -32,17 +32,15 @@
 	"defuse_config"         : "Biowulf_defuse.config_hg19_ens69.txt",
 	"genotypeBed"		: "/data/Clinomics/Ref/annovar/1000gSites4genotyping.bed",
 	"hotspot_intervals"	: "/data/Clinomics/Ref/annovar/hg19_Hotspot.07.07.15.bed",
-	"refSeq_bed"		: "/data/Clinomics/Ref/khanlab/refseq/modify_gtf_v2_sorted_RefSeq.bed",
 	"tophat_post_ref"	: "/data/Clinomics/Ref/khanlab/Tophat_post",
 	"TCGA_fusion"		: "/data/Clinomics/Ref/khanlab/fusion/TCGA.fusion",
 	"omim_fusion" 		: "/data/Clinomics/Ref/khanlab/fusion/omim.fusions.txt",
 	"Mitelman"		: "/data/Clinomics/Ref/khanlab/fusion/Mitelman/gene_pairs_list",
 	"exon_Bed_UCSC"		: "/data/Clinomics/Ref/khanlab/hg19_UCSC.bed",
 	"exon_Bed_ENS"		: "/data/Clinomics/Ref/khanlab/hg19_ENSEMBL.bed",
-	"coding_bed"		: "/data/Clinomics/Ref/khanlab/design/hg19_ExomeCaptureRegion.merged.bed",
 	"gene_coord"		: "/data/Clinomics/Ref/khanlab/gene_coordinates.txt",
 	"GTF"			: {
-				"ENS" : "/data/Clinomics/Ref/khanlab/Homo_sapiens.GRCh37.71.gtf",
-				"UCSC": "/data/Clinomics/Ref/khanlab/Homo_sapiens.hg19.032013.gtf"
+				"ENS" : "/data/Clinomics/Ref/khanlab/GTF/06302016_ensembl.gtf",
+				"UCSC": "/data/Clinomics/Ref/khanlab/GTF/06302016_refseq.gtf"
 	}
 }
