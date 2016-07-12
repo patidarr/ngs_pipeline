@@ -963,28 +963,6 @@ rule Bam2MPG:
 	#######################
 	"""
 ############
-# Subject Bam2MPG
-############
-rule Sub_MPG:
-	input:
-		vcf=lambda wildcards: SUB_MPG[wildcards.subject],
-	output:
-		vcf="{subject}/{TIME}/{subject}/calls/{subject}.bam2mpg.raw.vcf"
-	version: config["vcftools"]
-	params:
-		rulename = "mergevcf",
-		batch    = config[config['host']]["job_default"],
-		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R"
-	shell: """
-	#######################
-	module load vcftools/{version}
-	module load R
-	vcf-merge {input.vcf} > {output.vcf}.tmp
-	{params.vcforder} -i {output.vcf}.tmp -o {output.vcf}
-	rm -rf {output.vcf}.tmp
-	#######################
-	"""
-############
 #       MuTect
 ############
 rule MuTect:
