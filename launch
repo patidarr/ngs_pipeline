@@ -6,6 +6,7 @@ use Pod::Usage;
 use Time::Piece;
 my $NGS_PIPELINE;
 my $mode = 'd';
+my $time='20160415';
 my $dataDir="";
 my $sheet="samplesheet.json";
 if (`dirname $0` =~ /\./){
@@ -62,10 +63,22 @@ if (!$sheet){
 	print STDERR "relative paths are not full path\n";
 	exit;
 }
+
+if ($mode eq 'p'){
+	$time=`$(date +"%Y%m%d")`;
+	chomp $time;
+}
+elsif($mode eq 'd'){
+	$time=$time;
+}
+else{
+	$time=$mode;
+}
+
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	if ($dryrun){
 		my $cmd = "(
-		export TIME=\"20160415\"
+		export TIME=$time
 		module load snakemake/3.5.5.n1
 		export NGS_PIPELINE=$NGS_PIPELINE
 		export WORK_DIR=$workDir
@@ -85,7 +98,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
 	if ($dryrun){
 		my $cmd= "(
-		export TIME=\"20160415\"
+		export TIME=$time
                 module load snakemake/3.5.5
                 export NGS_PIPELINE=$NGS_PIPELINE
                 export WORK_DIR=$workDir

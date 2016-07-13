@@ -11,8 +11,9 @@ if [[ $time == 'd' ]]; then
 elif [[ $time == 'p' ]]; then
 	export TIME=$(date +"%Y%m%d")
 else
-	echo -e "Can not run without knowing which mode you would like to set time up\n";
-	exit;
+	export TIME=$time
+#	echo -e "Can not run without knowing which mode you would like to set time up\n";
+#	exit;
 fi
 if [[ ! -z $ngs ]]; then
         export NGS_PIPELINE=$ngs
