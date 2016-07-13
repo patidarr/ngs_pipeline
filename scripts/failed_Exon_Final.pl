@@ -22,6 +22,9 @@ open(IN, $COV_FILE) or die "Couldn't open file $COV_FILE for processing: $!";
 while (<IN>) {
 	chomp;
 	my @cols = split(/\t/, $_);
+	if ($cols[3] =~ /^RS\d+/){ # Skip Pharmacogenomics RSIDs available in Panel1 
+		next;
+	}
 	my ($gene, $exnum) = split('___', $cols[3]);
 	my $exon_key = join('_', $cols[0], $cols[1]);
 	if (exists $cov_hash{$exon_key}) {
@@ -66,6 +69,7 @@ foreach my $exon_key (sort keys %cov_hash) {
 } # end of foreach
 foreach my $gene (sort keys %gene_hash) {
 	my $ratio = $gene_hash{$gene}[1]/$gene_hash{$gene}[0];
+	#print "$gene\t$gene_hash{$gene}[1]\t\t$gene_hash{$gene}[0]\t$ratio\n";
 	if ( $ratio > 0.05 ) {
 		my $line = join("\t", $gene, $gene_hash{$gene}[0], $ratio);
 		print OUT2 "$line\n";
