@@ -38,22 +38,27 @@ while(<FH>){
 		chomp $rnaseq;
 		if($rnaseq =~ /\d/){ # Have coverage 
 			my @s = split("\t", $rnaseq);
-			$s[2] =uc($s[2]);
-			my $bases = join '', sort, split //, $s[2];
-			my $Ref = () = ($bases =~ /$d[3]/g); # 4th Column is the Ref Column
-				my $Alt = () = ($bases =~ /$d[4]/g); # 5th Column is the Alt Column 
-				my $totalRef = $Ref + $Alt;
-			if($totalRef >=1){ 
-				if($Alt >=1){
-					my $vaf = ($Alt/$totalRef);
-					print "$line\tNA\t$totalRef\t$Ref\t$Alt\t$vaf\n";
-				}
-				else{
-					print "$line\tNA\t$totalRef\t$Ref\t$Alt\t0\n";
-				}
+			if ($s[1] <1){
+				print "$line\tNA\t0\t0\t0\t0\n";
 			}
 			else{
-				print "$line\tNA\t0\t0\t0\t0\n";
+				$s[2] =uc($s[2]);
+				my $bases = join '', sort, split //, $s[2];
+				my $Ref = () = ($bases =~ /$d[3]/g); # 4th Column is the Ref Column
+				my $Alt = () = ($bases =~ /$d[4]/g); # 5th Column is the Alt Column 
+				my $totalRef = $Ref + $Alt;
+				if($totalRef >=1){ 
+					if($Alt >=1){
+						my $vaf = ($Alt/$totalRef);
+						print "$line\tNA\t$totalRef\t$Ref\t$Alt\t$vaf\n";
+					}
+					else{
+						print "$line\tNA\t$totalRef\t$Ref\t$Alt\t0\n";
+					}
+				}
+				else{
+					print "$line\tNA\t0\t0\t0\t0\n";
+				}
 			}
 		}
 		else{ # no output from mpileup no COVERAGE
