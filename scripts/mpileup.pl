@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use File::Basename;
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 use 5.010;
 local $SIG{__WARN__} = sub {
         my $message =shift;

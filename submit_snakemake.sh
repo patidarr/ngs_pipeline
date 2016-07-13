@@ -66,4 +66,4 @@ elif [ $HOST == 'login01' ]; then
 	echo "Variables are $cmd"
 	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 fi
-#chmod 755 $WORK_DIR/.snakemake/*
+chmod 755 $WORK_DIR/.snakemake/*
