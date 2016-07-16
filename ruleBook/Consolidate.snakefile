@@ -45,6 +45,8 @@ rule QC_Summary:
 	shell: """
 	#######################
 	touch {output}
-	cat {input} {output} |{params.tools} |uniq |sed -e '/^$/d'>{output}
+	export LC_ALL=C
+	cat {input} {output} |sort|uniq |sed -e '/^$/d'>{output}.tmp
+	mv {output}.tmp {output}
 	#######################
 	"""
