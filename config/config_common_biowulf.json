@@ -36,8 +36,8 @@
 	"TCGA_fusion"		: "/data/Clinomics/Ref/khanlab/fusion/TCGA.fusion",
 	"omim_fusion" 		: "/data/Clinomics/Ref/khanlab/fusion/omim.fusions.txt",
 	"Mitelman"		: "/data/Clinomics/Ref/khanlab/fusion/Mitelman/gene_pairs_list",
-	"exon_Bed_UCSC"		: "/data/Clinomics/Ref/khanlab/hg19_UCSC.bed",
-	"exon_Bed_ENS"		: "/data/Clinomics/Ref/khanlab/hg19_ENSEMBL.bed",
+	"exon_Bed_UCSC"		: "/data/Clinomics/Ref/khanlab/GTF/Exons_06302016_refseq_formatted.merged.bed",
+	"exon_Bed_ENS"		: "/data/Clinomics/Ref/khanlab/GTF/Exons_06302016_ensembl_formatted.merged.bed",
 	"gene_coord"		: "/data/Clinomics/Ref/khanlab/gene_coordinates.txt",
 	"GTF"			: {
 				"ENS" : "/data/Clinomics/Ref/khanlab/GTF/06302016_ensembl.gtf",
