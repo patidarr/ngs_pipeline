@@ -78,5 +78,8 @@ foreach my $file(@ARGV){
 }
 # Print the data.
 foreach (sort keys %READS) {
-    print "$_\t$CALLER{$_}\t$QUAL{$_}\t$FS{$_}\t$READS{$_}\n";
+	my ($total, $alt) =split("\t", $READS{$_});
+	if ($total =~ /^\d+$/ and $alt =~ /^\d+$/ and $total >=10){
+		print "$_\t$CALLER{$_}\t$QUAL{$_}\t$FS{$_}\t$READS{$_}\n";
+	}
 }
