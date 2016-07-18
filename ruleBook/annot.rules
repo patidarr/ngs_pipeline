@@ -18,7 +18,7 @@ configfile: NGS_PIPELINE +"config/config_annotation.json"
 PATIENTS =[]
 for subject in config['subject'].keys():
         PATIENTS.append(subject)
-ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic"]
+ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out"]
 
 ALL_QC = expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
 rule final:
@@ -221,5 +221,112 @@ rule Annot_Custom:
 	{input.tool} {input.candl}	{input.file} >{output.candl}
 	{input.tool} {input.tcc}	{input.file} >{output.tcc}
 	{input.tool} {input.civic}	{input.file} >{output.civic}	
+	#######################
+	"""
+############
+#       SIFT
+############
+rule SIFT:
+	input:
+		sift	="{base}/AnnotationInput.sift",
+		tool	=NGS_PIPELINE + "/scripts/ParseSIFT.pl"
+	output:
+		temp("{base}/AnnotationInput.sift.out")
+	version: config["SIFT"]
+	resources: SIFT=1
+	params:
+		rulename   = "SIFT",
+		batch      = config[config['host']]["job_SIFT"],
+		build      = config["SIFTbuild"]
+	shell: """
+	#######################
+	if [ -s {input.sift} ]; then
+		module load python/2.7.9
+		module load SIFT/{version}
+		DIR=`pwd`
+		cd ${{DIR}}/`dirname {input.sift}`
+		FILE=`basename {input.sift}`
+		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o ${{LOCAL}}  -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+		perl {input.tool} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
+	else
+		echo -e "Chr\\tStart\\tEnd\\tRef\\tAlt\\tSIFT Prediction\\tSIFT Score" >{output}
+	fi
+	#######################
+	"""
+############
+#	Combine Annotation
+############
+rule CombineAnnotation:
+	input:
+		"{base}/AnnotationInput.gene",
+		"{base}/AnnotationInput.clinseq",
+		"{base}/AnnotationInput.cadd",
+		"{base}/AnnotationInput.cosmic",
+		"{base}/AnnotationInput.pcg",
+		"{base}/AnnotationInput.clinvar",
+		"{base}/AnnotationInput.hgmd",
+		"{base}/AnnotationInput.match",
+		"{base}/AnnotationInput.mcg",
+		"{base}/AnnotationInput.docm",
+		"{base}/AnnotationInput.candl",
+		"{base}/AnnotationInput.tcc",
+		"{base}/AnnotationInput.civic",
+		"{base}/AnnotationInput.sift.out"
+		convertor   = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
+		geneanno    = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
+		filter      = NGS_PIPELINE + "/scripts/filterVariants.pl",
+		coding      = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
+		blacklisted = config["annovar_data"]+ "hg19_blacklistedSites.txt"
+	output: 
+		filtered="{base}/Annotations.coding.rare.txt",
+		all	="{base}/AnnotationInput.annotations.final.txt"
+	version: "1.0"
+	params:
+		rulename   = "combine",
+		batch	   = config[config['host']]["job_Combine"],
+		dataDir    = config["annovar_data"]
+	shell: """
+	#######################
+echo "{base}/annotation/AnnotationInput
+{base}/annotation/AnnotationInput.gene
+{base}/annotation/AnnotationInput.clinseq
+{base}/annotation/AnnotationInput.cadd
+{base}/annotation/AnnotationInput.sift.out
+{base}/annotation/AnnotationInput.clinvar
+{base}/annotation/AnnotationInput.cosmic
+{base}/annotation/AnnotationInput.hgmd
+{base}/annotation/AnnotationInput.match
+{base}/annotation/AnnotationInput.docm
+{base}/annotation/AnnotationInput.candl
+{base}/annotation/AnnotationInput.tcc
+{base}/annotation/AnnotationInput.mcg
+{base}/annotation/AnnotationInput.civic
+{base}/annotation/AnnotationInput.pcg" >{base}/list
+	perl {input.convertor} {base}/list >{output.all}.tmp
+	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output.all}.tmp >{output.all}
+
+	perl {input.coding} {base}/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 >{output.all}.tmp
+	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >{output.filtered}
+	grep -v -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >>{output.filtered}
+	rm -rf {output.all}.tmp {base}/list
+	#######################
+	"""
+############
+#	Add Annotation back to sample level file
+############
+rule AttachAnnotation:
+	input:
+		txt="{subject}/{TIME}/{base1}/calls/{base}.snpEff.txt",
+		ref="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
+		convertor  = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl"
+	output:
+		txt="{subject}/{TIME}/{base1}/calls/{base}.annotated.txt"
+	version: "1.0"
+	params:
+		rulename   = "add",
+		batch      = config[config['host']]["job_addbackann"],
+	shell: """
+	#######################
+	perl {input.convertor} {input.ref}  {input.txt} >{output.txt}
 	#######################
 	"""

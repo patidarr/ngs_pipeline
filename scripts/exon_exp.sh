@@ -5,7 +5,7 @@
 #
 #module load samtools/0.1.19
 mil=1000000000
-constant="0.01"
+constant="1"
 total_reads=$1
 BedFile=$2
 bamFile=$3
@@ -24,7 +24,7 @@ do
 	mpileup_cord="$chr:${elements[1]}-${elements[2]}";
 	sum=`samtools depth -Q 10 -r $mpileup_cord $bamFile | awk '{sum += $3} END {print sum}'`; 
 	if [ -z "$sum" ];then
-		sum="0.01"
+		sum="1"
 		log=`echo "scale=3; l($sum)/l(2)" |bc -l`
 		echo -e "$line\\t0\\t$sum\\t$log" >> $outFile # sum is 0
 #		echo -e "$line\\t$sum" >> $outFile
