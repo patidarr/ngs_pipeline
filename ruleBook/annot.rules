@@ -271,7 +271,7 @@ rule CombineAnnotation:
 		"{base}/AnnotationInput.candl",
 		"{base}/AnnotationInput.tcc",
 		"{base}/AnnotationInput.civic",
-		"{base}/AnnotationInput.sift.out"
+		"{base}/AnnotationInput.sift.out",
 		convertor   = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
 		geneanno    = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
 		filter      = NGS_PIPELINE + "/scripts/filterVariants.pl",

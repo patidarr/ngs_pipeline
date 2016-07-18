@@ -5,7 +5,7 @@
 		"job_c_QC"       : "--partition=ccr,b1 --time=10:00:00 --mem=10G  --cpus-per-task=5  --gres=lscratch:05",
 		"job_failedExon" : "--partition=ccr,b1 --time=24:00:00 --mem=10G  --cpus-per-task=5  --gres=lscratch:05",
 		"job_copynumber" : "--partition=ccr,b1 --time=04:00:00 --mem=10G  --cpus-per-task=25 --gres=lscratch:10",
-		"job_exonExp"    : "--partition=ccr,b1 --time=24:00:00 --mem=50G  --cpus-per-task=32 --gres=lscratch:10",
+		"job_exonExp"    : "--partition=quick,ccr --time=2:00:00 --mem=5G  --cpus-per-task=32 --gres=lscratch:10",
 		"job_qualimap"   : "--partition=b1  --time=04:00:00 --mem=19G  --cpus-per-task=16 --gres=lscratch:40",
 		"job_fusioncatch": "--partition=b1,ccr --time=24:00:00 --mem=100g --cpus-per-task=16 --gres=lscratch:200",
 		"job_STAR"       : "--partition=ccr,b1 --time=05:00:00 --mem=50g  --cpus-per-task=32 --gres=lscratch:600",
