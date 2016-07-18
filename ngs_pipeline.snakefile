@@ -584,56 +584,6 @@ rule CopyNumber:
 	#######################
 	"""
 ############
-#       Somatic Copy Number
-############
-rule CN_LRR_old:
-	input:
-		files=lambda wildcards: somaticCopy[wildcards.Tumor],
-		ref=config["gene_coord"],
-		index=config["reference"].replace('.fasta', '.index.txt'),
-		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+"geneLists/combinedList_04292016",
-		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
-	output:
-		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.v1.txt",
-		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.v1.txt",
-		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v1.annotated.txt",
-		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.v1.filtered.txt"
-	params:
-		rulename = "LRR",
-		batch    = config[config['host']]["job_default"],
-		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
-	shell: """
-	#######################
-	module load R
-	module load bedtools/2.25.0
-	mkdir -p {wildcards.subject}/{TIME}/Actionable/
-	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
-	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
-
-	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
-	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
-
-	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file - `
-	MAD=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat MAD --file - `
-	min=`echo "${{median}}-(2*${{MAD}})"|bc`
-	max=`echo "${{median}}+(2*${{MAD}})"|bc`
-
-	perl {input.filter} filter {output.out} ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
-	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.v1.txt
-	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
-
-	head -1 {output.final} >{output.filtered}
-	for gene in ${{geneList}};
-	do
-		awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
-	done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
-	cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v1.filtered.txt
-	rm -rf {output.out}.temp1 {output.out}.temp
-	#######################
-	"""
-############
 #       Somatic Copy Number LRR (Median Corrected)
 ############
 rule CN_LRR:
