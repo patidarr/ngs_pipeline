@@ -181,19 +181,17 @@ rule CUFFLINKS:
 ############
 #       Exon Expression
 ############
-rule EXON_EXPRESSION:
+rule EXON_EXP_UCSC:
 	input:
 		bam="{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
 		convertor =NGS_PIPELINE + "/scripts/exon_exp.sh",
-		ucsc=config["exon_Bed_UCSC"],
-		ens=config["exon_Bed_ENS"],
+		ucsc=config["exon_Bed_UCSC"]
 	output:
-		ucsc="{base}/{TIME}/{sample}/exonExp_UCSC/{sample}.exonExpression.UCSC.txt",
-		ens="{base}/{TIME}/{sample}/exonExp_ENS/{sample}.exonExpression.ENS.txt"
+		ucsc="{base}/{TIME}/{sample}/exonExp_UCSC/{sample}.exonExpression.UCSC.txt"
 	version: config['samtools']
 	params:
-		rulename   = "exonExp",
+		rulename   = "exonExp.1",
 		batch      =config[config['host']]['job_exonExp']
 	shell: """
 	#######################
@@ -208,7 +206,28 @@ rule EXON_EXPRESSION:
         wait;
         cat ${{LOCAL}}/ucsc*.out >{output.ucsc}
 	rm -rf ${{LOCAL}}/*
-
+	#######################
+        """
+############
+#       Exon Expression
+############
+rule EXON_EXP_ENS:
+	input:
+		bam="{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam",
+		bai="{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
+		convertor =NGS_PIPELINE + "/scripts/exon_exp.sh",
+		ens=config["exon_Bed_ENS"],
+	output:
+		ens="{base}/{TIME}/{sample}/exonExp_ENS/{sample}.exonExpression.ENS.txt"
+	version: config['samtools']
+	params:
+		rulename   = "exonExp.2",
+		batch      =config[config['host']]['job_exonExp']
+	shell: """
+	#######################
+	module load samtools/{version}
+	totalReads=`samtools flagstat {input.bam} |head -1 | sed 's/\s/\\t/g' | cut -f1`
+	
 	split -d -l 15000 {input.ens} ${{LOCAL}}/ens
 	for file in ${{LOCAL}}/ens*
 	do
@@ -217,7 +236,7 @@ rule EXON_EXPRESSION:
 	wait
 	cat ${{LOCAL}}/ens*.out >{output.ens}
 	#######################
-        """
+	"""
 ############
 #       Fusioncatcher
 ############
