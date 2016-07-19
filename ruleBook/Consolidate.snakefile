@@ -2,12 +2,12 @@ rule QC:
         input:
                 bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
                 hsMatrix="{base}/{TIME}/{sample}/qc/{sample}.hsmetrics",
+		target_intervals =lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]]
         output: "{base}/{TIME}/{sample}/qc/{sample}.consolidated_QC"
         version:
                 config['samtools']
         params:
                 rulename        = "consolidated_QC",
-                target_intervals= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
                 bedtools        = config['bedtools'],
                 tool            = NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
 		tool_perl       = NGS_PIPELINE+ "/scripts/addAttributes.pl",
@@ -18,7 +18,7 @@ rule QC:
         module load python/2.7.9
         module load samtools/{version}
         module load bedtools/{params.bedtools}
-        python {params.tool} {input.bam} {params.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}.tmp
+        python {params.tool} {input.bam} {input.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}.tmp
 	perl {params.tool_perl} {wildcards.sample} {input.hsMatrix} {output}.tmp  {output}
 	rm -rf {output}.tmp
         #######################

@@ -1,7 +1,9 @@
 rule TargetIntervals:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
-		bai="{base}/{TIME}/{sample}/{sample}.bwa.final.bam.bai"
+		bai="{base}/{TIME}/{sample}/{sample}.bwa.final.bam.bai",
+		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
+                probe_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace(".target.", ".design."),
 	output:
 		probe_intervals  = temp("{base}/{TIME}/{sample}/qc/{sample}.probe.intervals"),
 		target_intervals = temp("{base}/{TIME}/{sample}/qc/{sample}.target.intervals")
@@ -9,14 +11,12 @@ rule TargetIntervals:
 		config['samtools']
 	params:
 		rulename = "targetIntervals",
-		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
-		probe_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace(".target.", ".design."),
 		batch	= config[config['host']]["job_default"],
 	shell:	"""
 	#######################
 	module load samtools/{version}
-	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.probe_intervals}  )> {output.probe_intervals}
-	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.target_intervals} )> {output.target_intervals} 
+	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {input.probe_intervals}  )> {output.probe_intervals}
+	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {input.target_intervals} )> {output.target_intervals} 
 	#######################
 	"""
 
