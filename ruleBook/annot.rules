@@ -22,7 +22,7 @@ ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mc
 ALL_QC = expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
 rule final:
         input:
-                ALL_QC
+#                ALL_QC
 ############
 #	table_annovar for:
 #		refGene
@@ -73,10 +73,10 @@ rule Annovar_Gene:
 	shell: """
 	#######################
 	module load annovar/{version}
-	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} -out {input.file} -remove -protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,exac03,cg69,nci60 -operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring "-1"
-	mv {input.file}.{params.build}_multianno.txt {output}
+	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} -out {input.file}.gene -remove -protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,exac03,cg69,nci60 -operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring "-1"
+	mv {input.file}.gene.{params.build}_multianno.txt {output}
 	sed -i '1s/\./_/g' {output}
-	rm -rf {input.file}.refGene.invalid_input
+	rm -rf {input.file}.gene.refGene.invalid_input {input.file}.gene.invalid_input
 	#######################
 	"""
 ############
@@ -100,7 +100,7 @@ rule Annovar_Clinseq:
 	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo -filter -dbtype generic -genericdbfile `basename {input.clinseq}`
 	awk '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
 	head -1 {input.clinseq} >>{output}
-	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered
+	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered {input.file}.invalid_input
 	#######################
 	"""
 ################################
@@ -127,7 +127,8 @@ rule Annovar_CADD:
 	annotate_variation.pl {input.file}.{params.build}_cadd_filtered {params.RefData} -buildver {params.build} -otherinfo -filter -dbtype caddindel
 	cut -f 2-7 {input.file}.{params.build}_cadd_dropped {input.file}.{params.build}_cadd_filtered.{params.build}_caddindel_dropped |sed -e 's/,/\\t/g' |awk '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$1,$2}}' >{output}
 	head -1 {input.cadd_indel} >>{output}
-	rm -rf {input.file}.{params.build}_cadd_dropped {input.file}.{params.build}_cadd_filtered {input.file}.{params.build}_caddindel_dropped {input.file}.{params.build}_caddindel_filtered
+	rm -rf {input.file}.{params.build}_cadd_dropped {input.file}.{params.build}_cadd_filtered {input.file}.{params.build}_cadd_filtered.log {input.file}.{params.build}_cadd_filtered.{params.build}_caddindel_filtered {input.file}.{params.build}_cadd_filtered.{params.build}_caddindel_dropped {input.file}.invalid_input
+	
 	#######################
 	"""
 ################################
@@ -149,8 +150,9 @@ rule Annovar_COSMIC:
 	shell: """
 	#######################
 	module load annovar/{version}
-	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} --dot2underline -out {input.file} -remove -protocol cosmic76 -operation f -nastring "NA" 
-	mv {input.file}.{params.build}_multianno.txt {output}
+	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} --dot2underline -out {input.file}.cosmic -remove -protocol cosmic76 -operation f -nastring "NA" 
+	mv {input.file}.cosmic.{params.build}_multianno.txt {output}
+	rm -rf {input.file}.cosmic.invalid_input
 	#######################
 	"""
 ################################
@@ -175,7 +177,7 @@ rule Annovar_PCG:
 	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo -filter -dbtype generic -genericdbfile `basename {input.pcg}`
 	awk -F "\\t" '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
 	head -1 {input.pcg} >>{output}
-	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered
+	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered {input.file}.invalid_input
 	#######################
 	"""
 ################################
@@ -250,6 +252,7 @@ rule SIFT:
 	else
 		echo -e "Chr\\tStart\\tEnd\\tRef\\tAlt\\tSIFT Prediction\\tSIFT Score" >{output}
 	fi
+	rm -rf ${{DIR}}/{input.sift}.sift_predictions.tsv
 	#######################
 	"""
 ############
@@ -273,7 +276,7 @@ rule CombineAnnotation:
 		"{base}/AnnotationInput.sift.out",
 		convertor   = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
 		geneanno    = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
-		filter      = NGS_PIPELINE + "/scripts/filterVariants.pl",
+		filter      = NGS_PIPELINE + "/scripts/filterVariants.v1.pl",
 		coding      = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
 		blacklisted = config["annovar_data"]+ "hg19_blacklistedSites.txt"
 	output: 
