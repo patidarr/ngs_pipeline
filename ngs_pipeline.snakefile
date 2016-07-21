@@ -11,14 +11,13 @@ DATA_DIR=os.environ['DATA_DIR']
 ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
 TIME=os.environ['TIME']
+configfile: NGS_PIPELINE +"/config/config_annotation.json"
+configfile: NGS_PIPELINE +"/config/config_common.json"
+configfile: NGS_PIPELINE +"/config/config_cluster.json"
 if HOST == 'biowulf.nih.gov':
-	configfile: NGS_PIPELINE +"/config/config_common.json"
 	configfile: NGS_PIPELINE +"/config/config_common_biowulf.json"
-	configfile: NGS_PIPELINE +"/config/config_cluster.json"
 elif HOST == 'login01':
-	configfile: NGS_PIPELINE +"/config/config_common.json"
 	configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
-	configfile: NGS_PIPELINE +"/config/config_cluster.json"
 
 config['host'] = HOST
 #HOST = config['host']
@@ -284,6 +283,7 @@ include: NGS_PIPELINE +"/ruleBook/gatk_RNASeq.snakefile"
 include: NGS_PIPELINE +"/ruleBook/ideogram.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Actionable.snakefile"
 include: NGS_PIPELINE +"/ruleBook/UnionSomaticMutations.snakefile"
+include: NGS_PIPELINE +"/ruleBook/annot.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -1050,130 +1050,6 @@ rule FormatInput:
 	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph",
-	#######################
-	"""
-############
-#	Custom Annotation
-############
-rule Annotation:
-	input:
-		"{subject}/{TIME}/annotation/AnnotationInput.anno",
-		TableAnnovar=NGS_PIPELINE + "/scripts/TableAnno.sh",
-		custom     =NGS_PIPELINE + "/scripts/addAnnotation.pl"
-	output:
-		temp("{subject}/{TIME}/annotation/AnnotationInput.docm")
-	version: config["annovar"]
-	params:
-		rulename   = "Annotation",
-		batch      = config[config['host']]["job_annovar"],
-		RefData    = config["annovar_data"],
-		build      = config["build"],
-	shell: """
-	#######################
-	module load annovar/{version}
-	sh {input.TableAnnovar} {wildcards.subject}/{TIME}/annotation AnnotationInput {input.custom} {params.RefData}
-	#######################
-	"""
-############
-#       SIFT
-############
-rule SIFT:
-	input:
-		sift="{subject}/{TIME}/annotation/AnnotationInput.sift",
-		convertor  = NGS_PIPELINE + "/scripts/ParseSIFT.pl"
-	output:
-		temp("{subject}/{TIME}/annotation/AnnotationInput.sift.out")
-	version: config["SIFT"]
-	resources: SIFT=1
-	params:
-		rulename   = "SIFT",
-		batch      = config[config['host']]["job_SIFT"],
-		build      = config["SIFTbuild"]
-	shell: """
-	#######################
-	if [ -s {input.sift} ]; then
-		module load python/2.7.9
-		module load SIFT/{version}
-		DIR=`pwd`
-		cd ${{DIR}}/`dirname {input.sift}`
-		FILE=`basename {input.sift}`
-		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o ${{LOCAL}}  -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
-		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
-	else
-		echo -e "Chr\\tStart\\tEnd\\tRef\\tAlt\\tSIFT Prediction\\tSIFT Score" >{output}
-	fi
-	#######################
-	"""
-############
-#       PPH2   ** Not in use**
-############
-rule PPH2:
-	input:
-		pph="{subject}/{TIME}/annotation/AnnotationInput.pph",
-		convertor  = NGS_PIPELINE + "/scripts/ParsePPH2.pl"
-	output: "{subject}/{TIME}/annotation/AnnotationInput.pph2.out"
-	version: config["polyphen2"]
-	params:
-		rulename   = "PPH2",
-		batch      = config[config['host']]["job_PPH2"],
-	shell: """
-	#######################
-	module load polyphen2/{version}
-	if [ -s {input.pph} ]; then
-		mapsnps.pl -c -g hg19 -U -y {input.pph}.intermediate {input.pph}
-		pph_swarm.pl {input.pph}.intermediate -d /scratch/`whoami`/${{RANDOM}}${{RANDOM}} -o {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph2.intermediate.txt --partition ${{SLURM_JOB_PARTITION}} --block
-		perl {input.convertor}  {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph2.intermediate.txt >{output}
-	else
-		touch {output}
-	fi
-	rm -rf {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph.inter*
-	#######################
-	"""
-############
-#	Combine Annotation
-############
-rule CombineAnnotation:
-	input:
-		anno="{subject}/{TIME}/annotation/AnnotationInput.docm",
-		sift="{subject}/{TIME}/annotation/AnnotationInput.sift.out",
-		convertor  = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
-		geneanno   = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
-		filter     = NGS_PIPELINE + "/scripts/filterVariants.pl",
-		coding     = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
-		blacklisted      = config["annovar_data"]+ "hg19_blacklistedSites.txt"
-	output: "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt"
-	version: "1.0"
-	params:
-		rulename   = "combine",
-		batch	   = config[config['host']]["job_Combine"],
-		dataDir    = config["annovar_data"]
-	shell: """
-	#######################
-	echo "{wildcards.subject}/{TIME}/annotation/AnnotationInput
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.gene
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.exac.3
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.clinseq
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.cadd
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.sift.out
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.clinvar
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.cosmic
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.hgmd
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.match
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.docm
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.candl
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.tcc
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.mcg
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.civic
-{wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.pcg" >{wildcards.subject}/{TIME}/annotation/list
-	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/list >{output}
-	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output} >>{wildcards.subject}/{TIME}/annotation/AnnotationInput.annotations.final.txt
-	perl {input.coding} {wildcards.subject}/{TIME}/annotation/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 |sort -n |uniq >{output}.all
-	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output}.all >{output}
-	grep -v -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output}.all >>{output}
-	rm -rf {output}.all {wildcards.subject}/{TIME}/annotation/list
-	
-
-	rm -rf {wildcards.subject}/{TIME}/annotation/AnnotationInput.pph {wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.* {wildcards.subject}/{TIME}/annotation/AnnotationInput.hgmd {wildcards.subject}/{TIME}/annotation/AnnotationInput.match {wildcards.subject}/{TIME}/annotation/AnnotationInput.candl {wildcards.subject}/{TIME}/annotation/AnnotationInput.tcc {wildcards.subject}/{TIME}/annotation/AnnotationInput.mcg {wildcards.subject}/{TIME}/annotation/AnnotationInput.civic {wildcards.subject}/{TIME}/annotation/AnnotationInput.anno.pcg {wildcards.subject}/{TIME}/annotation/AnnotationInput.clinvar {wildcards.subject}/{TIME}/annotation/AnnotationInput {wildcards.subject}/{TIME}/annotation/allSites {wildcards.subject}/{TIME}/annotation/AnnotationInput.sift.sift_predictions.tsv
 	#######################
 	"""
 ############

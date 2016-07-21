@@ -1,28 +1,5 @@
-import itertools
-import os
-import collections
-import json
-from snakemake.utils import R
-from snakemake.exceptions import MissingInputException
-NGS_PIPELINE=os.environ['NGS_PIPELINE']
-WORK_DIR=os.environ['WORK_DIR']
-DATA_DIR=os.environ['DATA_DIR']
-ACT_DIR=os.environ['ACT_DIR']
-HOST=os.environ['HOST']
-TIME=os.environ['TIME']
-
-configfile: NGS_PIPELINE +"/config/config_common.json"
-configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
-configfile: NGS_PIPELINE +"/config/config_cluster.json"
-configfile: NGS_PIPELINE +"config/config_annotation.json"
-PATIENTS =[]
-for subject in config['subject'].keys():
-        PATIENTS.append(subject)
-ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
-ALL_QC = expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
-rule final:
-        input:
-#                ALL_QC
+#ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
+#ALL_QC = expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
 ############
 #	table_annovar for:
 #		refGene
