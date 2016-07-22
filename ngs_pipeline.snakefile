@@ -285,7 +285,7 @@ include: NGS_PIPELINE +"/ruleBook/ideogram.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Actionable.snakefile"
 include: NGS_PIPELINE +"/ruleBook/UnionSomaticMutations.snakefile"
 include: NGS_PIPELINE +"/ruleBook/plots.snakefile"
-include: NGS_PIPELINE +"/ruleBook/annot.rules"
+include: NGS_PIPELINE +"/ruleBook/annot.snakefile"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -929,6 +929,19 @@ rule FormatInput:
 	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph",
+	#######################
+	"""
+rule CopyAnnotationFile:
+	input:
+		"{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt"
+	output:
+		"{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt"
+	params:
+		rulename   = "caf",
+		batch      = config[config['host']]["job_default"],
+	shell: """
+	#######################
+	cp {input} {output}
 	#######################
 	"""
 ############
