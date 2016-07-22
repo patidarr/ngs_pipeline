@@ -130,8 +130,13 @@ else{
 
         -h, -help, --help Print this message.
 
-        -m, -mode		This sets up the time in the patient directory, in production mode the time is dynamically decided, 
-			  in dev mode a pre set time is used for debugging purposes.
+        -m, -mode	This sets up the time in the patient directory, in production mode the time is dynamically decided, 
+			 in dev mode a pre set time is used for debugging purposes.
+			 if new libraries are secqueced from a case -m <previous Data> could be used as mode.
+		Accpeted values:
+			p =production mode <todays date>	
+			d =development mode <preset date 20160415>
+			<20160415> = to use this is caseID for the sample. this sould only be done with single subject json file
 
 	-d, -datadir	On biowulf the raw data is stored in /data/khanlab/projects/DATA/
 			  On TGen the raw data is stored in /projects/Clinomics/DATA/

@@ -86,7 +86,6 @@ SUB_BAMS= {}
 SUB_COV = {}
 SUB_LOH = {}
 SUB_GT  = {}
-SUB_MPG = {}
 SUB_HOT = {}
 SUB_IGV = {}
 SUB_CON_QC = {}
@@ -104,7 +103,6 @@ for subject in config['subject'].keys():
 	SUB_LOH[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.loh".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_GT[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_CON_QC[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_MPG[subject] = ["{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.vcf.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
@@ -277,12 +275,16 @@ include: NGS_PIPELINE +"/ruleBook/failedExon.snakefile"
 include: NGS_PIPELINE +"/ruleBook/hsMetrix.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Consolidate.snakefile"
 include: NGS_PIPELINE +"/ruleBook/universal.snakefile"
+
 include: NGS_PIPELINE +"/ruleBook/haplotypeCaller.snakefile"
 include: NGS_PIPELINE +"/ruleBook/platypus.snakefile"
+include: NGS_PIPELINE +"/ruleBook/bam2mpg.snakefile"
+
 include: NGS_PIPELINE +"/ruleBook/gatk_RNASeq.snakefile"
 include: NGS_PIPELINE +"/ruleBook/ideogram.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Actionable.snakefile"
 include: NGS_PIPELINE +"/ruleBook/UnionSomaticMutations.snakefile"
+include: NGS_PIPELINE +"/ruleBook/plots.snakefile"
 include: NGS_PIPELINE +"/ruleBook/annot.rules"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
@@ -693,27 +695,6 @@ rule Coverage:
 	#######################
 	"""
 ############
-# CoveragePlot
-############
-rule CoveragePlot:
-	input:
-		covFiles=lambda wildcards: SUB_COV[wildcards.subject],
-		coverage =NGS_PIPELINE + "/scripts/coverage.R"
-	output: "{subject}/{TIME}/qc/{subject}.coveragePlot.png",
-	version: config["R"]
-	params:
-		rulename = "covplot",
-		batch    = config[config['host']]["job_covplot"]
-	shell: """
-	#######################
-
-	cp -f {input.covFiles} ${{LOCAL}}
-
-	module load R
-	R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.coverage}
-	#######################
-	"""
-############
 # IGV Session file
 ############
 rule IGV_Session:
@@ -737,46 +718,6 @@ rule IGV_Session:
 	done
 	echo "\t</Resources>" >>{output}
 	echo "</Global>" >>{output}
-	#######################
-	"""
-############
-# Circos Plot
-############
-rule Circos:
-	input:
-		lohFiles=lambda wildcards: SUB_LOH[wildcards.subject],
-		circos =NGS_PIPELINE + "/scripts/circos.R"
-	output:
-		"{subject}/{TIME}/qc/{subject}.circos.png",
-	version: config["R"]
-	params:
-		rulename = "Circos",
-		batch    = config[config['host']]["job_covplot"]
-	shell: """
-	#######################
-	cp -f {input.lohFiles} ${{LOCAL}}
-	module load R
-	R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.circos}
-	#######################
-	"""
-############
-# Box Plot Hotspot
-############
-rule BoxPlot_Hotspot:
-	input:
-		covFiles=lambda wildcards: SUB_HOT[wildcards.subject],
-		boxplot =NGS_PIPELINE + "/scripts/boxplot.R"
-	output:
-		"{subject}/{TIME}/qc/{subject}.hotspot_coverage.png",
-	version: config["R"]
-	params:
-		rulename = "Boxplot",
-		batch    = config[config['host']]["job_covplot"]
-	shell: """
-	#######################
-	cp -f {input.covFiles} ${{LOCAL}}
-	module load R
-	R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.boxplot}
 	#######################
 	"""
 ############
@@ -849,68 +790,6 @@ rule GATK:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T BaseRecalibrator -R {input.ref} -knownSites {input.phase1} -knownSites {input.mills} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $GATK_JAR -T PrintReads -R {input.ref} -I ${{LOCAL}}/{wildcards.sample}.lr.bam -o {output.bam} -BQSR ${{LOCAL}}/{wildcards.sample}.recalibration.matrix.txt
 	mv -f {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bwa.final.bai {output.index}
-	#######################
-	"""
-############
-#	Bam2MPG
-############
-rule Bam2MPG:
-	input:
-		bam="{subject}/{TIME}/{sample}/{sample}.novo.final.bam",
-		bai="{subject}/{TIME}/{sample}/{sample}.novo.final.bam.bai",
-		ref=config["reference"],
-		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace("target","targetbp")
-	output:
-		snps="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.vcf.gz",
-		vcf="{subject}/{TIME}/{sample}/calls/{sample}.bam2mpg.raw.vcf"
-	version: config["bam2mpg"]
-	params:
-		rulename  = "bam2mpg",
-		batch     = config[config['host']]["job_bam2mpg"],
-		samtools  = config["samtools"],
-		vcftools  = config["vcftools"],
-		parallel  = NGS_PIPELINE + "/scripts/parallel"
-	shell: """
-	#######################
-	if [ -f {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz ]; then
-        	rm -rf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.*
-
-	fi
-
-	module load bam2mpg/{version}
-	module load vcftools/{params.vcftools}
-	for CHR in `seq 1 22` X Y;
-	do
-	echo "bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam}"
-	done >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file
-	cat   {wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file |{params.parallel} -j 10 --no-notice
-	rm -rf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/swarm.file
-	
-	for CHR in `seq 1 22` X Y
-	do
-		
-		echo "Started indexing chr${{CHR}}"
-		cat ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort >${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
-		mv -f ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf
-		bgzip ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf
-		cat ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort >${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
-		mv -f ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf
-		bgzip ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf
-		tabix -p vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
-		tabix -p vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
-		echo "Finished indexing chr${{CHR}}"
-	done
-	echo "Combine chr level vcf files"
-	vcf-concat ${{LOCAL}}/chr*{wildcards.sample}.*.vcf.gz >${{LOCAL}}/{wildcards.sample}.snps.vcf
-	echo "Restrict to Bed file"
-
-	vcftools --vcf ${{LOCAL}}/{wildcards.sample}.snps.vcf --bed {input.interval} --out ${{LOCAL}}/{wildcards.sample} --recode --keep-INFO-all
-
-	sed -e 's/SAMPLE/{wildcards.sample}/g' ${{LOCAL}}/{wildcards.sample}.recode.vcf |vcf-sort >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
-
-	bgzip {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf
-	tabix -f -p vcf {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz
-	gunzip -c {wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.vcf.gz >{wildcards.subject}/{TIME}/{wildcards.sample}/calls/{wildcards.sample}.bam2mpg.raw.vcf
 	#######################
 	"""
 ############
