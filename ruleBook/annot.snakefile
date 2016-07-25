@@ -74,10 +74,10 @@ rule Annovar_Clinseq:
 	shell: """
 	#######################
 	module load annovar/{version}
-	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo -filter -dbtype generic -genericdbfile `basename {input.clinseq}`
-	awk '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
+	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo --outfile {input.file}.clinseq -filter -dbtype generic -genericdbfile `basename {input.clinseq}`
+	awk '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.clinseq.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
 	head -1 {input.clinseq} >>{output}
-	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered {input.file}.invalid_input
+	rm -rf {input.file}.clinseq.{params.build}_generic_dropped {input.file}.clinseq.{params.build}_generic_filtered {input.file}.invalid_input
 	#######################
 	"""
 ################################
@@ -151,10 +151,10 @@ rule Annovar_PCG:
 	shell: """
 	#######################
 	module load annovar/{version}
-	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo -filter -dbtype generic -genericdbfile `basename {input.pcg}`
-	awk -F "\\t" '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
+	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo --outfile {input.file}.pcg -filter -dbtype generic -genericdbfile `basename {input.pcg}`
+	awk -F "\\t" '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.pcg.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
 	head -1 {input.pcg} >>{output}
-	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered {input.file}.invalid_input
+	rm -rf {input.file}.pcg.{params.build}_generic_dropped {input.file}.pcg.{params.build}_generic_filtered {input.file}.invalid_input
 	#######################
 	"""
 ################################
