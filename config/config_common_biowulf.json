@@ -39,6 +39,8 @@
 	"exon_Bed_UCSC"		: "/data/Clinomics/Ref/khanlab/GTF/Exons_06302016_refseq_formatted.merged.bed",
 	"exon_Bed_ENS"		: "/data/Clinomics/Ref/khanlab/GTF/Exons_06302016_ensembl_formatted.merged.bed",
 	"gene_coord"		: "/data/Clinomics/Ref/khanlab/gene_coordinates.txt",
+	"ref_flat"              : "/data/Clinomics/Ref/khanlab/GTF/refFlat.txt.gz",
+	"rRNA_interval"         : "/data/Clinomics/Ref/khanlab/GTF/rRNA_interval_file",
 	"GTF"			: {
 				"ENS" : "/data/Clinomics/Ref/khanlab/GTF/06302016_ensembl.gtf",
 				"UCSC": "/data/Clinomics/Ref/khanlab/GTF/06302016_refseq.gtf"

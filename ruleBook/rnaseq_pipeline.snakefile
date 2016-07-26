@@ -24,6 +24,8 @@ for subject  in config['RNASeq'].keys():
 		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
+		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.txt"]
+		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.pdf"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
 		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
 		EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
@@ -161,11 +163,13 @@ rule CUFFLINKS:
 	input:
 		bam="{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam",
 		bai="{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam.bai",
-		convertor =NGS_PIPELINE + "/scripts/transformlog2_FPKM.py",
+		convertor =NGS_PIPELINE + "/scripts/fpkm2log2_fpkm.pl",
 		ref=lambda wildcards: config['GTF'][wildcards.gtf]
 	output:
-		"{base}/{TIME}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking_log2",
-		"{base}/{TIME}/{sample}/cufflinks_{gtf}/isoforms.fpkm_tracking_log2"
+		gene="{base}/{TIME}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking",
+		gene_log="{base}/{TIME}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking_log2",
+		isoform="{base}/{TIME}/{sample}/cufflinks_{gtf}/isoforms.fpkm_tracking",
+		isoform_log="{base}/{TIME}/{sample}/cufflinks_{gtf}/isoforms.fpkm_tracking_log2"
 	version: config['cufflinks']
 	params:
 		rulename   = "cuff",
@@ -174,8 +178,8 @@ rule CUFFLINKS:
 	#######################
 	module load cufflinks/{version}
 	cufflinks -p ${{THREADS}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
-	/usr/bin/python {input.convertor} genes {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf}/genes.fpkm_tracking_log2
-	python {input.convertor} isoforms {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf}/isoforms.fpkm_tracking_log2
+	perl {input.convertor} {output.gene}    > {output.gene_log}
+	perl {input.convertor} {output.isoform} > {output.isoform_log}
 	#######################
 	"""
 ############

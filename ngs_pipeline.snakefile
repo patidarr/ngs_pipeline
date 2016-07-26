@@ -270,6 +270,7 @@ localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Ex
 #                               Rule Book				  #
 ###########################################################################
 include: NGS_PIPELINE +"/ruleBook/rnaseq_pipeline.snakefile"
+include: NGS_PIPELINE +"/ruleBook/rnaseqQC.snakefile"
 include: NGS_PIPELINE +"/ruleBook/readDepth.snakefile"
 include: NGS_PIPELINE +"/ruleBook/failedExon.snakefile"
 include: NGS_PIPELINE +"/ruleBook/hsMetrix.snakefile"
