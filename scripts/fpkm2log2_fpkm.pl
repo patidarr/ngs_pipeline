@@ -27,11 +27,13 @@ while(<FH>){
 	chomp;
 	my @line =split("\t", $_);
 	if ($_=~ '^tracking_id'){
-		print "Tracking_ID\tGene_ID\tLocus\tlog2(FPKM)\n";
+		print "Tracking_ID\tGene_ID\tGene_Name\tLocus\tlog2(FPKM)\n";
 		next;
 	}
-	my $fpkm=$line[9] + 1;
-	$fpkm=sprintf ("%.3f", log($fpkm)/log(2));
-	print "$line[0]\t$line[3]\t$line[6]\t$fpkm\n";
+	if ($line[6] =~ /^\d+:/ or $line[6] =~ /^[X|Y]:/){
+		my $fpkm=$line[9] + 1;
+		$fpkm=sprintf ("%.3f", log($fpkm)/log(2));
+		print "$line[0]\t$line[3]\t$line[4]\t$line[6]\t$fpkm\n";
+	}
 }
 close FH;
