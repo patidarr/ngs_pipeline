@@ -202,7 +202,7 @@ rule EXON_EXP_UCSC:
 	module load samtools/{version}
 	totalReads=`samtools flagstat {input.bam} |head -1 | sed 's/\s/\\t/g' | cut -f1`
 
-        split -d -l 12000 {input.ucsc} ${{LOCAL}}/ucsc
+        split -d -l 30000 {input.ucsc} ${{LOCAL}}/ucsc
         for file in ${{LOCAL}}/ucsc*
         do
 		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
@@ -232,7 +232,7 @@ rule EXON_EXP_ENS:
 	module load samtools/{version}
 	totalReads=`samtools flagstat {input.bam} |head -1 | sed 's/\s/\\t/g' | cut -f1`
 	
-	split -d -l 15000 {input.ens} ${{LOCAL}}/ens
+	split -d -l 45000 {input.ens} ${{LOCAL}}/ens
 	for file in ${{LOCAL}}/ens*
 	do
 		sh {input.convertor} ${{totalReads}} ${{file}} {input.bam} ${{file}}.out &
