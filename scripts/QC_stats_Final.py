@@ -22,7 +22,7 @@ def _count_reads(bam):
                 stats['mapped_reads'] += 1
 
     stats['percent_mapped'] = (float(stats['mapped_reads']) / float(stats['total_reads'])) * 100
-    stats['percent_mapped'] = "%2.2F" % stats['percent_mapped'] + '%'
+    stats['percent_mapped'] = "%2.2F" % stats['percent_mapped']
 
     return stats 
 
@@ -108,43 +108,43 @@ def _coverage(bam):
 
     stats['percent_at_1000'] = (float(positions_at_1000) /
                               float(total_positions)) * 100
-    stats['percent_at_1000'] = "%2.2F" % stats['percent_at_1000'] + '%'
+    stats['percent_at_1000'] = "%2.2F" % stats['percent_at_1000']
     
     stats['percent_at_400'] = (float(positions_at_400) /
                               float(total_positions)) * 100
-    stats['percent_at_400'] = "%2.2F" % stats['percent_at_400'] + '%'
+    stats['percent_at_400'] = "%2.2F" % stats['percent_at_400']
     
     stats['percent_at_200'] = (float(positions_at_200) /
                                   float(total_positions)) * 100
-    stats['percent_at_200'] = "%2.2F" % stats['percent_at_200'] + '%'
+    stats['percent_at_200'] = "%2.2F" % stats['percent_at_200']
 
     stats['percent_at_100'] = (float(positions_at_100) /
                               float(total_positions)) * 100
-    stats['percent_at_100'] = "%2.2F" % stats['percent_at_100'] + '%'
+    stats['percent_at_100'] = "%2.2F" % stats['percent_at_100']
 
     stats['percent_at_50'] = (float(positions_at_50) / 
                               float(total_positions)) * 100
-    stats['percent_at_50'] = "%2.2F" % stats['percent_at_50'] + '%'
+    stats['percent_at_50'] = "%2.2F" % stats['percent_at_50']
 
     stats['percent_at_30'] = (float(positions_at_30) /
                               float(total_positions)) * 100
-    stats['percent_at_30'] = "%2.2F" % stats['percent_at_30'] + '%'
+    stats['percent_at_30'] = "%2.2F" % stats['percent_at_30']
 
     stats['percent_at_20'] = (float(positions_at_20) /
                               float(total_positions)) * 100
-    stats['percent_at_20'] = "%2.2F" % stats['percent_at_20'] + '%'
+    stats['percent_at_20'] = "%2.2F" % stats['percent_at_20']
 
     stats['percent_at_15'] = (float(positions_at_15) /
                               float(total_positions)) * 100
-    stats['percent_at_15'] = "%2.2F" % stats['percent_at_15'] + '%'
+    stats['percent_at_15'] = "%2.2F" % stats['percent_at_15']
 
     stats['percent_at_10'] = (float(positions_at_10) /
                               float(total_positions)) * 100
-    stats['percent_at_10'] = "%2.2F" % stats['percent_at_10'] + '%'
+    stats['percent_at_10'] = "%2.2F" % stats['percent_at_10']
 
     stats['percent_at_5'] = (float(positions_at_5) /
                               float(total_positions)) * 100
-    stats['percent_at_5'] = "%2.2F" % stats['percent_at_5'] + '%'
+    stats['percent_at_5'] = "%2.2F" % stats['percent_at_5']
 
     return stats
 
@@ -184,7 +184,9 @@ def _ontarget(bam):
 
     stats['min_mapq']    = min_mapq
     stats['mean_mapq']   = numpy_array.mean()
+    stats['mean_mapq']   = "%2.2F" % stats['mean_mapq'] 
     stats['stddev_mapq'] = numpy_array.std() 
+    stats['stddev_mapq'] = "%2.2F" % stats['stddev_mapq']
 
     return stats 
     
@@ -224,15 +226,15 @@ for filename in [argv[1]]:
  
         stats2['percent_ontarget'] = (float(stats2['ontarget_reads']) / 
                                      float(stats1['mapped_reads'])) * 100
-        stats2['percent_ontarget'] = "%2.2F" % stats2['percent_ontarget'] + '%'
+        stats2['percent_ontarget'] = "%2.2F" % stats2['percent_ontarget']
         
         stats2['percent_unique_ontarget'] = (float(stats2['unique_ontarget_reads']) / 
                                              float(stats2['ontarget_reads'])) * 100
-        stats2['percent_unique_ontarget'] = "%2.2F" % stats2['percent_unique_ontarget'] + '%'
+        stats2['percent_unique_ontarget'] = "%2.2F" % stats2['percent_unique_ontarget']
 
         stats2['percent_hq_unique_ontarget'] = (float(stats2['hq_unique_ontarget_reads']) /
                                              float(stats2['unique_ontarget_reads'])) * 100
-        stats2['percent_hq_unique_ontarget'] = "%2.2F" % stats2['percent_hq_unique_ontarget'] + '%'        
+        stats2['percent_hq_unique_ontarget'] = "%2.2F" % stats2['percent_hq_unique_ontarget']
 
         print string.join([argv[4], argv[5], argv[6],
                            str(stats1['total_reads']),
