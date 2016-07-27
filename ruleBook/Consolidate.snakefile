@@ -3,13 +3,14 @@ rule QC:
                 bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
                 hsMatrix="{base}/{TIME}/{sample}/qc/{sample}.hsmetrics",
 		target_intervals =lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]]
+                tool= NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
+		tool_perl       = NGS_PIPELINE+ "/scripts/addAttributes.pl",
         output: "{base}/{TIME}/{sample}/qc/{sample}.consolidated_QC"
         version:
                 config['samtools']
         params:
                 rulename        = "consolidated_QC",
                 bedtools        = config['bedtools'],
-                tool            = NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
 		tool_perl       = NGS_PIPELINE+ "/scripts/addAttributes.pl",
                 batch           = config[config['host']]["job_c_QC"],
                 diagnosis       = lambda wildcards: config['Diagnosis'][wildcards.sample]
@@ -18,8 +19,8 @@ rule QC:
         module load python/2.7.9
         module load samtools/{version}
         module load bedtools/{params.bedtools}
-        python {params.tool} {input.bam} {input.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}.tmp
-	perl {params.tool_perl} {wildcards.sample} {input.hsMatrix} {output}.tmp  {output}
+        python {input.tool} {input.bam} {input.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}.tmp
+	perl   {input.tool_perl} {wildcards.sample} {input.hsMatrix} {output}.tmp  {output}
 	rm -rf {output}.tmp
         #######################
         """
@@ -40,7 +41,6 @@ rule QC_Summary:
 	output: "Consolidated_QC.txt"
 	params:
 		rulename  = "QC_Sum",
-		tools	  = NGS_PIPELINE+ "/scripts/awk_sort_withHeader.awk",
 		batch	  = config[config['host']]["job_default"]
 	shell: """
 	#######################
