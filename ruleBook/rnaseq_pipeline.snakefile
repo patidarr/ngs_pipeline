@@ -6,6 +6,7 @@ RNA_CALLS =[]
 SUB2RNA = {}
 SUB_RNASEQ=[]
 SUB_FUSION={}
+SUB_QC={}
 ActionableFiles1 =[]
 for subject,samples in config['RNASeq'].items():
 	SUB_RNASEQ.append(subject)
@@ -34,6 +35,7 @@ for subject  in config['RNASeq'].keys():
 			EXPRESSION += [subject+"/"+TIME+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
 	RNA_CALLS  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{TIME}/{sample}/fusion/{sample}.actionable.fusion.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+	SUB_QC[subject]     = ["{subject}/{TIME}/{sample}/qc/{sample}.RnaSeqQC.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.snpEff.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
