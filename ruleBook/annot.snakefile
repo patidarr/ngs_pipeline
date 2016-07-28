@@ -223,7 +223,7 @@ rule SIFT:
 		DIR=`pwd`
 		cd ${{DIR}}/`dirname {input.sift}`
 		FILE=`basename {input.sift}`
-		LOCAL=/projects/scratch/
+		#LOCAL=/projects/scratch/
 		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o ${{LOCAL}}  -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
 		perl {input.tool} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
 	else
