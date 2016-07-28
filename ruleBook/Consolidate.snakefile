@@ -2,7 +2,7 @@ rule QC:
         input:
                 bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
                 hsMatrix="{base}/{TIME}/{sample}/qc/{sample}.hsmetrics",
-		target_intervals =lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]]
+		target_intervals =lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
                 tool= NGS_PIPELINE+ "/scripts/QC_stats_Final.py",
 		tool_perl       = NGS_PIPELINE+ "/scripts/addAttributes.pl",
         output: "{base}/{TIME}/{sample}/qc/{sample}.consolidated_QC"
@@ -29,11 +29,11 @@ rule QC_Summary_Patient:
 	output: "{subject}/{TIME}/qc/{subject}.consolidated_QC.txt"
 	params:
 		rulename  = "QC_Sum",
-		tools     = NGS_PIPELINE+ "/scripts/awk_sort_withHeader.awk",
 		batch     = config[config['host']]["job_default"]
 	shell: """
 	#######################
-	cat {input} |{params.tools} |uniq |sed -e '/^$/d'>{output}
+	export LC_ALL=C
+	cat {input} |sort |uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""
 rule QC_Summary:

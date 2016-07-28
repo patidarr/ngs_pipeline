@@ -33,3 +33,15 @@ rule RNASeqQC_1:
 	perl {input.convertor} {input.file} {wildcards.base} {wildcards.sample} "{params.diagnosis}" >{output}
 	#######################
 	"""
+rule RNASeqQC_2:
+	input : lambda wildcards: SUB_QC[wildcards.subject]
+	output: "{subject}/{TIME}/qc/{subject}.RnaSeqQC.txt"
+	params:
+		rulename  = "QC_Sum",
+		batch     = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	export LC_ALL=C
+        cat {input} |sort |uniq |sed -e '/^$/d'>{output}	
+	#######################
+	"""
