@@ -182,6 +182,7 @@ rule Annot_Custom:
 		candl  ="{base}/AnnotationInput.candl",
 		tcc    ="{base}/AnnotationInput.tcc",
 		civic  ="{base}/AnnotationInput.civic"	
+	version: config["annovar"]
 	params:
 		rulename   = "Annot_PCG",
 		batch      = config[config['host']]["job_annovar"],
