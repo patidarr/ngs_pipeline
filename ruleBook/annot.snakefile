@@ -68,7 +68,7 @@ rule Annovar_Clinseq:
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_clinseq",
-		batch      = config[config['host']]["job_annovar"],
+		batch      = config[config['host']]["job_annot"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
 	shell: """
@@ -121,7 +121,7 @@ rule Annovar_COSMIC:
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_COSMIC",
-		batch      = config[config['host']]["job_annovar"],
+		batch      = config[config['host']]["job_annot"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
 	shell: """
@@ -145,7 +145,7 @@ rule Annovar_PCG:
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_PCG",
-		batch      = config[config['host']]["job_annovar"],
+		batch      = config[config['host']]["job_annot"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
 	shell: """
@@ -185,7 +185,7 @@ rule Annot_Custom:
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_PCG",
-		batch      = config[config['host']]["job_annovar"],
+		batch      = config[config['host']]["job_annot"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
 	shell: """
