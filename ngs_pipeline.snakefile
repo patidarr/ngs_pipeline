@@ -264,7 +264,7 @@ for subject in SUBJECT_ANNO.keys():
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
-localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, CopyNovoBam, FormatInput, Ideogram, RNASeqQC_1, RNASeqQC_2
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, CopyNovoBam, FormatInput, Ideogram, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3
 #Circos, CoveragePlot, BoxPlot_Hotspot, makeConfig,Ideogram
 ###########################################################################
 #                               Rule Book				  #
@@ -302,6 +302,7 @@ rule Khanlab_Pipeline:
 		"rnaseqDone",
 		CON_QC,
 		"Consolidated_QC.txt",
+		"RnaSeqQC.txt",
 		ALL_QC,
 		ALL_FASTQC,
 		varFiles,
@@ -325,7 +326,7 @@ rule Khanlab_Pipeline:
 	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	find . -type d -user $USER -exec chmod g-s {{}} \;
 	export LC_ALL=C
-	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt |sed -e '/^$/d' |sort |uniq >{WORK_DIR}/tmpFile.txt
+	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt {WORK_DIR}/RnaSeqQC.txt |sed -e '/^$/d' |sort |uniq >{WORK_DIR}/tmpFile.txt
 	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/tmpFile.txt |/usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
 	rm -rf {WORK_DIR}/tmpFile.txt
 	#######################

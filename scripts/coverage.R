@@ -16,13 +16,19 @@ for (i in 1:length(files)) {
 labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.coverage\\.txt", "", files, perl=TRUE), sep="")
 
 library(RColorBrewer)
-cols <- brewer.pal(length(cov)+1, "Dark2")
+
+total <- length(labs)+1
+if (total > 8){
+        cols <- brewer.pal(total, "Paired")
+} else{
+        cols <- brewer.pal(total, "Dark2")
+}
 
 # Save the graph to a file
 png(FILE, h=1000, w=1000, pointsize=10, type=c("cairo"))
 
 # Create plot area, but do not plot anything. Add gridlines and axis labels.
-par(las=2)
+par(las=2,cex.lab=2.2, cex.main=2.4, mar=c(6,7,6,2), mgp=c(4,1,0))
 plot(
 	c(1,1000),
 	c(0,1.001),
@@ -34,11 +40,12 @@ plot(
 	ylab="Fraction of capture target bases \u2265 depth", 
 	ylim=c(0,1.001),
 	las=1,
+	cex=3,
 	xlim=c(1,1000),
 	main=paste(SAM, "\nTarget Region Coverage", sep="\t")
 	)
-axis(1, at=c(5,10,20,50, 100, 200, 500, 1000))
-axis(2, at=c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
+axis(1, cex.axis=2, at=c(5,10,20,50, 100, 200, 500, 1000))
+axis(2, cex.axis=2, at=c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
 abline(  v=c(5,10,20,50, 100, 200, 500, 1000), col = "darkgray")
 abline(  h=c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), col="darkgray")
 
@@ -50,6 +57,6 @@ for (i in 1:length(cov)){
 }
 box()
 # Add a legend using the nice sample labeles rather than the full filenames.
-legend("topright", legend=labs, col=cols, lty=1, lwd=4)
+legend("bottomleft", legend=labs, col=cols, lty=1, lwd=4, cex=2)
 
 dev.off()

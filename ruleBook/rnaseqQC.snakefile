@@ -18,9 +18,30 @@ rule RNASeqQC:
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JAR CollectRnaSeqMetrics STRAND_SPECIFICITY=NONE VALIDATION_STRINGENCY=SILENT REF_FLAT={input.ref_flat} RIBOSOMAL_INTERVALS={input.rna_interval} INPUT={input.bam} OUTPUT={output.table} CHART_OUTPUT={output.pdf}
 	#######################
 	"""
+
+rule RNASeqQC1:
+	input:
+		bam="{base}/{TIME}/{sample}/{sample}.tophat.final.bam",
+		bai="{base}/{TIME}/{sample}/{sample}.tophat.final.bam.bai",
+	output:
+		table="{base}/{TIME}/{sample}/qc/{sample}.AlignmentSummaryMetrics.txt",
+	version: config["picard"]
+	params:
+		rulename  ="RnaSeqMetrics",
+		batch     =config[config['host']]["job_markdup"],
+		ref       =config['Bowtie2Index'].replace('genome', 'genome.fa')
+	shell: """
+	#######################
+	module load picard/{version}
+	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JAR CollectAlignmentSummaryMetrics VALIDATION_STRINGENCY=SILENT REFERENCE_SEQUENCE={params.ref} INPUT={input.bam} OUTPUT={output.table} ADAPTER_SEQUENCE=null
+	#######################
+	"""
+
+
 rule RNASeqQC_1:
 	input:
-		file="{base}/{TIME}/{sample}/qc/{sample}.RnaSeqMetrics.txt",
+		file1="{base}/{TIME}/{sample}/qc/{sample}.RnaSeqMetrics.txt",
+		file2="{base}/{TIME}/{sample}/qc/{sample}.AlignmentSummaryMetrics.txt",
 		convertor=NGS_PIPELINE+ "/scripts/rnaseqQC.pl"	
 	output:
 		"{base}/{TIME}/{sample}/qc/{sample}.RnaSeqQC.txt"
@@ -30,7 +51,7 @@ rule RNASeqQC_1:
 		diagnosis = lambda wildcards: config['Diagnosis'][wildcards.sample]
 	shell: """
 	#######################
-	perl {input.convertor} {input.file} {wildcards.base} {wildcards.sample} "{params.diagnosis}" >{output}
+	perl {input.convertor} {input.file1} {wildcards.base} {wildcards.sample} "{params.diagnosis}" >{output}
 	#######################
 	"""
 rule RNASeqQC_2:
@@ -43,5 +64,17 @@ rule RNASeqQC_2:
 	#######################
 	export LC_ALL=C
         cat {input} |sort |uniq |sed -e '/^$/d'>{output}	
+	#######################
+	"""
+rule RNASeqQC_3:
+	input : RNA_QC_ALL
+	output: "RnaSeqQC.txt"
+	params:
+		rulename  = "QC_Sum",
+		batch     = config[config['host']]["job_default"]
+	shell: """
+	#######################
+        export LC_ALL=C
+        cat {input} {output} |sort|uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""

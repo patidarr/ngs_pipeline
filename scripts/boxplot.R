@@ -10,7 +10,13 @@ files <- list.files(path = DIR, pattern=".hotspot.depth$")
 
 labs <- paste("", gsub("Sample_|\\.star|\\.bwa|\\.hotspot.depth", "", files, perl=TRUE), sep="")
 
-cols <- brewer.pal(length(files)+1, "Dark2")
+total <- length(labs)+1
+if (total > 8){
+        cols <- brewer.pal(total, "Paired")
+} else{
+        cols <- brewer.pal(total, "Dark2")
+}
+
 
 ## y max
 y_max =0 
@@ -24,8 +30,15 @@ for (i in 1:length(files)){
 
 png(FILE,width = 1000, height = 1000, res=100, type=c("cairo"));
 par(mar = c(18, 5, 4, 2) + 0.1)
-plot(10,10,  xlim=c(1,length(files)+1), ylim=c(0,1000), xaxt='n', yaxt="n", xlab='', ylab='Coverage', main=paste(SAM, "Hotspot Coverage", sep="\n"))
-
+plot(0,0,
+	xlim=c(1,length(files)+1), 
+	ylim=c(0,1000), 
+	xaxt='n', 
+	yaxt="n", 
+	xlab='', 
+	ylab='Coverage', 
+	main=paste(SAM, "Hotspot Coverage", sep="\n")
+	)
 for (i in 1:length(files)){
         cov.data   <-read.table(paste(DIR,files[i] ,sep = ""), sep="\t", quote="", head=F);
 	cov.data <-cov.data[,6]

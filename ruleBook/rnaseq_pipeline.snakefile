@@ -1,5 +1,5 @@
 RNASEQ_BAM =[]
-RNASEQ_FUSION1=[]
+RNA_QC_ALL =[]
 RNASEQ_FUSION =[]
 EXPRESSION=[]
 RNA_CALLS =[]
@@ -7,7 +7,6 @@ SUB2RNA = {}
 SUB_RNASEQ=[]
 SUB_FUSION={}
 SUB_QC={}
-ActionableFiles1 =[]
 for subject,samples in config['RNASeq'].items():
 	SUB_RNASEQ.append(subject)
 	for sample in samples:
@@ -17,6 +16,7 @@ for subject  in config['RNASeq'].keys():
 	ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+".fusion.actionable.txt"]
 	ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+".rnaseq.actionable.txt"]
 	ALL_QC          +=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
+	RNA_QC_ALL	+=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
 	for sample in config['RNASeq'][subject]:
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]

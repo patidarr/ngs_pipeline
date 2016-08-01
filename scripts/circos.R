@@ -8,12 +8,17 @@ FILE=str_trim(args[2])
 SAM=str_trim(args[3])
 
 files <- list.files(path = DIR, pattern=".loh$")
+files[-grep("_P.bwa.loh",files,perl=TRUE,value = FALSE)]
 
 labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.loh", "", files, perl=TRUE), sep="")
 
-cols <- brewer.pal(length(files)+1, "Dark2")
 
-#color<-c("salmon2","palevioletred1","rosybrown","red2","dodgerblue1","dodgerblue3");
+total <- length(labs)+1
+if (total > 8){
+        cols <- brewer.pal(total, "Paired")
+} else{
+        cols <- brewer.pal(total, "Dark2")
+}
 
 options(stringsAsFactors = FALSE);
 set.seed(1234);
