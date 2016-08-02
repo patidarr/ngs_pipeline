@@ -26,11 +26,6 @@ if (total <=3){
 } else{
        	cols <- brewer.pal(total, "Dark2")
 }
-print("This is total files we have")
-files
-
-print("This is total files we have")
-
 options(stringsAsFactors = FALSE);
 set.seed(1234);
 png(FILE ,width = 1000, height = 1000, res=100, points=12, type=c("cairo"));
