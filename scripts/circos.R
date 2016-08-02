@@ -8,16 +8,28 @@ FILE=str_trim(args[2])
 SAM=str_trim(args[3])
 
 files <- list.files(path = DIR, pattern=".loh$")
-files <- files[-grep("_P.bwa.loh",files,perl=TRUE,value = FALSE)]
+for (i in 1:length(files)){
+	if (length(grep("_P.bwa.loh",files[i]))>0){
+		files <- files[-grep("_P.bwa.loh",files,perl=TRUE,value = FALSE)]
+	}
+}
+
+
 labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.loh", "", files, perl=TRUE), sep="")
 
 
 total <- length(labs)+1
-if (total > 8){
-        cols <- brewer.pal(total, "Paired")
+if (total <=3){
+	cols <- brewer.pal(total+2, "Dark2")
+} else if (total > 8){
+       	cols <- brewer.pal(total, "Paired")
 } else{
-        cols <- brewer.pal(total, "Dark2")
+       	cols <- brewer.pal(total, "Dark2")
 }
+print("This is total files we have")
+files
+
+print("This is total files we have")
 
 options(stringsAsFactors = FALSE);
 set.seed(1234);
@@ -30,7 +42,7 @@ circos(R=400, cir="hg19", type="chr", mapping=UCSC.hg19.chr,print.chr.lab=TRUE, 
 r=350
 for (i in 1:length(files)){
         LOH.data   <-read.table(paste(DIR,files[i] ,sep = ""), sep="\t", quote="", head=T);
-        circos(cir="hg19", R=r, W=50, type="s", mapping=LOH.data, col.v=3, col=cols[i], B=TRUE, cex=0.0001, lwd=1);
+        circos(cir="hg19", R=r, W=50, type="s", mapping=LOH.data, col.v=3, col=cols[i], B=FALSE, cex=0.0001, lwd=1);
 	r=r-45;
 }
 legend("topright", legend=labs, col=cols, lty=1, lwd=4, cex=0.5)
