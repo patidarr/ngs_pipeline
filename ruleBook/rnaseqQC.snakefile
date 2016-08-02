@@ -40,6 +40,7 @@ rule RNASeqQC1:
 
 rule RNASeqQC_1:
 	input:
+		"{base}/{TIME}/{sample}/qc/fastqc/{sample}_R1_fastqc.html",
 		file1="{base}/{TIME}/{sample}/qc/{sample}.RnaSeqMetrics.txt",
 		file2="{base}/{TIME}/{sample}/qc/{sample}.AlignmentSummaryMetrics.txt",
 		convertor=NGS_PIPELINE+ "/scripts/rnaseqQC.pl"	
@@ -51,7 +52,7 @@ rule RNASeqQC_1:
 		diagnosis = lambda wildcards: config['Diagnosis'][wildcards.sample]
 	shell: """
 	#######################
-	perl {input.convertor} {input.file1} {wildcards.base} {wildcards.sample} "{params.diagnosis}" >{output}
+	perl {input.convertor} {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R1_fastqc/fastqc_data.txt {input.file2} {input.file1} {wildcards.base} {wildcards.sample} "{params.diagnosis}" >{output}
 	#######################
 	"""
 rule RNASeqQC_2:
