@@ -294,6 +294,12 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 		vcf = vcf.replace('raw.vcf', 'raw.snpEff.vcf')
 		ALL_VCFs +=[vcf]
+###########################################################################
+onerror:
+        shell("echo 'Error occured in the ngs-pipeline. Working Dir: {WORK_DIR} ' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov")
+onsuccess:
+        print("Workflow finished, no error")
+###########################################################################
 rule Khanlab_Pipeline:
 	input:
 		SUB_IGV.values(),
