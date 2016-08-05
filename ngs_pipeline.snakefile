@@ -297,13 +297,15 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-	shell("chmod -R 775 {WORK_DIR}/.snakemake/")
-	shell("chgrp -R {GROUP} {WORK_DIR}/.snakemake/")
+	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+	shell("find .snakemake/ -group $USER -exec chgrp {GROUP} {{}} \;")
 	shell("find . -group $USER -exec chgrp {GROUP} {{}} \;")
 	shell("find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("find . -type d -user $USER -exec chmod g-s {{}} \;")
 	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov -c patidarr@mail.nih.gov\"")
 onsuccess:
+	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+	shell("find .snakemake/ -group $USER -exec chgrp {GROUP} {{}} \;")
 	print("Workflow finished, no error")
 ###########################################################################
 rule Khanlab_Pipeline:
@@ -333,9 +335,13 @@ rule Khanlab_Pipeline:
 		subs     = config["subject"].keys()
 	shell: """
 	#######################
-	#find log/ -type f -empty -delete
+	for sub in {params.subs}	
+	do
+		touch {WORK_DIR}/${{sub}}/{TIME}/successful.txt
+	done
+	find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp {params.group} {{}} \;
-	#find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
+	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	find . -type d -user $USER -exec chmod g-s {{}} \;
 	export LC_ALL=C
 	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt {WORK_DIR}/RnaSeqQC.txt |sed -e '/^$/d' |sort |uniq >{WORK_DIR}/tmpFile.txt
