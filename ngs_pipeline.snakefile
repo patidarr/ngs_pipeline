@@ -332,7 +332,7 @@ rule Khanlab_Pipeline:
 		mail 	 = NGS_PIPELINE + "/scripts/tsv2html.final.sh",
 		email     = config["mail"],
 		host     = config["host"],
-		subs     = config["subject"].keys()
+		subs     = PATIENTS
 	shell: """
 	#######################
 	for sub in {params.subs}	
