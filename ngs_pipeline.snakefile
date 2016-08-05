@@ -20,6 +20,7 @@ elif HOST == 'login01':
 	configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
 
 config['host'] = HOST
+GROUP=config['group']
 #HOST = config['host']
 ###########################################################################
 #
@@ -98,9 +99,9 @@ for subject in config['subject'].keys():
 	SUBS.append(subject)
 	PATIENTS.append(subject)
 	SUB_BAMS[subject]= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-#	SUB_COV[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.coverage.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-#	SUB_HOT[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-#	SUB_LOH[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.loh".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_COV[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.coverage.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_HOT[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	SUB_LOH[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.loh".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_GT[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_CON_QC[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
@@ -296,9 +297,14 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-        shell("echo 'Error occured in the ngs-pipeline. Working Dir: {WORK_DIR} ' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov")
+	shell("chmod -R 775 {WORK_DIR}/.snakemake/")
+	shell("chgrp -R {GROUP} {WORK_DIR}/.snakemake/")
+	shell("find . -group $USER -exec chgrp {GROUP} {{}} \;")
+	shell("find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+	shell("find . -type d -user $USER -exec chmod g-s {{}} \;")
+	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov -c patidarr@mail.nih.gov\"")
 onsuccess:
-        print("Workflow finished, no error")
+	print("Workflow finished, no error")
 ###########################################################################
 rule Khanlab_Pipeline:
 	input:
@@ -327,9 +333,9 @@ rule Khanlab_Pipeline:
 		subs     = config["subject"].keys()
 	shell: """
 	#######################
-	find log/ -type f -empty -delete
+	#find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp {params.group} {{}} \;
-	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
+	#find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	find . -type d -user $USER -exec chmod g-s {{}} \;
 	export LC_ALL=C
 	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt {WORK_DIR}/RnaSeqQC.txt |sed -e '/^$/d' |sort |uniq >{WORK_DIR}/tmpFile.txt

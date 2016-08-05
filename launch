@@ -65,7 +65,7 @@ if (!$sheet){
 }
 
 if ($mode eq 'p'){
-	$time=`$(date +"%Y%m%d")`;
+	$time=`date +"%Y%m%d"`;
 	chomp $time;
 }
 elsif($mode eq 'd'){

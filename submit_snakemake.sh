@@ -5,7 +5,7 @@
 # Author: Rajesh Patidar
 # 
 # Usually slurm can translate the PBS varibles so no need to initialize the sbatch variables.
-set -eo pipefail
+#set -eo pipefail
 if [[ $time == 'd' ]]; then
 	export TIME="20160415"
 elif [[ $time == 'p' ]]; then
@@ -58,6 +58,7 @@ export ACT_DIR="/Actionable/"
 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 
 cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobscript $NGS_PIPELINE/scripts/jobscript.sh --jobname {params.rulename}.{jobid} --nolock  --ri -k -p -T -j 3000 --resources DeFuse=25 --resources SIFT=8 --stats ngs_pipeline_${NOW}.stats"
+umask 022
 if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
 	echo "Variables are $cmd"
