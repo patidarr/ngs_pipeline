@@ -1,5 +1,5 @@
 {
-	"group"			: "khanlab",
+	"group"			: "Clinomics",
 	"host"			: "biowulf.nih.gov",
 	"annovar_data"		: "/data/Clinomics/Ref/annovar/",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
