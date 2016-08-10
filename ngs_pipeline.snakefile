@@ -680,18 +680,19 @@ rule CN_LRR:
 rule HotSpotCoverage:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam",
-		interval=config["hotspot_intervals"]
+		interval=config["hotspot_intervals"],
+		genome=config["reference"].replace(".fasta",".genome")
 	output: "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
 	version: config["bedtools"]
 	params:
 		rulename  = "HotSpotCov",
 		batch     = config[config['host']]["job_hotspot"],
-		samtools  = config["samtools"]
 	shell: """
 	#######################
-	module load samtools/{params.samtools}
+	module load samtools
 	module load bedtools/{version}
-	samtools view -hF 0x400 -q 30 -L {input.interval} {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
+	slopBed -i {input.interval} -g {input.genome} -b 50 >${{LOCAL}}/Region.bed
+	samtools view -hF 0x400 -q 30 -L ${{LOCAL}}/Region.bed {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
 	#######################
 	"""
 ############
