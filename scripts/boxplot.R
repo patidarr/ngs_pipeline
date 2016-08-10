@@ -19,7 +19,7 @@ if (total > 8){
 
 png(FILE,width = 1000, height = 1000, res=100, type=c("cairo"));
 par(mar = c(18, 5, 4, 2) + 0.1)
-plot( c(1,length(files)+1), c(0,1000), type="n", xaxt="n", yaxt="n", las=1, xlab='', cex.lab=2, ylab='Coverage', main=paste("OM161", "Hotspot Coverage", sep="\n"))
+plot( c(1,length(files)+1), c(0,1000), type="n", xaxt="n", yaxt="n", las=1, xlab='', cex.lab=2, ylab='Coverage', main=paste(SAM, "Hotspot Coverage", sep="\n"))
 axis(2, cex.axis=2, at=c(100,200,300,500,750,1000),las=2, cex.axis=1)
 axis(2, cex.axis=2, at=c(50,400),las=2, cex.axis=1.2, col.axis="red")
 
