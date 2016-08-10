@@ -35,6 +35,7 @@ for subject  in config['RNASeq'].keys():
 		EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]
 		for gtf in config['GTF']:
 			EXPRESSION += [subject+"/"+TIME+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
+			ALL_QC     += [subject+"/"+TIME+"/"+subject+"/db/matrixInput_"+sample+"_"+gtf]
 	RNA_CALLS  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{TIME}/{sample}/fusion/{sample}.actionable.fusion.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_QC[subject]     = ["{subject}/{TIME}/{sample}/qc/{sample}.RnaSeqQC.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
@@ -184,6 +185,25 @@ rule CUFFLINKS:
 	cufflinks -p ${{THREADS}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
 	perl {input.convertor} {output.gene}    > {output.gene_log}
 	perl {input.convertor} {output.isoform} > {output.isoform_log}
+	#######################
+	"""
+############
+#	This is to make input file for Sivasish's metrix generation tool.
+############
+rule Cuff_Mat:
+	input: 
+		gene="{base}/{TIME}/{sample}/cufflinks_{gtf}/genes.fpkm_tracking"
+	output:
+		"{base}/{TIME}/{base}/db/matrixInput_{sample}_{gtf}"
+	params:
+		rulename  ="cuff_1",
+		batch     =config[config['host']]['job_default'],
+		diagnosis =lambda wildcards: config['Diagnosis'][wildcards.sample],
+		library   =lambda wildcards: config['sample_captures'][wildcards.sample]
+	shell: """
+	#######################
+	echo -e "{wildcards.sample}\\t{params.diagnosis}\\t{params.library}" >{output}
+	echo "{input.gene}" >>{output}
 	#######################
 	"""
 ############
@@ -391,7 +411,7 @@ rule HapCall_RNASeq:
 		vcf="{base}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf"
 	version: config["GATK"]
 	params:
-		rulename = "HC",
+		rulename = "HC_RNA",
 		batch    = config[config['host']]["job_HC"]
 	shell: """
 	#######################
