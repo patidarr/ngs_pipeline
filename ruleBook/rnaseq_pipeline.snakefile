@@ -203,7 +203,7 @@ rule Cuff_Mat:
 	shell: """
 	#######################
 	echo -e "{wildcards.sample}\\t{params.diagnosis}\\t{params.library}" >{output}
-	echo "{input.gene}" >>{output}
+	echo "{WORK_DIR}/{input.gene}" >>{output}
 	#######################
 	"""
 ############
