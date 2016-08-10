@@ -31,7 +31,7 @@ rule HSMetrics:
 	params:
 		rulename = "hsMetrics",
 		reference = config["reference"],
-		batch	= config[config['host']]["job_markdup"],
+		batch	= config[config['host']]["job_hsMetrics"],
 	shell: """
 	#######################
 	module load picard/{version}
