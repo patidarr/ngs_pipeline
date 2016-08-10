@@ -392,7 +392,7 @@ rule HapCall_RNASeq:
 	version: config["GATK"]
 	params:
 		rulename = "HC",
-		batch    = config[config['host']]["job_gatk"]
+		batch    = config[config['host']]["job_HC"]
 	shell: """
 	#######################
 	module load GATK/{version}

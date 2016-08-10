@@ -691,7 +691,7 @@ rule HotSpotCoverage:
 	#######################
 	module load samtools/{params.samtools}
 	module load bedtools/{version}
-	samtools view -hF 0x400 -q 30 {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
+	samtools view -hF 0x400 -q 30 -L {input.interval} {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
 	#######################
 	"""
 ############
