@@ -36,10 +36,10 @@ fi
 NOW=$(date +"%Y%m%d%H")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
-	module load snakemake/3.5.5.n1
+	module load snakemake/3.6.1
 	export HOST="biowulf.nih.gov"
 elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
-	module load snakemake/3.5.5
+	module load snakemake/3.6.1
 	export HOST="login01"
 else 
 	echo -e "Host `hostname` is not recognized\n"
