@@ -10,11 +10,44 @@ DATA_DIR=os.environ['DATA_DIR']
 ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
 TIME=os.environ['TIME']
-
+configfile: NGS_PIPELINE +"/config/config_annotation.json"
 configfile: NGS_PIPELINE +"/config/config_common.json"
-configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
 configfile: NGS_PIPELINE +"/config/config_cluster.json"
-configfile: NGS_PIPELINE +"config/config_annotation.json"
+if HOST == 'biowulf.nih.gov':
+        configfile: NGS_PIPELINE +"/config/config_common_biowulf.json"
+elif HOST == 'login01':
+        configfile: NGS_PIPELINE +"/config/config_common_tgen.json"
+
+config['host'] = HOST
+GROUP=config['group']
+#HOST = config['host']
+###########################################################################
+#
+#               This initializes all the variables we need for the jobs.
+#               It also removes the host specific constraints like scratch
+#               area on the node.
+#               module purge is needed to remove all the loaded modules and
+#                       inside the rule load what is necessary.
+###########################################################################
+shell.prefix("""
+set -e -o pipefail
+module purge
+if [ {HOST} == 'biowulf.nih.gov' ]
+        then
+                MEM=`echo "${{SLURM_MEM_PER_NODE}} / 1024 "|bc`
+                LOCAL="/lscratch/${{SLURM_JOBID}}/"
+                THREADS=${{SLURM_CPUS_ON_NODE}}
+elif [ {HOST} == 'login01' ]
+        then
+                module load torque/4.2.2
+                module load gcc/4.8.1
+                MEM=`qstat -f ${{PBS_JOBID}} |grep Resource_List.mem |perl -n -e'/mem = (\d+)gb/ && print \$1'`
+                mkdir -p /projects/scratch/${{PBS_JOBID}}/
+                LOCAL="/projects/scratch/${{PBS_JOBID}}/"
+                THREADS=${{PBS_NUM_PPN}}
+fi
+""")
+
 PATIENTS =[]
 for subject in config['subject'].keys():
         PATIENTS.append(subject)
@@ -174,10 +207,10 @@ rule Annovar_PCG:
 	shell: """
 	#######################
 	module load annovar/{version}
-	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo -filter -dbtype generic -genericdbfile `basename {input.pcg}`
-	awk -F "\\t" '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
+	annotate_variation.pl {input.file} {params.RefData} -buildver {params.build} -otherinfo --outfile {input.file}.pcg -filter -dbtype generic -genericdbfile `basename {input.pcg}`
+	awk -F "\\t" '{{OFS="\\t"}};{{print $3,$4,$5,$6,$7,$2}}' {input.file}.pcg.{params.build}_generic_dropped |sed -e 's/,/\\t/g' >{output}
 	head -1 {input.pcg} >>{output}
-	rm -rf {input.file}.{params.build}_generic_dropped {input.file}.{params.build}_generic_filtered {input.file}.invalid_input
+	rm -rf {input.file}.pcg.{params.build}_generic_dropped {input.file}.pcg.{params.build}_generic_filtered {input.file}.invalid_input
 	#######################
 	"""
 ################################
@@ -246,7 +279,6 @@ rule SIFT:
 		DIR=`pwd`
 		cd ${{DIR}}/`dirname {input.sift}`
 		FILE=`basename {input.sift}`
-		LOCAL=/projects/scratch/
 		SIFT_exome_nssnvs.pl -i ${{FILE}} -d $SIFTDB/Human_db_37 -o ${{LOCAL}}  -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
 		perl {input.tool} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv >${{DIR}}/`dirname {input.sift}`/${{FILE}}.out
 	else
