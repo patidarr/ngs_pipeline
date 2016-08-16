@@ -245,7 +245,7 @@ rule Annot_Custom:
 		build      = config["build"],
 	shell: """
 	#######################
-	module load annovar/{version}
+	module load annovar
 	{input.tool} {input.clinvar}	{input.file} >{output.clinvar}
 	{input.tool} {input.hgmd}	{input.file} >{output.hgmd}
 	{input.tool} {input.match}	{input.file} >{output.match}

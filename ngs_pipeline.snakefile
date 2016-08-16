@@ -297,11 +297,10 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+#	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
-	shell("find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
-	shell("find . -type d -user $USER -exec chmod g-s {{}} \;")
+	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov -c patidarr@mail.nih.gov\"")
 onsuccess:
 	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
@@ -341,8 +340,7 @@ rule Khanlab_Pipeline:
 	done
 	find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp -f {params.group} {{}} \;
-	find . \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
-	find . -type d -user $USER -exec chmod g-s {{}} \;
+	find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
 	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt {WORK_DIR}/RnaSeqQC.txt |sed -e '/^$/d' |sort |uniq >{WORK_DIR}/tmpFile.txt
 	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/tmpFile.txt |/usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"

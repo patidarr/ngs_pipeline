@@ -79,7 +79,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	if ($dryrun){
 		my $cmd = "(
 		export TIME=$time
-		module load snakemake/3.6.1
+		module load snakemake/3.5.5.n1
 		export NGS_PIPELINE=$NGS_PIPELINE
 		export WORK_DIR=$workDir
 		export DATA_DIR=$dataDir
@@ -100,7 +100,7 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
 	if ($dryrun){
 		my $cmd= "(
 		export TIME=$time
-                module load snakemake/3.6.1
+                module load snakemake/3.5.1
                 export NGS_PIPELINE=$NGS_PIPELINE
                 export WORK_DIR=$workDir
                 export DATA_DIR=$dataDir

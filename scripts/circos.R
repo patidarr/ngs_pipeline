@@ -9,8 +9,16 @@ SAM=str_trim(args[3])
 
 files <- list.files(path = DIR, pattern=".loh$")
 for (i in 1:length(files)){
-	if (length(grep("_P.bwa.loh",files[i]))>0){
-		files <- files[-grep("_P.bwa.loh",files,perl=TRUE,value = FALSE)]
+	if (length(files) >1){
+		if (length(grep("_P.bwa.loh",files[i]))>0){
+			files <- files[-grep("_P.bwa.loh",files,perl=TRUE,value = FALSE)]
+		}
+		if (length(grep("_PS.bwa.loh",files[i]))>0){
+			files <- files[-grep("_PS.bwa.loh",files,perl=TRUE,value = FALSE)]
+		}
+		if (length(grep("_PC.bwa.loh",files[i]))>0){
+			files <- files[-grep("_PC.bwa.loh",files,perl=TRUE,value = FALSE)]
+		}
 	}
 }
 
