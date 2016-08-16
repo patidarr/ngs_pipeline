@@ -23,6 +23,20 @@
 		"seqcapez.rms.v1"	: "/data/Clinomics/Ref/khanlab/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed",
 		"nbl.panel"             : "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Panel_Neuro.target.hg19.merged.bed"
 	},
+	"hotspot_bed"		:{
+		"wholegenome"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"seqcapez.hu.ex.v3"     : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"seqcapez.hu.ex.utr.v1" : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"clin.ex.v1"            : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"clin.snv.v1"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
+		"clin.cnv.v2"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"clin.snv.v2"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_2.bed",
+		"access"                : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"polya"                 : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"ribozero"              : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"seqcapez.rms.v1"       : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"nbl.panel"             : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
+	},
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",
 	"dbsnp"			: "/data/Clinomics/Ref/khanlab/dbsnp_138.hg19.vcf",

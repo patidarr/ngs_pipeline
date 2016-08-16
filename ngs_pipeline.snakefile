@@ -678,7 +678,7 @@ rule CN_LRR:
 rule HotSpotCoverage:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam",
-		interval=config["hotspot_intervals"],
+		interval=lambda wildcards: config['hotspot_bed'][config['sample_captures'][wildcards.sample]],
 		genome=config["reference"].replace(".fasta",".genome")
 	output: "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.hotspot.depth"
 	version: config["bedtools"]
