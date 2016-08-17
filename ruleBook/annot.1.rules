@@ -55,7 +55,7 @@ ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mc
 ALL_QC = expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
 rule final:
         input:
-#                ALL_QC
+                ALL_QC
 ############
 #	table_annovar for:
 #		refGene
