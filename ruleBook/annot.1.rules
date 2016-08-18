@@ -6,10 +6,7 @@ from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 NGS_PIPELINE=os.environ['NGS_PIPELINE']
 WORK_DIR=os.environ['WORK_DIR']
-DATA_DIR=os.environ['DATA_DIR']
-ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
-TIME=os.environ['TIME']
 configfile: NGS_PIPELINE +"/config/config_annotation.json"
 configfile: NGS_PIPELINE +"/config/config_common.json"
 configfile: NGS_PIPELINE +"/config/config_cluster.json"
@@ -48,11 +45,11 @@ elif [ {HOST} == 'login01' ]
 fi
 """)
 
-PATIENTS =[]
-for subject in config['subject'].keys():
-        PATIENTS.append(subject)
+#PATIENTS =[]
+#for subject in config['subject'].keys():
+#        PATIENTS.append(subject)
 ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
-ALL_QC = expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
+ALL_QC = expand("annotation/AnnotationInput.{suff}", suff=ANNO_FILES)
 rule final:
         input:
                 ALL_QC
