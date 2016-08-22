@@ -182,7 +182,7 @@ rule CUFFLINKS:
 	shell: """
 	#######################
 	module load cufflinks/{version}
-	cufflinks -p ${{THREADS}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
+	cufflinks --no-update-check -p ${{THREADS}} -G {input.ref} --max-bundle-frags 8000000000000 --max-bundle-length 10000000 -o {wildcards.base}/{TIME}/{wildcards.sample}/cufflinks_{wildcards.gtf} {input.bam}
 	perl {input.convertor} {output.gene}    > {output.gene_log}
 	perl {input.convertor} {output.isoform} > {output.isoform_log}
 	#######################
