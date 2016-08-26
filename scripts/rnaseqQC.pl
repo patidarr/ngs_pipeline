@@ -27,7 +27,7 @@ chomp $hq_bases;
 my $hq_bases_20=`grep "^PAIR" $ARGV[1] |cut -f11`;
 chomp $hq_bases_20;
 my $pct_hq_20=sprintf ("%.2f", ($hq_bases_20/$hq_bases)*100);
-print "$pct_hq_20\t";
+print "$pct_hq_20";
 open(FH, $ARGV[2]); # File Name
 while(<FH>){
 	chomp;
