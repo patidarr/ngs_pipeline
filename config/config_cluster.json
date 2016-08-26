@@ -71,7 +71,7 @@
 		"job_genotype"   : "-l nodes=1:ppn=02,mem=02gb,walltime=96:00:00",
 		"job_fastqc"     : "-l nodes=1:ppn=16,mem=45gb,walltime=96:00:00",
 		"job_expressed"  : "-l nodes=1:ppn=01,mem=02gb,walltime=96:00:00",
-		"job_tophatPost" : "-q hmem -l nodes=1:ppn=10,mem=225gb,walltime=96:00:00",
+		"job_tophatPost" : "-l nodes=1:ppn=10,mem=47gb,walltime=96:00:00",
 		"job_bwa"        : "-l nodes=1:ppn=16,mem=45gb,walltime=96:00:00",
 		"job_cufflinks"  : "-l nodes=1:ppn=16,mem=30gb,walltime=96:00:00",
 		"job_hotspot"    : "-l nodes=1:ppn=2,mem=4gb,walltime=96:00:00",
