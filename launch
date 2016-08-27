@@ -93,7 +93,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	}
 	else{
 		`mkdir -p "$workDir/log/"`;
-		`sbatch -e $workDir/log/ngs-pipeline.e -o $workDir/log/ngs-pipeline.o --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet --cpus-per-task=1 --partition=ccr --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`;
+		`sbatch -e $workDir/log/ngs-pipeline.e -o $workDir/log/ngs-pipeline.o --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet --cpus-per-task=1 --partition=ccr,norm --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`;
 	}
 }
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
