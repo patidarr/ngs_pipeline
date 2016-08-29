@@ -27,7 +27,7 @@ if (total > 8){
 }
 png(opt$image, h=1200, w=1500, pointsize=25, type=c("cairo"))
 #png(opt$image, h=1000, w=1000, pointsize=20)
-par(mar = c(5, 5, 4, 10) + 0.1)
+par(mar = c(5, 5, 4, 13) + 0.1)
 plot(c(-1,101), c(0,1.2), 
 	type="n", 
 	xaxt="n", 
@@ -38,8 +38,8 @@ plot(c(-1,101), c(0,1.2),
 	ylab='Normalized Coverage',
 	main=subject
 )
-axis(1, cex.axis=2, at=c(0,20,40,60,80,100))
-axis(2, cex.axis=2, at=c(0.0,0.2,0.4,0.6,0.8,1))
+axis(1, cex.axis=1, at=c(0,20,40,60,80,100))
+axis(2, cex.axis=1, at=c(0.0,0.2,0.4,0.6,0.8,1))
 abline(  h=1, col="darkgray")
 box()
 labs<-c()

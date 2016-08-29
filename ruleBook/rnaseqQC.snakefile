@@ -65,8 +65,9 @@ rule RNASeqQC_2:
 	#######################
 	module load R
 	export LC_ALL=C
-	cat {input.files} |sort |uniq |sed -e '/^$/d'>{output.txt}	
-	{input.convertor} -f "{input.files}" -s "{wildcards.subject}" -o {output.plot}
+	cat {input.files} |sort |uniq |sed -e '/^$/d'>{output.txt}
+	list=`echo {input.files}|sed -e 's/RnaSeqQC/RnaSeqMetrics/g'`
+	{input.convertor} -f "${{list}}" -s "{wildcards.subject}" -o {output.plot}
 	#######################
 	"""
 rule RNASeqQC_3:
