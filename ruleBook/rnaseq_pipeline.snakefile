@@ -17,7 +17,7 @@ for subject  in config['RNASeq'].keys():
 	ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+".rnaseq.actionable.txt"]
 	ALL_QC          +=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
 	RNA_QC_ALL	+=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
-	RNA_QC_ALL	+=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
+	ALL_QC		+=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
 	for sample in config['RNASeq'][subject]:
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]
