@@ -60,7 +60,7 @@ rule RNASeqQC_2:
 		plot="{subject}/{TIME}/qc/{subject}.transcriptCoverage.png"
 	params:
 		rulename  = "QC_Sum",
-		batch     = config[config['host']]["job_default"]
+		batch     = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
 	module load R
