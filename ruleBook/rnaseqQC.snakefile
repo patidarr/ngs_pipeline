@@ -53,15 +53,20 @@ rule RNASeqQC_1:
 	#######################
 	"""
 rule RNASeqQC_2:
-	input : lambda wildcards: SUB_QC[wildcards.subject]
-	output: "{subject}/{TIME}/qc/{subject}.RnaSeqQC.txt"
+	input : files=lambda wildcards: SUB_QC[wildcards.subject],
+		convertor=NGS_PIPELINE+"/scripts/transcript_coverage.R"
+	output: 
+		txt="{subject}/{TIME}/qc/{subject}.RnaSeqQC.txt",
+		plot="{subject}/{TIME}/qc/{subject}.transcriptCoverage.png"
 	params:
 		rulename  = "QC_Sum",
 		batch     = config[config['host']]["job_default"]
 	shell: """
 	#######################
+	module load R
 	export LC_ALL=C
-	cat {input} |sort |uniq |sed -e '/^$/d'>{output}	
+	cat {input.files} |sort |uniq |sed -e '/^$/d'>{output.txt}	
+	{input.convertor} -f "{input.files}" -s "{wildcards.subject}" -o {output.plot}
 	#######################
 	"""
 rule RNASeqQC_3:
