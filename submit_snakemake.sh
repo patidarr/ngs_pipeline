@@ -33,7 +33,7 @@ if [[ $sheet == 'samplesheet.json' ]]; then
 else
 	SAM_CONFIG=$sheet
 fi
-NOW=$(date +"%Y%m%d%H")
+NOW=$(date +"%Y%m%d_%H%M%S")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	module load snakemake/3.5.5.n1
