@@ -1,4 +1,4 @@
-[![Snakemake](https://img.shields.io/badge/snakemake- >=3.6.1-brightgreen.svg?style=flat-square)](http://snakemake.bitbucket.org)
+[![Snakemake](https://img.shields.io/badge/snakemake- >=3.8.0-brightgreen.svg?style=flat-square)](http://snakemake.bitbucket.org)
 
 ## Introduction
 This is the implimentation of [KhanLab](https://ccr.cancer.gov/Genetics-Branch/javed-khan) NGS Pipeline using Snakemake.

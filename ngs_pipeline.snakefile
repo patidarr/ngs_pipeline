@@ -912,10 +912,10 @@ rule SNPEff:
 ############
 rule VCF2TXT:
 	input:
-		eff="{subject}/{TIME}/calls/{base}.raw.snpEff.vcf",
+		eff="{subject}/{TIME}/{sample}/calls/{base}.raw.snpEff.vcf",
 		vcf2txt=NGS_PIPELINE + "/scripts/vcf2txt.pl"
 	output:
-		txt="{subject}/{TIME}/calls/{base}.snpEff.txt"
+		txt="{subject}/{TIME}/{sample}/calls/{base}.snpEff.txt"
 	params:
 		rulename      ="vcf2txt",
 		batch         =config[config['host']]["job_default"],
@@ -988,9 +988,9 @@ rule AttachAnnotation:
 rule Expressed:
 	input:
 		RNASeq = lambda wildcards: expressedPairs[wildcards.sample],
-		Mutation="{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.txt",
+		Mutation="{subject}/{TIME}/{sample}/calls/{base}.annotated.txt",
 		convertor = NGS_PIPELINE + "/scripts/mpileup.pl"
-	output: "{subject}/{TIME,[0-9]+}/{sample}/calls/{base}.annotated.expressed.txt"
+	output: "{subject}/{TIME}/{sample}/calls/{base}.annotated.expressed.txt"
 	version: config["samtools"]
 	params:
 		rulename  = "Expressed",
@@ -1010,7 +1010,7 @@ rule DBinput:
 		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
 		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl",
 		tool=NGS_PIPELINE + "/scripts/AddSampleType.pl"
-	output: "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.{group}"
+	output: "{subject}/{TIME}/{subject}/db/{subject}.{group}"
 	params:
 		rulename = "makeDBinput",
 		batch    = config[config['host']]['job_default'],

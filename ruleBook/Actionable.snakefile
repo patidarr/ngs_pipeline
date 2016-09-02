@@ -3,7 +3,7 @@
 ############
 rule Actionable_Somatic:
 	input:
-		somatic       = "{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.somatic",
+		somatic       = "{subject}/{TIME}/{subject}/db/{subject}.somatic",
 		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile       = config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
@@ -25,7 +25,7 @@ rule Actionable_Somatic:
 ############
 rule Actionable_Germline:
 	input:
-		germline  ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.germline",
+		germline  ="{subject}/{TIME}/{subject}/db/{subject}.germline",
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
@@ -66,7 +66,7 @@ rule Actionable_Germline:
 ############
 rule Actionable_RNAseq:
 	input:
-		rnaseq    ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.rnaseq",
+		rnaseq    ="{subject}/{TIME}/{subject}/db/{subject}.rnaseq",
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
@@ -94,7 +94,7 @@ rule Actionable_RNAseq:
 ############
 rule Actionable_Variants:
 	input:
-		rnaseq    ="{subject}/{TIME,[0-9]+}/{subject}/db/{subject}.variants",
+		rnaseq    ="{subject}/{TIME}/{subject}/db/{subject}.variants",
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
