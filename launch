@@ -53,8 +53,7 @@ if (!$dataDir){
         exit;
 }
 if (!$workDir){
-	print STDERR "On biowulf the development version is ran in /data/khanlab/projects/DATA/\n";
-	print STDERR "This is set here specifically to run the dev mode in a test location\n";
+	print STDERR "This is required. Location where you would like to write results\n\n";
 	exit;
 }
 if (!$sheet){
