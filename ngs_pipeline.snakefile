@@ -21,6 +21,7 @@ elif HOST == 'login01':
 
 config['host'] = HOST
 GROUP=config['group']
+MAIL=config['mail']
 #HOST = config['host']
 ###########################################################################
 #
@@ -300,7 +301,9 @@ onerror:
 	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
-	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov -c patidarr@mail.nih.gov config['mail'] \"")
+	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
+onstart:
+	shell("ssh {HOST} \"echo 'ngs-pipeline started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
 onsuccess:
 	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
