@@ -1,7 +1,7 @@
 {
 	"group"			: "clinomics",
 	"host"			: "login01",
-	"mail"                 : "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov",
+	"mail"                 : "-c patidarr@mail.nih.gov -c manoj.tyagi@nih.gov",
 	"annovar_data"		: "/projects/Clinomics/ref/annovar/",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/projects/Clinomics/Tools/ref/hg19/Index/bwa/ucsc.hg19.fasta",

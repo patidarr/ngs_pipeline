@@ -16,7 +16,7 @@ rule GATK_RNASeq_Trim:
         version: config["GATK"]
         params:
                 rulename  = "gatk_R",
-                batch     = config[config['host']]["job_gatk"]
+                batch     = config[config['host']]["job_gatk_RNA"]
         shell: """
         #######################
         module load GATK/{version}
@@ -37,7 +37,7 @@ rule GATK_RNASeq_RTC:
         version: config["GATK"]
         params:
                 rulename  = "gatk_R",
-                batch     = config[config['host']]["job_gatk"]
+                batch     = config[config['host']]["job_gatk_RNA"]
         shell: """
         #######################
         module load GATK/{version}

@@ -297,11 +297,10 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-#	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
-	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov -c patidarr@mail.nih.gov\"")
+	shell("ssh {HOST} \"echo 'Error occured in the ngs-pipeline on {HOST}. Working Dir:  {WORK_DIR}' |/usr/bin/mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov -c patidarr@mail.nih.gov config['mail'] \"")
 onsuccess:
 	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
@@ -1014,8 +1013,8 @@ rule DBinput:
 	params:
 		rulename = "makeDBinput",
 		batch    = config[config['host']]['job_default'],
-		hash 	 = config["sample_type"].items(),
-		hash1	 = config["sample_captures"].items(),
+		hash 	 = lambda wc: " ".join("{} {}".format(a, b) for a, b in config["sample_type"].items()),
+		hash1	 = lambda wc: " ".join("{} {}".format(a, b) for a, b in config["sample_captures"].items()),
 	shell: """
 	#######################
 	perl {input.convertor} {input.txtFiles} |perl {input.tool} - "{params.hash}" "{params.hash1}" >{output}

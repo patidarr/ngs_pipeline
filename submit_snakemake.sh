@@ -6,6 +6,7 @@
 # 
 # Usually slurm can translate the PBS varibles so no need to initialize the sbatch variables.
 #set -eo pipefail
+module load snakemake/3.8.0
 if [[ $time == 'd' ]]; then
 	export TIME="20160415"
 elif [[ $time == 'p' ]]; then
@@ -36,10 +37,10 @@ fi
 NOW=$(date +"%Y%m%d_%H%M%S")
 #export TIME=$(date +"%Y%m%d%H")
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
-	module load snakemake/3.8.0
+	#module load snakemake/3.5.5.nl
 	export HOST="biowulf.nih.gov"
 elif [[ `hostname` =~ "tghighmem" ]] || [[ `hostname` =~ "tgcompute" ]] || [ `hostname` == 'login01' ] ; then
-	module load snakemake/3.8.0
+	#module load snakemake/3.5.5
 	export HOST="login01"
 else 
 	echo -e "Host `hostname` is not recognized\n"
@@ -68,4 +69,3 @@ elif [ $HOST == 'login01' ]; then
 	echo "Variables are $cmd"
 	snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 fi
-#chmod 775 $WORK_DIR/.snakemake/*
