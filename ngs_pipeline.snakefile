@@ -298,10 +298,11 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
+	
 	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("ssh {HOST} \"echo 'Pipeline failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
+	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
 onstart:
 	shell("ssh {HOST} \"echo 'ngs-pipeline started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
 onsuccess:
@@ -340,7 +341,6 @@ rule Khanlab_Pipeline:
 	do
 		touch {WORK_DIR}/${{sub}}/{TIME}/successful.txt
 	done
-	find log/ -type f -empty -delete
 	find . -group $USER -exec chgrp -f {params.group} {{}} \;
 	find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
