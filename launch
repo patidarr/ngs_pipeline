@@ -113,7 +113,7 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
 	}
 	else{
 		`mkdir -p "$workDir/log/"`;
-		`qsub -W umask=022 -e $workDir/log/ngs-pipeline.e -o $workDir/log/ngs-pipeline.o -v time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet -l nodes=tgcompute31:ppn=1,mem=1gb,walltime=96:00:00 $NGS_PIPELINE/submit_snakemake.sh`;
+		`sbatch --nodelist=tgcompute31 -e $workDir/log/ngs-pipeline.e -o $workDir/log/ngs-pipeline.o --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet --cpus-per-task=1 --partition=batch --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`;
 	}
 }
 else{
