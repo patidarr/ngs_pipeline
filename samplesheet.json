@@ -1,36 +1,20 @@
 {
-  "subject": {
-    "NCI0291": [
-      "NCI0291_B_E",
-      "NCI0291_B_P",
-      "NCI0291_T_E",
-      "NCI0291_T_P"
-    ]
+  "subject":{"NCI0291": ["NCI0291_B_E","NCI0291_B_P","NCI0291_T_E","NCI0291_T_P"]},
+  "RNASeq": {"NCI0291": ["NCI0291_T_T"]},
+  "sample_references": {
+    "NCI0291_T_E": ["NCI0291_B_E"],
+    "NCI0291_T_P": ["NCI0291_B_P"]
+  },
+  "sample_RNASeq": {
+    "NCI0291_T_E": ["NCI0291_T_T"],
+    "NCI0291_T_P": ["NCI0291_T_T"]
   },
   "library": {
-    "NCI0291_B_E": [
-      "Sample_NCI0291_B_E_HH3CWBGXX"
-    ],
-    "NCI0291_B_P": [
-      "Sample_NCI0291_B_P_HH3CWBGXX"
-    ],
-    "NCI0291_T_E": [
-      "Sample_NCI0291_T_E_HWHT3BGXX"
-    ],
-    "NCI0291_T_P": [
-      "Sample_NCI0291_T_P_HWHT3BGXX"
-    ],
-    "NCI0291_T_T": [
-      "Sample_NCI0291_T_T_HWJW5BGXX"
-    ]
-  },
-  "sample_references": {
-    "NCI0291_T_E": [
-      "NCI0291_B_E"
-    ],
-    "NCI0291_T_P": [
-      "NCI0291_B_P"
-    ]
+    "NCI0291_B_E": ["Sample_NCI0291_B_E_HH3CWBGXX"],
+    "NCI0291_B_P": ["Sample_NCI0291_B_P_HH3CWBGXX"],
+    "NCI0291_T_E": ["Sample_NCI0291_T_E_HWHT3BGXX"],
+    "NCI0291_T_P": ["Sample_NCI0291_T_P_HWHT3BGXX"],
+    "NCI0291_T_T": ["Sample_NCI0291_T_T_HWJW5BGXX"]
   },
   "sample_type": {
     "NCI0291_B_E": "Normal",
@@ -44,19 +28,6 @@
     "NCI0291_T_E": "clin.ex.v1",
     "NCI0291_T_P": "clin.snv.v1",
     "NCI0291_T_T": "access"
-  },
-  "sample_RNASeq": {
-    "NCI0291_T_E": [
-      "NCI0291_T_T"
-    ],
-    "NCI0291_T_P": [
-      "NCI0291_T_T"
-    ]
-  },
-  "RNASeq": {
-    "NCI0291": [
-      "NCI0291_T_T"
-    ]
   },
   "Diagnosis": {
     "NCI0291_B_E": "Glioblastoma",
