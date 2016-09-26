@@ -144,7 +144,7 @@ sub Germline{
 			if($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){  # HGMD
                 		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
 					$source = 'HGMD-clinvar';
-					$level{"1"}  = "yes";
+					$level{"3"}  = "yes";
 				}
 				else{
 					$source = 'HGMD';
@@ -154,11 +154,11 @@ sub Germline{
 			if (exists $SOURCE{$ANN[$index_of_Gene]}){ # ACMG
 				$source =$SOURCE{$ANN[$index_of_Gene]};
 				if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
-					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i or $ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
 						$level{"1"} = "yes";
 					}
 					else{
-						$level{"3"} = "yes";
+						$level{"2"} = "yes";
 					}
 				}
 				if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
@@ -166,15 +166,6 @@ sub Germline{
 					$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
 				}
 				if ($source =~ /^InheritedDiseases$/){
-					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
-						$level{"3"} = "yes";
-					}
-					elsif($vaf >=0.75){
-						$level{"3.1"} = "yes";
-					}
-					else{
-						$level{"4"} = "yes";
-					}
 				}
 				else{
 					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
@@ -184,7 +175,7 @@ sub Germline{
 						$level{"1"} = "yes";
 					}
 					else{
-						$level{"2.1"} = "yes";
+						$level{"3.1"} = "yes";
 					}
 				}
 			}
@@ -220,35 +211,19 @@ sub Germline{
 	}
 	foreach my $key (sort keys %normal_vaf){
 		if (exists $tumor_vaf{$key}){
-			if ($germline{$key} eq 'Tier2.1'){
+			if ($germline{$key} eq 'Tier3.1'){
 				if ($tumor_vaf{$key}/$normal_vaf{$key} >=1.2){
-					$germline{$key} = "Tier2";
-				}
-				else{
-					$germline{$key} = "Tier3";
-				}
-			}
-			elsif($germline{$key} eq 'Tier3.1'){
-				if ($normal_vaf{$key} >=0.75){
-					$germline{$key} = "Tier3";
-				}
-				else{
-					$germline{$key} = "Tier4";	
-				}
-			}
-		}
-		else{
-			if ($germline{$key} eq 'Tier2.1'){
-				$germline{$key} = "Tier3";
-			}
-			elsif($germline{$key} eq 'Tier3.1'){
-				if ($normal_vaf{$key} >=0.75){
 					$germline{$key} = "Tier3";
 				}
 				else{
 					$germline{$key} = "Tier4";
 				}
-			}				
+			}
+		}
+		else{
+			if ($germline{$key} eq 'Tier3.1'){
+				$germline{$key} = "Tier4";
+			}
 		}
 	}
 	foreach my $key (sort keys %judge_tier) {
