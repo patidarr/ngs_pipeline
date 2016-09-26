@@ -50,7 +50,7 @@ rule Annovar_Gene:
 	shell: """
 	#######################
 	module load annovar/{version}
-	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} -out {input.file}.gene -remove -protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,exac03,cg69,nci60 -operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring "-1"  -hgvs
+	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} -out {input.file}.gene -remove -protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,exac03,cg69,nci60 -operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring "-1"   --argument "-hgvs",,,,,,,,,,,,,,,
 	mv {input.file}.gene.{params.build}_multianno.txt {output}
 	sed -i '1s/\./_/g' {output}
 	rm -rf {input.file}.gene.refGene.invalid_input {input.file}.gene.invalid_input
@@ -127,7 +127,7 @@ rule Annovar_COSMIC:
 	shell: """
 	#######################
 	module load annovar/{version}
-	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} --dot2underline -out {input.file}.cosmic -remove -protocol cosmic76 -operation f -nastring "NA" 
+	table_annovar.pl {input.file} {params.RefData} -buildver {params.build} --dot2underline -out {input.file}.cosmic -remove -protocol cosmic78 -operation f -nastring "NA" 
 	mv {input.file}.cosmic.{params.build}_multianno.txt {output}
 	rm -rf {input.file}.cosmic.invalid_input
 	#######################
