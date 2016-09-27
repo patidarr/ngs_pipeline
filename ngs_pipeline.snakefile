@@ -42,6 +42,7 @@ if [ {HOST} == 'biowulf.nih.gov' ]
 elif [ {HOST} == 'login01' ]
 	then
 		module load slurm
+		module load gcc/4.8.1
 		MEM=`scontrol show job ${{SLURM_JOB_ID}} | grep "MinMemoryNode"| perl -n -e'/MinMemoryNode=(\d*)G/ && print $1'`
 		mkdir -p /projects/scratch/ngs_pipeline_${{SLURM_JOB_ID}}/
 		LOCAL="/projects/scratch/ngs_pipeline_${{SLURM_JOB_ID}}/"
