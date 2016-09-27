@@ -256,15 +256,15 @@ rule CombineAnnotation:
 		geneanno    = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
 		filter      = NGS_PIPELINE + "/scripts/filterVariants.v1.pl",
 		coding      = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
-		blacklisted = config["annovar_data"]+ "hg19_blacklistedSites.txt"
+		blacklisted = config["annovar_data"]+ "hg19_blacklistedSites.txt",
+		AMCG	    = config["annovar_data"]+ "hg19_ACMG.txt"
 	output: 
 		filtered="{base}/AnnotationInput.coding.rare.txt",
 		all	="{base}/AnnotationInput.annotations.final.txt"
 	version: "1.0"
 	params:
 		rulename   = "combine",
-		batch	   = config[config['host']]["job_Combine"],
-		dataDir    = config["annovar_data"]
+		batch	   = config[config['host']]["job_Combine"]
 	shell: """
 	#######################
 echo "{wildcards.base}/AnnotationInput
@@ -283,7 +283,7 @@ echo "{wildcards.base}/AnnotationInput
 {wildcards.base}/AnnotationInput.civic
 {wildcards.base}/AnnotationInput.pcg" >{wildcards.base}/list
 	perl {input.convertor} {wildcards.base}/list >{output.all}.tmp
-	perl {input.geneanno} {params.dataDir}hg19_ACMG.txt {output.all}.tmp >{output.all}
+	perl {input.geneanno} {input.ACMG} {output.all}.tmp >{output.all}
 
 	perl {input.coding} {wildcards.base}/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 >{output.all}.tmp
 	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >{output.filtered}
