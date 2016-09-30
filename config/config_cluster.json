@@ -34,8 +34,8 @@
 		"job_hotspot"    : "--partition=quick    --time=02:00:00 --mem=10G  --cpus-per-task=4   --gres=lscratch:02",
 		"job_bedtools"   : "--partition=ccr,norm --time=10:00:00 --mem=20G  --cpus-per-task=2",
 		"job_vcf2txt"    : "--partition=quick    --time=01:00:00 --mem=02G  --cpus-per-task=2",
-		"job_annovar"    : "--partition=ccr,norm --time=60:00:00 --mem=10G  --cpus-per-task=5",
-		"job_annot"      : "--partition=ccr,norm --time=03:00:00 --mem=05G  --cpus-per-task=2",
+		"job_annovar"    : "--partition=ccr,norm --time=60:00:00 --mem=05G  --cpus-per-task=2",
+		"job_annot"      : "--partition=quick    --time=02:00:00 --mem=05G  --cpus-per-task=2",
 		"job_igvtools"   : "--partition=ccr,norm --time=05:00:00 --mem=10G  --cpus-per-task=1   --gres=lscratch:05",
 		"job_novoalign"  : "--partition=ccr,norm --time=20:00:00 --mem=60G  --cpus-per-task=32  --gres=lscratch:02",
 		"job_deFuse"     : "--partition=ccr,norm --time=20:00:00 --mem=100G --cpus-per-task=30  --gres=lscratch:400"
