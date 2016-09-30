@@ -472,7 +472,7 @@ rule Actionable_fusion:
 	input:
 		fusion=lambda wildcards: SUB_FUSION[wildcards.subject]
 	output:
-		"{subject}/{TIME}{ACT_DIR}{subject}.fusion.actionable.txt"
+		"{subject}/{TIME}/{ACT_DIR}{subject}.fusion.actionable.txt"
 	params:
 		rulename = "Actionable_F",
 		batch    = config[config['host']]["job_default"]

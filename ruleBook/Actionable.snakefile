@@ -11,7 +11,7 @@ rule Actionable_Somatic:
 		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor     = NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 	output:
-		somatic="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.somatic.actionable.txt",
+		somatic="{subject}/{TIME}/{ACT_DIR}{subject}.somatic.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
@@ -35,7 +35,7 @@ rule Actionable_Germline:
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
-		germline="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.germline.actionable.txt",
+		germline="{subject}/{TIME}/{ACT_DIR}{subject}.germline.actionable.txt",
 	params:
 		rulename = "ActionableMutations",
 		batch    = config[config['host']]['job_default'],
@@ -76,7 +76,7 @@ rule Actionable_RNAseq:
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
-		rnaseq="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.rnaseq.actionable.txt",
+		rnaseq="{subject}/{TIME}/{ACT_DIR}{subject}.rnaseq.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']
@@ -104,7 +104,7 @@ rule Actionable_Variants:
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
-		rnaseq="{subject}/{TIME,[0-9]+}{ACT_DIR}{subject}.variants.actionable.txt",
+		rnaseq="{subject}/{TIME}/{ACT_DIR}{subject}.variants.actionable.txt",
 	params:
 		rulename  = "ActionableMutations",
 		batch    = config[config['host']]['job_default']

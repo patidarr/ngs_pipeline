@@ -290,6 +290,7 @@ include: NGS_PIPELINE +"/ruleBook/Actionable.snakefile"
 include: NGS_PIPELINE +"/ruleBook/UnionSomaticMutations.snakefile"
 include: NGS_PIPELINE +"/ruleBook/plots.snakefile"
 include: NGS_PIPELINE +"/ruleBook/annot.snakefile"
+include: NGS_PIPELINE +"/ruleBook/STAR.snakefile"
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
@@ -893,10 +894,10 @@ rule Strelka:
 ############
 rule SNPEff:
 	input:
-		vcf="{subject}/{TIME}/calls/{base}.raw.vcf",
+		vcf="{subject}/{TIME}/{sample}/calls/{base}.raw.vcf",
 		ref=config["reference"],
 	output:
-		eff="{subject}/{TIME}/calls/{base}.raw.snpEff.vcf"
+		eff="{subject}/{TIME}/{sample}/calls/{base}.raw.snpEff.vcf"
 	version: config["snpEff"]
 	params:
 		rulename      ="snpEff",
@@ -929,7 +930,6 @@ rule VCF2TXT:
 	perl {input.vcf2txt} {input.eff} ${{LOCAL}} >{output.txt}
 	#######################
 	"""
-
 ############
 #	MakeList
 ############
@@ -953,6 +953,9 @@ rule FormatInput:
 	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph",
 	#######################
 	"""
+############
+#       CopyAnnotationFile
+############
 rule CopyAnnotationFile:
 	input:
 		"{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt"
