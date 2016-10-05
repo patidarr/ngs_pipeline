@@ -20,7 +20,8 @@ for subject  in config['RNASeq'].keys():
 	ALL_QC		+=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
 	for sample in config['RNASeq'][subject]:
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
-		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star_ucsc.bam"]
+		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star_UCSC.bam"]
+		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star_ENS.bam"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]
 		ALL_FASTQC += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
 		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/tophat-fusion.txt"]
@@ -37,6 +38,7 @@ for subject  in config['RNASeq'].keys():
 		EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]
 		for gtf in config['GTF']:
 			EXPRESSION += [subject+"/"+TIME+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
+			EXPRESSION += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+"_counts.Gene.txt"]
 			ALL_QC     += [subject+"/"+TIME+"/"+subject+"/db/matrixInput_"+sample+"_"+gtf]
 	RNA_CALLS  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{TIME}/{sample}/fusion/{sample}.actionable.fusion.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
