@@ -12,5 +12,4 @@ PID=$!
 wait $PID
 trap - SIGTERM
 wait $PID
-echo "############# This is local 2==> ${LOCAL} ###################"
 exit $?
