@@ -25,7 +25,8 @@
 		"nbl.panel"             : "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Panel_Neuro.target.hg19.merged.bed",
 		"Agilent.Exon50M"       : "/data/CCRBioinfo/public/serpentine_resources/design/Agilent_SureSelect_Human_All_Exon_50Mb_Kit.design.hg19.merged.bed",
 		"agilent.v4"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect.target.v4.bed",
-		"agilent.v5"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect.target.v4.bed"
+		"agilent.v5"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect.target.v4.bed",
+		"strexome"		: "/data/Clinomics/Ref/khanlab/design/Strexome.target.bed"
 	},
 	"hotspot_bed"		:{
 		"wholegenome"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
@@ -42,7 +43,8 @@
 		"nbl.panel"             : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"Agilent.Exon50M"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"agilent.v4"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
-		"agilent.v5"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
+		"agilent.v5"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"strexome"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
 	},
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",

@@ -46,6 +46,7 @@
 		"nbl.panel"		:{"Normal":"100","Tumor":"100"},
 		"Agilent.Exon50M"	:{"Normal":"20","Tumor":"20"},
 		"agilent.v4"		:{"Normal":"20","Tumor":"20"},
-		"agilent.v5"		:{"Normal":"20","Tumor":"20"}
+		"agilent.v5"		:{"Normal":"20","Tumor":"20"},
+		"strexome"		:{"Normal":"20","Tumor":"20"}
 	}
 }
