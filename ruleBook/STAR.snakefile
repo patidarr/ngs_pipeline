@@ -57,7 +57,7 @@ rule STAR_TPM:
 		--sjdbGTFfile {input.gtf1}\
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample}_ucsc
-	cp {wildcards.sample}_ucscAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_ucsc.bam
+	cp {wildcards.sample}_ucscAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_UCSC.bam
 
 	echo "Finished Step 4"
 
@@ -71,7 +71,7 @@ rule STAR_TPM:
 		--sjdbGTFfile {input.gtf2}\
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample}_ens
-	cp {wildcards.sample}_ensAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_ens.bam
+	cp {wildcards.sample}_ensAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_ENS.bam
 	echo "Finished Step 5"
 	#######################
 	"""
