@@ -5,10 +5,9 @@ rule STAR_TPM:
 	input:  R=lambda wildcards: FQ[wildcards.sample],
 		ref=config["reference"],
 		gtf1=config['GTF']['UCSC'],
-		gtf2=config['GTF']['ENS']
 	output:
 		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam"),
-		temp("{subject}/{TIME}/{sample}/{sample}.star_ENS.bam")
+		"{subject}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab"
 	version: config["STAR"]
 	params:
 		rulename  = "STAR",
@@ -57,34 +56,21 @@ rule STAR_TPM:
 		--sjdbGTFfile {input.gtf1}\
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample}_ucsc
-	cp {wildcards.sample}_ucscAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_UCSC.bam
-
+	mv -f {wildcards.sample}_ucscAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_UCSC.bam
+	mv -f {wildcards.sample}_ucscSJ.out.tab {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}_ucsc.SJ.out.tab
 	echo "Finished Step 4"
-
-
-	STAR --outTmpDir STEP4\
-		--genomeDir GenomeForPass2\
-		--runThreadN ${{THREADS}}\
-		--outSAMattributes All\
-		--readFilesIn {input.R[0]} {input.R[1]}\
-		--outSAMtype BAM SortedByCoordinate\
-		--sjdbGTFfile {input.gtf2}\
-		--readFilesCommand zcat\
-		--outFileNamePrefix {wildcards.sample}_ens
-	cp {wildcards.sample}_ensAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_ENS.bam
-	echo "Finished Step 5"
 	#######################
 	"""
 ############
 # featureCounts
 #############
-rule FeatureCounts_UCSC:
+rule FeatureCounts:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.star_UCSC.bam",
-		ref=config['GTF']['UCSC'],
+		ref=lambda wildcards: config['GTF'][wildcards.gtf],
 		script=NGS_PIPELINE + "/scripts/featureCounts.R",
 	output:
-		gene="{base}/{TIME}/{sample}/TPM_UCSC/{sample}_counts.Gene.txt",
+		gene="{base}/{TIME}/{sample}/TPM_{gtf}/{sample}_counts.Gene.txt",
 	params:
 		rulename   = "featureCounts",
 		batch      =config[config['host']]['job_featCount'],
@@ -93,36 +79,6 @@ rule FeatureCounts_UCSC:
 	#######################
 	module load R
 	cd ${{LOCAL}}
-	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --countOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_UCSC/{wildcards.sample}_counts" --fpkmOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_UCSC/{wildcards.sample}_fpkm"
-	#######################
-	"""
-
-############
-## featureCounts
-##############
-rule FeatureCounts_ENS:
-	input:
-		bam="{base}/{TIME}/{sample}/{sample}.star_ENS.bam",
-		ref=config['GTF']['ENS'],
-		script=NGS_PIPELINE + "/scripts/featureCounts.R",
-	output:
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_counts.Exon.fc.RDS",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_counts.Exon.txt",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_counts.Gene.fc.RDS",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_counts.Gene.txt",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_counts.Transcript.fc.RDS",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_counts.Transcript.txt",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_fpkm.Exon.txt",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_fpkm.Gene.txt",
-		"{base}/{TIME}/{sample}/TPM_ENS/{sample}_fpkm.Transcript.txt"
-	params:
-		rulename   = "featureCounts",
-		batch      =config[config['host']]['job_featCount'],
-		work_dir =  WORK_DIR
-	shell: """
-	#######################
-	module load R
-	cd ${{LOCAL}}
-	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --countOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_ENS/{wildcards.sample}_counts" --fpkmOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_ENS/{wildcards.sample}_fpkm"
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --countOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/{wildcards.sample}_counts" --fpkmOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/{wildcards.sample}_fpkm"
 	#######################
 	"""
