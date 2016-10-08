@@ -73,10 +73,11 @@ elsif($mode eq 'd'){
 else{
 	$time=$mode;
 }
-
+my $NOW=`echo \$(date +"%Y%m%d_%H%M%S")`;
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	if ($dryrun){
 		my $cmd = "(
+		export TMP=$NOW
 		export TIME=$time
 		module load snakemake/3.8.0
 		export NGS_PIPELINE=$NGS_PIPELINE
@@ -98,6 +99,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /login01/){
 	if ($dryrun){
 		my $cmd= "(
+		export TMP=$NOW
 		export TIME=$time
                 module load snakemake/3.8.0
                 export NGS_PIPELINE=$NGS_PIPELINE

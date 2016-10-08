@@ -11,6 +11,7 @@ DATA_DIR=os.environ['DATA_DIR']
 ACT_DIR=os.environ['ACT_DIR']
 HOST=os.environ['HOST']
 TIME=os.environ['TIME']
+NOW=os.environ['TMP']
 configfile: NGS_PIPELINE +"/config/config_annotation.json"
 configfile: NGS_PIPELINE +"/config/config_common.json"
 configfile: NGS_PIPELINE +"/config/config_cluster.json"
@@ -44,8 +45,8 @@ elif [ {HOST} == 'login01' ]
 		module load slurm
 		module load gcc/4.8.1
 		MEM=`scontrol show job ${{SLURM_JOB_ID}} | grep "MinMemoryNode"| perl -n -e'/MinMemoryNode=(\d*)G/ && print $1'`
-		mkdir -p /projects/scratch/ngs_pipeline_${{SLURM_JOB_ID}}/
-		LOCAL="/projects/scratch/ngs_pipeline_${{SLURM_JOB_ID}}/"
+		mkdir -p /projects/scratch/ngs_pipeline_{NOW}_${{SLURM_JOB_ID}}/
+		LOCAL="/projects/scratch/ngs_pipeline_{NOW}_${{SLURM_JOB_ID}}/"
 		THREADS=`scontrol show job ${{SLURM_JOB_ID}} | grep  "MinCPUsNode" | perl -n -e'/MinCPUsNode=(\d*)/ && print $1'`
 fi
 """)

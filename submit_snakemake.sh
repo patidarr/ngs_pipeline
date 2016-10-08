@@ -36,6 +36,7 @@ else
 fi
 NOW=$(date +"%Y%m%d_%H%M%S")
 #export TIME=$(date +"%Y%m%d%H")
+export TMP="$NOW"
 if [[ `hostname` =~ "cn" ]] || [ `hostname` == 'biowulf.nih.gov' ]; then
 	#module load snakemake/3.5.5.nl
 	export HOST="biowulf.nih.gov"
@@ -69,4 +70,5 @@ elif [ $HOST == 'login01' ]; then
 	echo "Variables are $cmd"
 	snakemake $cmd --cluster "sbatch -o log/{params.rulename}.%j.o -e log/{params.rulename}.%j.e {params.batch}" >& ngs_pipeline_${NOW}.log
 	#snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
+	rm -rf /projects/scratch/ngs_pipeline_${NOW}_*
 fi
