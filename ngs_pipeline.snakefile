@@ -299,6 +299,11 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 		vcf = vcf.replace('raw.vcf', 'raw.snpEff.vcf')
 		ALL_VCFs +=[vcf]
+f = open('ngs_pipeline_%s.csv' % NOW , 'w')
+print ('#Patient','Diagnosis',sep='\t', end='\n',file=f)
+for subject in sorted(SUBS):
+	diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
+	print (subject,diagnosis,sep='\t', end='\n',file=f)
 ###########################################################################
 onerror:
 	
@@ -347,9 +352,8 @@ rule Khanlab_Pipeline:
 	find . -group $USER -exec chgrp -f {params.group} {{}} \;
 	find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
-	cut -f 1,3 {WORK_DIR}/Consolidated_QC.txt {WORK_DIR}/RnaSeqQC.txt |sed -e '/^$/d' |sort |uniq >{WORK_DIR}/tmpFile.txt
-	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/tmpFile.txt |mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
-	rm -rf {WORK_DIR}/tmpFile.txt
+	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/ngs_pipeline_{NOW}.csv |mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
+	rm -rf {WORK_DIR}/ngs_pipeline_{NOW}.csv
 	#######################
 	"""
 ############
