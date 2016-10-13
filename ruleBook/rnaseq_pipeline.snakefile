@@ -452,10 +452,6 @@ rule Sub_Fusion:
 		fc="{subject}/{TIME}/{sample}/fusion/fusion-catcher.txt",
 		defuse="{subject}/{TIME}/{sample}/fusion/defuse.filtered.txt",
 		convertor = NGS_PIPELINE + "/scripts/" + config['Actionable_fusion'],
-		combined  = config["annovar_data"]+"geneLists/combinedList_04292016",
-		mitelman  = config["Mitelman"],
-		omim	  = config["omim_fusion"],
-		TCGA      = config["TCGA_fusion"]
 	output:
 		"{subject}/{TIME}/{sample}/fusion/{sample}.actionable.fusion.txt"
 	params:
@@ -464,7 +460,7 @@ rule Sub_Fusion:
 	shell: """
 	#######################
 	mkdir -p {wildcards.subject}/{TIME}/Actionable
-	perl {input.convertor} {input.combined} {input.mitelman} {input.omim} {input.TCGA} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |awk 'NR<2{{print $0;next}}{{print $0| "sort "}}' >{output}
+	perl {input.convertor} {wildcards.sample} {input.defuse} {input.tophat} {input.fc} {wildcards.subject}/{TIME}{ACT_DIR} |awk 'NR<2{{print $0;next}}{{print $0| "sort "}}' >{output}
 	#######################
 	"""
 ############

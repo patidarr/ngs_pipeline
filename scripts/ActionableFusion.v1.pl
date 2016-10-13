@@ -8,70 +8,12 @@ use warnings;
 #    actionable fusions based on some rules.
 #
 ###########################################################
-my $mitchelman     = $ARGV[0];
-my $omim	   = $ARGV[1];
-my $tcga	   = $ARGV[2];
-my $library        = $ARGV[3];
-my $defuse         = $ARGV[4];
-my $tophat         = $ARGV[5];
-my $fusioncatcher  = $ARGV[6];
-my $destination    = $ARGV[7];
+my $library        = $ARGV[0];
+my $defuse         = $ARGV[1];
+my $tophat         = $ARGV[2];
+my $fusioncatcher  = $ARGV[3];
+my $destination    = $ARGV[4];
 print "#LeftGene\tRightGene\tChr_Left\tPosition\tChr_Right\tPosition\tSample\tTool\tRefDatabase\n";
-my %REF;
-unless (open(FH, "$mitchelman")){
-        print STDERR "Can not open the file $mitchelman\n";
-        exit;
-}
-while(<FH>){
-        chomp;
-        my @local =split("\t", $_);
-	$REF{"$local[0]\t$local[1]"} = 'Mitchelman';
-	$REF{"$local[1]\t$local[0]"} = 'Mitchelman';
-}
-close FH;
-unless (open(FH, "$omim")){
-	print STDERR "Can not open the file $omim\n";
-	exit;
-}
-while(<FH>){
-	chomp;
-	my @local =split("\t", $_);
-	if(exists $REF{"$local[0]\t$local[1]"}){
-		$REF{"$local[0]\t$local[1]"} = $REF{"$local[0]\t$local[1]"}."; Omim";
-	}
-	else{
-		$REF{"$local[0]\t$local[1]"} = "Omim";	
-	}
-	if (exists $REF{"$local[1]\t$local[0]"}){
-		$REF{"$local[1]\t$local[0]"} = $REF{"$local[1]\t$local[0]"}."; Omim";
-	}
-	else{
-		$REF{"$local[1]\t$local[0]"} = "Omim";
-	}
-}
-close FH;
-unless (open(FH, "$tcga")){
-	print STDERR "Can not open the file $tcga\n";
-	exit;
-}
-while(<FH>){
-	chomp;
-	my @local =split("\t", $_);
-	if(exists $REF{"$local[0]\t$local[1]"}){
-		$REF{"$local[0]\t$local[1]"} = $REF{"$local[0]\t$local[1]"}."; TCGA";
-	}
-	else{
-		$REF{"$local[0]\t$local[1]"} = "TCGA";
-	}
-	if (exists $REF{"$local[1]\t$local[0]"}){
-		$REF{"$local[1]\t$local[0]"} = $REF{"$local[1]\t$local[0]"}."; TCGA";
-	}
-	else{
-		$REF{"$local[1]\t$local[0]"} = "TCGA";
-	}
-
-}
-close FH;
 ###########################################################
 ###########################################################
 unless (open(DEFUSE, "$defuse")){
@@ -86,10 +28,8 @@ while(<DEFUSE>){
 	chomp;
 	my @local =split("\t", $_);
 	if($_ =~ /^cluster_id/){print DEFUSE_OUT "$_\n"; next}	
-	if(exists $REF{"$local[30]\t$local[31]"}){
-		print DEFUSE_OUT "$_\n";
-		print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t".$REF{"$local[30]\t$local[31]"}."\n";
-	}
+	print DEFUSE_OUT "$_\n";
+	print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\n";
 }
 close DEFUSE;
 close DEFUSE_OUT;
@@ -106,12 +46,10 @@ while(<TOP>){
         chomp;
 	my @local =split("\t", $_);
 	if($_ =~ /Coordinate_left/){print TOPHAT_OUT "$_\n"; next}
-	if(exists $REF{"$local[1]\t$local[4]"}){
-		$local[3] = $local[3] + 1;
-		$local[6] = $local[6] + 1;	
-		print "$local[1]\t$local[4]\tchr$local[2]\t$local[3]\tchr$local[5]\t$local[6]\t$library\ttophatFusion\t".$REF{"$local[1]\t$local[4]"}."\n";
-		print TOPHAT_OUT "$_\n";
-	}
+	$local[3] = $local[3] + 1;
+	$local[6] = $local[6] + 1;	
+	print "$local[1]\t$local[4]\tchr$local[2]\t$local[3]\tchr$local[5]\t$local[6]\t$library\ttophatFusion\n";
+	print TOPHAT_OUT "$_\n";
 
 }
 close TOP;
@@ -129,17 +67,10 @@ while(<FC>){
         chomp;
 	my @local =split("\t", $_);
 	if($_ =~ /^Gene_1_symbol/){print FC_OUT "$_\n"; next}
-	if(($local[2]  =~ /oncogene/ or $local[2]  =~ /known_fusion/ or $local[2]  =~ /cosmic/ or $local[2]  =~ /chimerdb2/ or $local[2]  =~ /ticdb/ or $local[2]  =~ /cgp/ or $local[2]  =~ /cell_lines/) and $local[3] <=0 and $local[4] >5 and $local[5] >3 and $local[6] >19){
-		my @left  = split(":", $local[8]);
-		my @right = split(":", $local[9]);
-		if(exists $REF{"$local[0]\t$local[1]"}){
-			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t".$REF{"$local[0]\t$local[1]"}."\n";
-		}
-		else{
-			print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t--\n";
-		}
-		print FC_OUT "$_\n";
-	}
+	my @left  = split(":", $local[8]);
+	my @right = split(":", $local[9]);
+	print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\n";
+	print FC_OUT "$_\n";
 }
 close FC;
 close FC_OUT;
