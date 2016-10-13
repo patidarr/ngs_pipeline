@@ -131,7 +131,7 @@ sub Germline{
 		# Position is not somatic called!!
 		# in tumor the capture is same as in normal
 		my %level;
-		$level{"10"} = 'yes';
+		$level{"5"} = 'yes';
 		my $source = "";
 		my $vaf = VAF($temp[11], $temp[12]);
 		if ($temp[11] <1){
@@ -141,8 +141,20 @@ sub Germline{
 		if (exists $Germline{"$site\t$temp[7]"} and !exists $DATA{$site} and $Germline{"$site\t$temp[7]"} eq $temp[7] and $vaf >=0.25){
 			$level{"5"} = 'yes';
 			my @ANN = split("\t", $ANNOTATION{"$site"});
+			if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
+				$level{"1"} = "yes";
+				$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
+			}
+			if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
+				if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i or $ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
+					$level{"1"} = "yes";
+				}
+				else{
+					$level{"2"} = "yes";
+				}
+			}
 			if($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){  # HGMD
-                		if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+				if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
 					$source = 'HGMD-clinvar';
 					$level{"3"}  = "yes";
 				}
@@ -153,25 +165,25 @@ sub Germline{
 			}
 			if (exists $SOURCE{$ANN[$index_of_Gene]}){ # ACMG
 				$source =$SOURCE{$ANN[$index_of_Gene]};
-				if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
-					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i or $ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
-						$level{"1"} = "yes";
-					}
-					else{
-						$level{"2"} = "yes";
-					}
-				}
-				if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
-					$level{"1"} = "yes";
-					$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
-				}
-				if ($source =~ /^InheritedDiseases$/){
+				if ($source =~ /CGCensus_Hereditary/){
+					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+                                                $level{"1.1"} = "yes";
+                                        }
+                                        elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
+                                                $level{"1.2"} = "yes";
+                                        }
+                                        else{
+                                                $level{"2"} = "yes";
+                                        }
 				}
 				else{
 					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
-						$level{"1"} = "yes";
+						$level{"1.1"} = "yes";
 					}
-					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+					elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
+                                                $level{"1.2"} = "yes";
+                                        }
+					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /frameshift/){
 						$level{"1"} = "yes";
 					}
 					else{
@@ -180,19 +192,16 @@ sub Germline{
 				}
 			}
 			my @l = sort { $a <=> $b } keys %level;
-			
 			if ($l[0] <=4){
-				if ($l[0] =~ /^\d$/){
+				if ($l[0] !~ /3.1/){
 					print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]\n";
 				}
 				else{ # Variants where tumor/normal or vaf in normal counts
 					$judge_tier{"$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]"} = $l[0];
-#					print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]\n";
 				}
 			}
 		}
 		else{
-#			print "$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\n";
 		}
 	}
 	close $ORI;
@@ -221,9 +230,7 @@ sub Germline{
 			}
 		}
 		else{
-			if ($germline{$key} eq 'Tier3.1'){
-				$germline{$key} = "Tier4";
-			}
+			$germline{$key} = "Tier4";
 		}
 	}
 	foreach my $key (sort keys %judge_tier) {
