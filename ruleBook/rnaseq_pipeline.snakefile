@@ -32,6 +32,7 @@ for subject  in config['RNASeq'].keys():
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.pdf"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqQC.txt"]
 		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
+		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/fusion/"+sample+".actionable.fusion.txt"]
 		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
 		EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
 		EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]

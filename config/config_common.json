@@ -33,7 +33,7 @@
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
 	"Actionable_mutation"	: "Actionable.v3.pl",
-	"Actionable_fusion"	: "ActionableFusion.pl",
+	"Actionable_fusion"	: "ActionableFusion.v1.pl",
 	"failed_exon_params": {
 		"wholegenome"		:{"Normal":"5","Tumor":"5"},
 		"seqcapez.hu.ex.v3"	:{"Normal":"20","Tumor":"20"},
