@@ -245,7 +245,7 @@ sub Germline{
 
 sub Somatic{
 #/data/Clinomics/Ref/annovar/hg19_SomaticActionableSites.txt NCI0276/NCI0276/db/NCI0276.somatic
-	my ($ref, $cgc, $geneList ,$subject, $annotation) = (@_);
+	my ($ref, $geneList ,$subject, $annotation) = (@_);
 	unless (open(ANN_FH, "$ref")){
 		print STDERR "\n\nCan not open $ref\n"; 
 		exit;

@@ -7,7 +7,6 @@ rule Actionable_Somatic:
 		somatic       = "{subject}/{TIME}/{subject}/db/{subject}.somatic",
 		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile       = config["annovar_data"]+config["somaticActSites"],
-		cgc           = config["annovar_data"]+config["cgc"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor     = NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
@@ -18,7 +17,7 @@ rule Actionable_Somatic:
 		batch    = config[config['host']]['job_default']
 	shell: """
 	#######################
-	perl {input.convertor} somatic  {input.refFile} {input.cgc} {input.combinedList} {input.somatic} {input.annotation} >{output.somatic}
+	perl {input.convertor} somatic  {input.refFile} {input.combinedList} {input.somatic} {input.annotation} >{output.somatic}
 	#######################
 	"""
 ############
@@ -32,8 +31,7 @@ rule Actionable_Germline:
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
-		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
-		cgc           = config["annovar_data"]+config["cgc"]
+		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		germline="{subject}/{TIME}/{ACT_DIR}{subject}.germline.actionable.txt",
 	params:
@@ -55,7 +53,7 @@ rule Actionable_Germline:
 	else
 		touch {input.germline}.dummy
 		perl {input.convertor} germline {input.germline}.dummy {input.germline} {input.annotation} {input.combinedList} {input.hotspot} > {output.germline}.gl
-		perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.combinedList}  {input.germline} {input.annotation} >{output.germline}.som
+		perl {input.convertor} somatic  {input.hotspot} {input.combinedList}  {input.germline} {input.annotation} >{output.germline}.som
 		perl {input.combine} {output.germline}.gl {output.germline}.som  >{output.germline}
 		rm -rf {output.germline}.gl {output.germline}.som {input.germline}.dummy
 	fi
@@ -72,8 +70,7 @@ rule Actionable_RNAseq:
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
-		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
-		cgc           = config["annovar_data"]+config["cgc"]
+		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		rnaseq="{subject}/{TIME}/{ACT_DIR}{subject}.rnaseq.actionable.txt",
 	params:
@@ -83,7 +80,7 @@ rule Actionable_RNAseq:
 	#######################
 	touch {input.rnaseq}.dummy
 	perl {input.convertor} rnaseq {input.rnaseq}.dummy {input.rnaseq} {input.annotation} {input.combinedList} {input.hotspot} > {output.rnaseq}.gl
-	perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.combinedList}  {input.rnaseq} {input.annotation} >{output.rnaseq}.som
+	perl {input.convertor} somatic  {input.hotspot} {input.combinedList}  {input.rnaseq} {input.annotation} >{output.rnaseq}.som
 	perl {input.combine} {output.rnaseq}.gl {output.rnaseq}.som  >{output.rnaseq}
 	rm -rf {output.rnaseq}.gl {output.rnaseq}.som {input.rnaseq}.dummy
 	#######################
@@ -99,8 +96,7 @@ rule Actionable_Variants:
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
-		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
-		cgc           = config["annovar_data"]+config["cgc"]
+		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl"
 	output:
 		rnaseq="{subject}/{TIME}/{ACT_DIR}{subject}.variants.actionable.txt",
 	params:
@@ -110,7 +106,7 @@ rule Actionable_Variants:
 	#######################
 	touch {input.rnaseq}.dummy
 	perl {input.convertor} rnaseq {input.rnaseq}.dummy {input.rnaseq} {input.annotation} {input.combinedList} {input.hotspot} > {output.rnaseq}.gl
-	perl {input.convertor} somatic  {input.hotspot} {input.cgc} {input.combinedList}  {input.rnaseq} {input.annotation} >{output.rnaseq}.som
+	perl {input.convertor} somatic  {input.hotspot} {input.combinedList}  {input.rnaseq} {input.annotation} >{output.rnaseq}.som
 	perl {input.combine} {output.rnaseq}.gl {output.rnaseq}.som  >{output.rnaseq}
 	rm -rf {output.rnaseq}.gl {output.rnaseq}.som {input.rnaseq}.dummy
 	#######################
