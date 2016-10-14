@@ -2,6 +2,7 @@
 #       Actionable
 ############
 rule Actionable_Somatic:
+	priority: 50
 	input:
 		somatic       = "{subject}/{TIME}/{subject}/db/{subject}.somatic",
 		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
