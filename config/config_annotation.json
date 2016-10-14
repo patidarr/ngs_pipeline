@@ -29,5 +29,7 @@
 	"annot_candl"  : "hg19_candl_10262015.txt",
 	"annot_tcc"    : "hg19_targated_cancer_care_10262015.txt",
 	"annot_civic"  : "hg19_civic_10262015.txt",
-	"geneList"     : "geneLists/combinedList_04292016"
+	"geneList"     : "geneLists/combinedList_04292016",
+	"somaticActSites" : "hg19_SomaticActionableSites.txt",
+	"ACMG"	       : "hg19_ACMG.txt"
 }

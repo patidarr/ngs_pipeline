@@ -6,7 +6,7 @@ rule Actionable_Somatic:
 	input:
 		somatic       = "{subject}/{TIME}/{subject}/db/{subject}.somatic",
 		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
-		refFile       = config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		refFile       = config["annovar_data"]+config["somaticActSites"],
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
 		combinedList  = config["annovar_data"]+config["geneList"],
 		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
@@ -30,7 +30,7 @@ rule Actionable_Germline:
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
-		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
@@ -70,7 +70,7 @@ rule Actionable_RNAseq:
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
-		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
@@ -97,7 +97,7 @@ rule Actionable_Variants:
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
-		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
+		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"

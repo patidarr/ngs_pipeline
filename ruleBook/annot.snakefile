@@ -257,7 +257,7 @@ rule CombineAnnotation:
 		filter      = NGS_PIPELINE + "/scripts/filterVariants.v1.pl",
 		coding      = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
 		blacklisted = config["annovar_data"]+ "hg19_blacklistedSites.txt",
-		ACMG	    = config["annovar_data"]+ "hg19_ACMG.txt"
+		ACMG	    = config["annovar_data"]+config['ACMG']
 	output: 
 		filtered="{base}/AnnotationInput.coding.rare.txt",
 		all	="{base}/AnnotationInput.annotations.final.txt"
