@@ -621,7 +621,7 @@ rule CN_LRR:
 		ref=config["gene_coord"],
 		index=config["reference"].replace('.fasta', '.index.txt'),
 		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+"geneLists/combinedList_04292016",
+		cgc    = config["annovar_data"]+config["geneList"],
 		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
 	output:
 		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",

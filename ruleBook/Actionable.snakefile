@@ -8,7 +8,7 @@ rule Actionable_Somatic:
 		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile       = config["annovar_data"]+"hg19_SomaticActionableSites.txt",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
+		combinedList  = config["annovar_data"]+config["geneList"],
 		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor     = NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
 	output:
@@ -30,9 +30,8 @@ rule Actionable_Germline:
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor=NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
-		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
+		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
@@ -71,9 +70,8 @@ rule Actionable_RNAseq:
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
-		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
+		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
@@ -99,9 +97,8 @@ rule Actionable_Variants:
 		annotation="{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		annotate  =NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor =NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
-		cancerGeneCensus = config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
 		hotspot= config["annovar_data"]+"hg19_SomaticActionableSites.txt",
-		combinedList  = config["annovar_data"]+"geneLists/combinedList_04292016",
+		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
 		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
 	output:
