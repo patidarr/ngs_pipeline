@@ -74,6 +74,7 @@ else{
 	$time=$mode;
 }
 my $NOW=`echo \$(date +"%Y%m%d_%H%M%S")`;
+chomp $NOW;
 if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 	if ($dryrun){
 		my $cmd = "(
@@ -88,7 +89,9 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 		SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 		SAM_CONFIG=$sheet
 		snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri
+		rm -rf $workDir/ngs_pipeline_$NOW.csv
 		)";
+		print "$cmd\n";
 		exec "$cmd";
 	}
 	else{
@@ -110,7 +113,9 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
                 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
                 SAM_CONFIG=$sheet
                 snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri
+		rm -rf $workDir/ngs_pipeline_$NOW.csv
 		)";
+		print "$cmd\n";
 		exec "$cmd";	
 	}
 	else{

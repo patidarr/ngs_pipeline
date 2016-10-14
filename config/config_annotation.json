@@ -30,8 +30,8 @@
 	"annot_tcc"    : "hg19_targated_cancer_care_10262015.txt",
 	"annot_civic"  : "hg19_civic_10262015.txt",
 	"blacklisted"  : "hg19_blacklistedSites.txt",
-	"geneList"     : "geneLists/combinedList_04292016",
-	"cgc"          : "geneLists/CancerGeneCensus.v76.txt",
+	"geneList"     : "geneLists/combinedList_10142016",
+	"cgc"          : "geneLists/CancerGeneCensus.v78.txt",
 	"somaticActSites" : "hg19_SomaticActionableSites.txt",
 	"ACMG"	       : "hg19_ACMG.txt"
 }
