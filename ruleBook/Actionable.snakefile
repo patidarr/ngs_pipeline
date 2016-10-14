@@ -7,7 +7,7 @@ rule Actionable_Somatic:
 		somatic       = "{subject}/{TIME}/{subject}/db/{subject}.somatic",
 		annotation    = "{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt",
 		refFile       = config["annovar_data"]+config["somaticActSites"],
-		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt",
+		cgc           = config["annovar_data"]+config["cgc"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		annotate      = NGS_PIPELINE + "/scripts/addAnnotations2vcf.pl",
 		convertor     = NGS_PIPELINE + "/scripts/" + config["Actionable_mutation"],
@@ -33,7 +33,7 @@ rule Actionable_Germline:
 		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
-		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
+		cgc           = config["annovar_data"]+config["cgc"]
 	output:
 		germline="{subject}/{TIME}/{ACT_DIR}{subject}.germline.actionable.txt",
 	params:
@@ -73,7 +73,7 @@ rule Actionable_RNAseq:
 		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
-		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
+		cgc           = config["annovar_data"]+config["cgc"]
 	output:
 		rnaseq="{subject}/{TIME}/{ACT_DIR}{subject}.rnaseq.actionable.txt",
 	params:
@@ -100,7 +100,7 @@ rule Actionable_Variants:
 		hotspot= config["annovar_data"]+config["somaticActSites"],
 		combinedList  = config["annovar_data"]+config["geneList"],
 		combine=NGS_PIPELINE + "/scripts/germlineOnly.pl",
-		cgc           = config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
+		cgc           = config["annovar_data"]+config["cgc"]
 	output:
 		rnaseq="{subject}/{TIME}/{ACT_DIR}{subject}.variants.actionable.txt",
 	params:
