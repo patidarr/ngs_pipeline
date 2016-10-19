@@ -10,14 +10,8 @@ SAM=str_trim(args[3])
 files <- list.files(path = DIR, pattern=".loh$")
 for (i in 1:length(files)){
 	if (length(files) >1){
-		if (length(grep("_P.bwa.loh",files[i]))>0){
-			files <- files[-grep("_P.bwa.loh",files,perl=TRUE,value = FALSE)]
-		}
-		if (length(grep("_PS.bwa.loh",files[i]))>0){
-			files <- files[-grep("_PS.bwa.loh",files,perl=TRUE,value = FALSE)]
-		}
-		if (length(grep("_PC.bwa.loh",files[i]))>0){
-			files <- files[-grep("_PC.bwa.loh",files,perl=TRUE,value = FALSE)]
+		if (length(grep("_P.*.bwa.loh",files[i]))>0){
+			files <- files[-grep("_P.*.bwa.loh",files,perl=TRUE,value = FALSE)]
 		}
 	}
 }
@@ -48,5 +42,5 @@ for (i in 1:length(files)){
         circos(cir="hg19", R=r, W=50, type="s", mapping=LOH.data, col.v=3, col=cols[i], B=FALSE, cex=0.0001, lwd=1);
 	r=r-45;
 }
-legend("topright", legend=labs, col=cols, lty=1, lwd=4, cex=0.5)
+legend("topright", legend=labs, col=cols, lty=1, lwd=4, cex=0.8)
 dev.off()
