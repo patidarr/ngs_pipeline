@@ -153,7 +153,8 @@ if len(config['sample_references']) > 0:
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
-			SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
+			if config['sample_captures'][Tumor] not in config['Panel_List']:
+				SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
 ###########################################################################
 # This is to make list of DB file list. (germline, variants, somatic, rnaseq)
 SUBJECT_ANNO = dict([(key, {}) for key in PATIENTS])
@@ -232,7 +233,8 @@ for sample in config['sample_references'].keys():
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.annotated.txt"]
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.filtered.txt"]
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.png"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".seqz.gz"]
+	if config['sample_captures'][sample] not in config['Panel_List']:
+		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".seqz.gz"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
