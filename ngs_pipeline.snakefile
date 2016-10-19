@@ -299,11 +299,14 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 		vcf = vcf.replace('raw.vcf', 'raw.snpEff.vcf')
 		ALL_VCFs +=[vcf]
-f = open('ngs_pipeline_%s.csv' % NOW , 'w')
-print ('#Patient','Diagnosis',sep='\t', end='\n',file=f)
-for subject in sorted(SUBS):
-	diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
-	print (subject,diagnosis,sep='\t', end='\n',file=f)
+def makeDiagnosisFile(dummy):
+	f = open('ngs_pipeline_%s.csv' % NOW , 'w')
+	print ('#Patient','Diagnosis',sep='\t', end='\n',file=f)
+	for subject in sorted(SUBS):
+		diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
+		print (subject,diagnosis,sep='\t', end='\n',file=f)
+	return ("dummy")
+	
 ###########################################################################
 onerror:
 	
@@ -334,13 +337,16 @@ rule Khanlab_Pipeline:
 		ActionableFiles,
 		UNION_SOM_MUT_LIST
 	version: "1.0"
+	wildcard_constraints:
+		NOW="\w+"
 	params:
 		rulename = "Final",
 		group    = config["group"],
 		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl",
 		sort 	 = NGS_PIPELINE + "/scripts/awk_sort_withHeader.awk",
 		mail 	 = NGS_PIPELINE + "/scripts/tsv2html.final.sh",
-		email     = config["mail"],
+		dummy	 = makeDiagnosisFile,
+		email    = config["mail"],
 		host     = config["host"],
 		subs     = PATIENTS
 	shell: """
@@ -353,7 +359,6 @@ rule Khanlab_Pipeline:
 	find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
 	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/ngs_pipeline_{NOW}.csv |mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
-	rm -rf {WORK_DIR}/ngs_pipeline_{NOW}.csv
 	#######################
 	"""
 ############
@@ -955,7 +960,7 @@ rule FormatInput:
 	module load annovar/{version}
 	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/AnnotationInput
-	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph",
+	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph"
 	#######################
 	"""
 ############
