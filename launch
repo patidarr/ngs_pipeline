@@ -170,6 +170,7 @@ else{
 	#
 	#	Biowulf
 	#
+		export TMP="20160415"
 		export TIME="20160415"
 		module load snakemake/3.8.0
                 export NGS_PIPELINE="/data/Clinomics/Tools/ngs_pipeline-dev/"
@@ -185,6 +186,7 @@ else{
 	#
 	#	TGen
 	#
+		export TMP="20160415"
 		export TIME="20160415"
                 module load snakemake/3.8.0
                 export NGS_PIPELINE="/projects/Clinomics/Tools/ngs_pipeline/"

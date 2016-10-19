@@ -15,6 +15,17 @@ This pipeline is available on NIH biowulf cluster, contact me if you would like 
 [gnu parallel](http://www.gnu.org/software/parallel/)  
 SLURM or PBS for resource management  
 Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)  
+### Following R Packages
+- [OmicCircos](https://www.bioconductor.org/packages/release/bioc/html/OmicCircos.html)
+- [RColorBrewer](https://cran.r-project.org/web/packages/RColorBrewer/index.html)
+- [Rsubread](https://bioconductor.org/packages/release/bioc/html/Rsubread.html)
+- [edgeR](http://bioconductor.org/packages/release/bioc/html/edgeR.html)
+- [limma](http://bioconductor.org/packages/release/bioc/html/limma.html)
+- [optparse](https://cran.r-project.org/web/packages/optparse/index.html)
+- [pracma](https://cran.r-project.org/web/packages/pracma/index.html)
+- [sequenza](https://cran.r-project.org/web/packages/sequenza/index.html)
+- [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html)
+- [stringr](https://cran.r-project.org/web/packages/stringr/vignettes/stringr.html) 
 
 ## Conventions
 
@@ -32,6 +43,7 @@ Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)
 - Create input format for oncogenomics database (Patient Level)
 - Make Actionable Classification for Germline and Somatic Mutations 
 - Copy number based on the simple T/N LogRatio (N cov >=30), Corrected for Total # Reads
+- Copy number, tumor purity using sequenza 
 - LRR adjusted to center. 
 
 ### RNASeq:
@@ -40,6 +52,7 @@ Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)
 - Broad Standard Practices on STAR bam
 - fusion-catcher, tophat-fusion, deFuse
 - Cufflinks (ENS and UCSC)
+- Rsubread TPM (ENS, UCSC), Gene, Transcript and Exon Level
 - In-house Exon Expression (ENS and UCSC)
 - Haplotype Caller
 - snpEff, Annovar, SIFT, pph2, Custom Annotation
@@ -56,9 +69,6 @@ Rulegraph
 
 
 ![alt tag](Rulegraph.png)
-
-
-
 
 
 DAG for example Sample
