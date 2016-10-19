@@ -32,6 +32,7 @@
 	"cufflinks"		: "2.2.1_patched",
 	"fusioncatcher"		: "0.99.5a",
 	"defuse"		: "0.7.0",
+	"pypy"			: "5.0",
 	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.v1.pl",
 	"failed_exon_params": {
