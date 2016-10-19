@@ -299,22 +299,19 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 		vcf = vcf.replace('raw.vcf', 'raw.snpEff.vcf')
 		ALL_VCFs +=[vcf]
-def makeDiagnosisFile(dummy):
-	f = open('ngs_pipeline_%s.csv' % NOW , 'w')
-	print ('#Patient','Diagnosis',sep='\t', end='\n',file=f)
-	for subject in sorted(SUBS):
-		diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
-		print (subject,diagnosis,sep='\t', end='\n',file=f)
-	return ("dummy")
-	
 ###########################################################################
 onerror:
-	
 	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("ssh {HOST} \"echo 'Pipeline failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
 	shell("find .snakemake/ -group $USER -exec chgrp -f {GROUP} {{}} \;")
 onstart:
+	f = open('ngs_pipeline_%s.csv' % NOW , 'w')
+	print ('#Patient','Diagnosis',sep='\t', end='\n',file=f)
+	for subject in sorted(SUBS):
+		diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
+		print (subject,diagnosis,sep='\t', end='\n',file=f)
+	
 	shell("ssh {HOST} \"echo 'ngs-pipeline started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
 onsuccess:
 	shell("find .snakemake/ \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
@@ -345,7 +342,6 @@ rule Khanlab_Pipeline:
 		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl",
 		sort 	 = NGS_PIPELINE + "/scripts/awk_sort_withHeader.awk",
 		mail 	 = NGS_PIPELINE + "/scripts/tsv2html.final.sh",
-		dummy	 = makeDiagnosisFile,
 		email    = config["mail"],
 		host     = config["host"],
 		subs     = PATIENTS
