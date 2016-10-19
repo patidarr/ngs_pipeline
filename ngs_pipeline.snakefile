@@ -307,10 +307,10 @@ onerror:
 	shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 onstart:
 	f = open('ngs_pipeline_%s.csv' % NOW , 'w')
-	print ('#Patient','Diagnosis',sep='\t', end='\n',file=f)
+	print ('#Patient','Diagnosis','CaseID',sep='\t', end='\n',file=f)
 	for subject in sorted(SUBS):
 		diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
-		print (subject,diagnosis,sep='\t', end='\n',file=f)
+		print (subject,diagnosis,TIME,sep='\t', end='\n',file=f)
 	
 	shell("ssh {HOST} \"echo 'ngs-pipeline started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
 onsuccess:
