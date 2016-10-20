@@ -317,7 +317,7 @@ onerror:
 onstart:
 	f = open('ngs_pipeline_%s.csv' % NOW , 'w')
 	print ('#Patient','Diagnosis','CaseID',sep='\t', end='\n',file=f)
-	for subject in sorted(SUBS):
+	for subject in sorted(PATIENTS):
 		diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
 		print (subject,diagnosis,TIME,sep='\t', end='\n',file=f)
 	
