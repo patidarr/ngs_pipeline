@@ -17,7 +17,7 @@ rule PILE4SEQ:
 	shell: """
 	#######################
 	module load bedtools/2.25.0
-	slopBed -i {input.interval} -g {input.genome} -b 200 >|mergeBed -i - >${{LOCAL}}/Region.bed	
+	slopBed -i {input.interval} -g {input.genome} -b 200 |mergeBed -i - >${{LOCAL}}/Region.bed	
 	module load samtools/{version}
 	samtools mpileup -Q 20 -q 30 -L ${{LOCAL}}/Region.bed  -f {input.ref} {input.bam}| gzip > {output}
 	#######################
