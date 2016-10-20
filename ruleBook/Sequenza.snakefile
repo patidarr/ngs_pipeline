@@ -38,7 +38,7 @@ rule Sequenza:
 	shell: """
 	#######################
 	module load pypy/{version}
-	pypy {input.seq} pileup2seqz -gc {input.gc_ref} {input.gc_ref} -n {input.files[0]} -t {input.files[1]} |gzip >{output.all}
+	pypy {input.seq} pileup2seqz -gc {input.gc_ref} -n {input.files[0]} -t {input.files[1]} |gzip >{output.all}
 	pypy {input.seq} seqz-binning -w 50 -s {output.all} | gzip > {output.bin}
 	module load R
 	cd {wildcards.subject}/{wildcards.TIME}/{wildcards.Tumor}/sequenza/
