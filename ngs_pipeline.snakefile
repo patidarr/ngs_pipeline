@@ -321,7 +321,7 @@ onstart:
 		diagnosis =config['Diagnosis'][SUBJECT_TO_SAMPLE[subject][0]]
 		print (subject,diagnosis,TIME,sep='\t', end='\n',file=f)
 	
-	shell("for sub in {PATIENTS}; do rm -rf {WORK_DIR}/${sub}/{TIME}/successful.txt; done")
+	shell("for sub in {PATIENTS}; do rm -rf {WORK_DIR}/${{sub}}/{TIME}/successful.txt; done")
 	shell("ssh {HOST} \"echo 'ngs-pipeline started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
 onsuccess:
 	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
