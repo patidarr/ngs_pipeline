@@ -9,7 +9,7 @@ rule PILE4SEQ:
 		genome=config["reference"].replace(".fasta",".genome"),
 		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]],
 		seq=NGS_PIPELINE+ "/scripts/sequenza-utils.py"
-	output: "{base}/{TIME}/{sample}/{sample}.mpileup.gz"
+	output: temp("{base}/{TIME}/{sample}/{sample}.mpileup.gz")
 	version: config["samtools_old"]
 	params:
 		rulename  = "pile4seq",
@@ -29,8 +29,21 @@ rule Sequenza:
 		gc_ref=config["annovar_data"]+config["gc50Base"],
 		RCode=NGS_PIPELINE+ "/scripts/run_sequenza_pipeline.R",
 	output:
-		all="{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.seqz.gz",
-		bin="{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.seqz_small.gz"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_CN_bars.pdf"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_CP_contours.pdf"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_alternative_fit.pdf"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_alternative_solutions.txt"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_chromosome_view.pdf"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_confints_CP.txt"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_genome_view.pdf"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_model_fit.pdf"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_mutations.txt"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_segments.txt"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_sequenza_cp_table.RData"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_sequenza_extract.RData"
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_sequenza_log.txt"
+		all=temp("{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.seqz.gz"),
+		bin=temp("{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.seqz_small.gz")
 	version: config['pypy']
 	params:
 		rulename = "sequenza",
