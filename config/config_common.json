@@ -7,7 +7,7 @@
 	"fastqc"		: "0.11.2",
 	"bedtools"		: "2.22.0",
 	"bwa"			: "0.7.10",
-	"STAR" 			: "2.4.0d",
+	"STAR" 			: "2.5.2a",
 	"picard"		: "1.129",
 	"GATK"			: "3.4-0",
 	"bam2mpg"		: "1.0.1",
@@ -35,7 +35,7 @@
 	"pypy"			: "5.0",
 	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.v1.pl",
-	"Panel_List"		: ["clin.snv.v1", "clin.cnv.v2", "clin.snv.v2", "nbl.panel", "Agilent.Exon50M"],
+	"Panel_List"		: ["clin.snv.v1", "clin.cnv.v2", "clin.snv.v2", "nbl.panel", "seqcapez.rms.v1"],
 	"failed_exon_params": {
 		"wholegenome"		:{"Normal":"5","Tumor":"5"},
 		"seqcapez.hu.ex.v3"	:{"Normal":"20","Tumor":"20"},
