@@ -14,7 +14,7 @@ This pipeline is available on NIH biowulf cluster, contact me if you would like 
 [mutt](http://www.mutt.org/)  
 [gnu parallel](http://www.gnu.org/software/parallel/)  
 SLURM or PBS for resource management  
-Bioinformatics Tools Listed in [config files](config/config_common_biowulf.json)  
+Bioinformatics Tools Listed in [config files](config/config_common.json)  
 ### Following R Packages
 - [OmicCircos](https://www.bioconductor.org/packages/release/bioc/html/OmicCircos.html)
 - [RColorBrewer](https://cran.r-project.org/web/packages/RColorBrewer/index.html)
