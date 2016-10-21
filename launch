@@ -88,7 +88,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 		export HOST=\"biowulf.nih.gov\"
 		SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
 		SAM_CONFIG=$sheet
-		snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri
+		snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri -R makeConfig
 		rm -rf $workDir/ngs_pipeline_$NOW.csv
 		)";
 		print "$cmd\n";
@@ -112,7 +112,7 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
                 export HOST=\"login01\"
                 SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
                 SAM_CONFIG=$sheet
-                snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri
+                snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri -R makeConfig
 		rm -rf $workDir/ngs_pipeline_$NOW.csv
 		)";
 		print "$cmd\n";
