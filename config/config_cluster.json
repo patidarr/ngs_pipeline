@@ -53,16 +53,16 @@
                 "job_qualimap"   : "--partition=batch --time=04:00:00 --mem=19G  --cpus-per-task=16 ",
                 "job_fusioncatch": "--partition=batch --time=24:00:00 --mem=45G  --cpus-per-task=16 ",
                 "job_STAR"       : "--partition=batch --time=10:00:00 --mem=45G  --cpus-per-task=16 ",
-                "job_STAR_TPM"   : "--partition=batch,hmem --time=10:00:00 --mem=60G --cpus-per-task=10 ",
+                "job_STAR_TPM"   : "--partition=mmem,hmem --time=10:00:00 --mem=60G --cpus-per-task=10 ",
                 "job_PPH2"       : "--partition=batch --time=24:00:00 --mem=04G  --cpus-per-task=2  ",
                 "job_SIFT"       : "--partition=batch --time=24:00:00 --mem=04G  --cpus-per-task=2  ",
-                "job_tophat"     : "--partition=batch --time=50:00:00 --mem=80G  --cpus-per-task=16 ",
+                "job_tophat"     : "--partition=batch --time=50:00:00 --mem=45G  --cpus-per-task=16 ",
                 "job_markdup"    : "--partition=batch --time=05:00:00 --mem=19G  --cpus-per-task=12 ",
                 "job_hsMetrics"  : "--partition=batch --time=05:00:00 --mem=04G  --cpus-per-task=2  ",
                 "job_covplot"    : "--partition=batch --time=01:00:00 --mem=01G  --cpus-per-task=1  ",
                 "job_gatk"       : "--partition=batch --time=30:00:00 --mem=40G  --cpus-per-task=2  ",
                 "job_HC"         : "--partition=batch --time=30:00:00 --mem=20G  --cpus-per-task=2  ",
-                "job_gatk_RNA"   : "--partition=batch,hmem  --time=30:00:00 --mem=150G --cpus-per-task=2  ",
+                "job_gatk_RNA"   : "--partition=mmem,hmem  --time=30:00:00 --mem=150G --cpus-per-task=2  ",
                 "job_bam2mpg"    : "--partition=batch --time=24:00:00 --mem=45G  --cpus-per-task=16 ",
                 "job_mutect"     : "--partition=batch --time=24:00:00 --mem=10G  --cpus-per-task=2  ",
                 "job_strelka"    : "--partition=batch --time=10:00:00 --mem=45G  --cpus-per-task=16 ",
@@ -85,6 +85,6 @@
                 "job_annot"      : "--partition=batch --time=03:00:00 --mem=05G  --cpus-per-task=2  ",
                 "job_igvtools"   : "--partition=batch --time=05:00:00 --mem=10G  --cpus-per-task=1  ",
                 "job_novoalign"  : "--partition=batch --time=20:00:00 --mem=40G  --cpus-per-task=16 ",
-                "job_deFuse"     : "--partition=batch,hmem  --time=20:00:00 --mem=180G --cpus-per-task=10 "
+                "job_deFuse"     : "--partition=mmem,hmem  --time=20:00:00 --mem=180G --cpus-per-task=10 "
         }
 }
