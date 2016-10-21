@@ -81,14 +81,12 @@ rule RNASeq:
 		RNA_CALLS,
 		RNASEQ_FUSION,
 		expand("{subject}/{TIME}"+ACT_DIR+"{subject}.fusion.actionable.txt", TIME=TIME, subject=config['RNASeq']),
-	output: temp("rnaseqDone")
 	params:
 		rulename  = "RNASeq_final",
 		batch     = config[config['host']]["job_default"]
 
 	shell: """
 	#######################
-	echo "This is the end of RNASeq" >{output}
 	#######################
 	"""
 ############

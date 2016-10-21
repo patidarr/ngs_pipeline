@@ -334,7 +334,7 @@ rule Khanlab_Pipeline:
 		SUB_IGV.values(),
 		COPY_NUMBER,
 		ALL_VCFs,
-		"rnaseqDone",
+		#"rnaseqDone",
 		CON_QC,
 		#"Consolidated_QC.txt",
 		#"RnaSeqQC.txt",
