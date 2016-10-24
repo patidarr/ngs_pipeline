@@ -310,7 +310,6 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-	shell("rm -rf rnaseqDone")
 	shell("find . ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find . ! -readable -prune \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("ssh {HOST} \"echo 'Pipeline failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
@@ -334,10 +333,7 @@ rule Khanlab_Pipeline:
 		SUB_IGV.values(),
 		COPY_NUMBER,
 		ALL_VCFs,
-		#"rnaseqDone",
 		CON_QC,
-		#"Consolidated_QC.txt",
-		#"RnaSeqQC.txt",
 		ALL_QC,
 		ALL_FASTQC,
 		varFiles,

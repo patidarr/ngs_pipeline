@@ -42,5 +42,5 @@ for (i in 1:length(files)){
         circos(cir="hg19", R=r, W=50, type="s", mapping=LOH.data, col.v=3, col=cols[i], B=FALSE, cex=0.0001, lwd=1);
 	r=r-45;
 }
-legend("topright", legend=labs, col=cols, lty=1, lwd=4, cex=0.8)
+legend("topright", legend=labs, col=cols, lty=1, lwd=4, cex=1)
 dev.off()
