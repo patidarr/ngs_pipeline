@@ -126,6 +126,7 @@ rule TOPHAT_LINK:
 		batch     = config[config['host']]["job_default"]
 	shell: """
 	#######################
+	sleep 60
 	cd {wildcards.base}/{TIME}/{wildcards.sample}/
 	ln -sf tophat_{wildcards.sample}/accepted_hits.bam {wildcards.sample}.tophat.final.bam
 	ln -sf tophat_{wildcards.sample}/accepted_hits.bam.bai {wildcards.sample}.tophat.final.bam.bai
