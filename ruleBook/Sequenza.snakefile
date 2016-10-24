@@ -58,3 +58,20 @@ rule Sequenza:
 	{input.RCode} --sample {wildcards.Tumor}
 	#######################
 	"""
+
+rule Sequenza_geneAnnot:
+	input:
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_segments.txt"
+	output:
+		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.txt"
+	params:
+		rulename = "sequenza_1",
+		batch    = config[config['host']]['job_Sequenza']
+	shell: """
+	#######################
+	#module load bedtools/2.25.0
+	##grep -v "chromosome" OM161/20160415/CL0034_T_E/sequenza/CL0034_T_E/CL0034_T_E_segments.txt |sed -e 's/"//g'|intersectBed -a /projects/Clinomics/Tools/ref/hg19/gene_coordinates.txt -b -
+	##sed -e 's/"//g' OM161/20160415/CL0034_T_E/sequenza/CL0034_T_E/CL0034_T_E_segments.txt |/projects/Clinomics/Tools/ngs_pipeline//scripts/AddGene.pl out.tmp -
+		
+	#######################
+	"""
