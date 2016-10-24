@@ -11,6 +11,7 @@ my $index_of_clinvar=57; # This does not include chr/alt, Func_RefGene==0
 my $index_of_ACMG=182; 
 my $index_of_HGMD=64;
 my $index_of_Gene=1;
+my $index_of_GrandTotal=186;
 my $idx_anno_region=0;
 my $idx_anno_eff=3;
 if($ARGV[0] eq 'somatic'){
@@ -307,12 +308,16 @@ sub Somatic{
 			next;
 		}
 		if (exists $DATA{$val}){
-			print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$DATA{$val}\tTier1\n";
+			print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$DATA{$val}\tTier1.1\n";
 		}
 		else{
 			my @local = split("\t",$ANNOTATION{$key});
 			if (exists $CGC{$local[1]}){
-				if ($local[3] =~ /stopgain/ or $local[3]=~ /^frameshift/ or $local[0] =~ /splicing/){
+				if ($local[$index_of_GrandTotal] >=5){
+					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.2\n";
+
+				}
+				elsif($local[3] =~ /stopgain/ or $local[3]=~ /^frameshift/ or $local[0] =~ /splicing/){
 					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier2\n";
 				}
 				else{
