@@ -310,8 +310,10 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-	shell("find . ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
-	shell("find . ! -readable -prune \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+        shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
+	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
+	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("ssh {HOST} \"echo 'Pipeline failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
 	shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 onstart:
@@ -354,8 +356,8 @@ rule Khanlab_Pipeline:
 		subs     = PATIENTS
 	shell: """
 	#######################
-	find . ! -readable -prune -group $USER -exec chgrp -f {params.group} {{}} \;
-	find . ! -readable -prune \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
+	find . -group $USER -exec chgrp -f {params.group} {{}} \;
+	find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
 	
 	for sub in {params.subs}

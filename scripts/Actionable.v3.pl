@@ -11,7 +11,7 @@ my $index_of_clinvar=57; # This does not include chr/alt, Func_RefGene==0
 my $index_of_ACMG=182; 
 my $index_of_HGMD=64;
 my $index_of_Gene=1;
-my $index_of_GrandTotal=186;
+my $index_of_GrandTotal=181;
 my $idx_anno_region=0;
 my $idx_anno_eff=3;
 if($ARGV[0] eq 'somatic'){
@@ -313,7 +313,7 @@ sub Somatic{
 		else{
 			my @local = split("\t",$ANNOTATION{$key});
 			if (exists $CGC{$local[1]}){
-				if ($local[$index_of_GrandTotal] >=5){
+				if ($local[$index_of_GrandTotal] =~ /\d+/ and $local[$index_of_GrandTotal] >=5){
 					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.2\n";
 
 				}
