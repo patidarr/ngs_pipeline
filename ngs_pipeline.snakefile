@@ -35,6 +35,7 @@ MAIL=config['mail']
 shell.prefix("""
 set -e -o pipefail
 module purge
+sleep 55s
 if [ {HOST} == 'biowulf.nih.gov' ]
 	then
 		MEM=`echo "${{SLURM_MEM_PER_NODE}} / 1024 "|bc`
@@ -183,7 +184,7 @@ for subject in config['subject'].keys():
 		elif config['sample_type'][sample] == 'Normal':
 			normal = 'yes'
 	if pair =='yes':
-		DECIDE_GL[subject] = 'both'
+		DECIDE_GL[subject] = 'gl_only'
 	elif pair == None:
 		if tumor == None and normal =='yes':
 			DECIDE_GL[subject] = 'gl_only'
@@ -312,8 +313,8 @@ for subject in SUBJECT_VCFS.keys():
 onerror:
 	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
         shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
-	shell("find . -group $USER -exec chgrp -f {GROUP} {{}} \;")
-	shell("find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+	shell("find {PATIENTS} -group $USER -exec chgrp -f {GROUP} {{}} \;")
+	shell("find {PATIENTS} \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("ssh {HOST} \"echo 'Pipeline failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
 	shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 onstart:
@@ -356,8 +357,8 @@ rule Khanlab_Pipeline:
 		subs     = PATIENTS
 	shell: """
 	#######################
-	find . -group $USER -exec chgrp -f {params.group} {{}} \;
-	find . \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
+	find {PATIENTS} -group $USER -exec chgrp -f {params.group} {{}} \;
+	find {PATIENTS} \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
 	
 	for sub in {params.subs}
