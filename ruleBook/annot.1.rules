@@ -49,7 +49,7 @@ fi
 #for subject in config['subject'].keys():
 #        PATIENTS.append(subject)
 ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
-ALL_QC = expand("annotation/AnnotationInput.{suff}", suff=ANNO_FILES)
+ALL_QC = expand("AnnotationInput.{suff}", suff=ANNO_FILES)
 rule final:
         input:
                 ALL_QC
@@ -91,9 +91,9 @@ rule Annovar_Gene:
 		config["annovar_data"]+config["annot_exac"],
 		config["annovar_data"]+config["annot_cg69"],
 		config["annovar_data"]+config["annot_nci60"],
-		file="{base}/AnnotationInput.anno",
+		file="AnnotationInput.anno",
 	output:
-		"{base}/AnnotationInput.gene"
+		"AnnotationInput.gene"
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_gene",
@@ -115,9 +115,9 @@ rule Annovar_Gene:
 ############
 rule Annovar_Clinseq:
 	input:
-		file="{base}/AnnotationInput.anno",
+		file="AnnotationInput.anno",
 		clinseq=config["annovar_data"]+config["annot_clinseq"]
-	output: "{base}/AnnotationInput.clinseq"
+	output: "AnnotationInput.clinseq"
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_clinseq",
@@ -139,11 +139,11 @@ rule Annovar_Clinseq:
 ################################
 rule Annovar_CADD:
 	input:
-		file="{base}/AnnotationInput.anno",
+		file="AnnotationInput.anno",
 		cadd=config["annovar_data"]+config["annot_cadd"],
 		cadd_indel=config["annovar_data"]+config["annot_caddind"]
 	output:
-		"{base}/AnnotationInput.cadd",
+		"AnnotationInput.cadd",
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_CADD",
@@ -167,10 +167,10 @@ rule Annovar_CADD:
 ################################
 rule Annovar_COSMIC:
 	input:
-		file="{base}/AnnotationInput.anno",
+		file="AnnotationInput.anno",
 		cosmic=config["annovar_data"]+config["annot_cosmic"]
 	output:
-		"{base}/AnnotationInput.cosmic",
+		"AnnotationInput.cosmic",
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_COSMIC",
@@ -191,10 +191,10 @@ rule Annovar_COSMIC:
 ################################
 rule Annovar_PCG:
 	input:
-		file="{base}/AnnotationInput.anno",
+		file="AnnotationInput.anno",
 		pcg=config["annovar_data"]+config["annot_pcg"]
 	output:
-		"{base}/AnnotationInput.pcg",
+		"AnnotationInput.pcg",
 	version: config["annovar"]
 	params:
 		rulename   = "Annot_PCG",
@@ -217,7 +217,7 @@ rule Annovar_PCG:
 rule Annot_Custom:
 	input:
 		tool	=NGS_PIPELINE + "/scripts/addAnnotation.pl",
-		file	="{base}/AnnotationInput.anno",
+		file	="AnnotationInput.anno",
 		clinvar	=config["annovar_data"]+config["annot_clinvar"],
 		hgmd	=config["annovar_data"]+config["annot_hgmd"],
 		match	=config["annovar_data"]+config["annot_match"],
@@ -227,14 +227,14 @@ rule Annot_Custom:
 		tcc	=config["annovar_data"]+config["annot_tcc"],
 		civic	=config["annovar_data"]+config["annot_civic"]
 	output:
-		clinvar="{base}/AnnotationInput.clinvar",
-		hgmd   ="{base}/AnnotationInput.hgmd",
-		match  ="{base}/AnnotationInput.match",
-		mcg    ="{base}/AnnotationInput.mcg",
-		docm   ="{base}/AnnotationInput.docm",
-		candl  ="{base}/AnnotationInput.candl",
-		tcc    ="{base}/AnnotationInput.tcc",
-		civic  ="{base}/AnnotationInput.civic"	
+		clinvar="AnnotationInput.clinvar",
+		hgmd   ="AnnotationInput.hgmd",
+		match  ="AnnotationInput.match",
+		mcg    ="AnnotationInput.mcg",
+		docm   ="AnnotationInput.docm",
+		candl  ="AnnotationInput.candl",
+		tcc    ="AnnotationInput.tcc",
+		civic  ="AnnotationInput.civic"	
 	params:
 		rulename   = "Annot_PCG",
 		batch      = config[config['host']]["job_annovar"],
@@ -258,10 +258,10 @@ rule Annot_Custom:
 ############
 rule SIFT:
 	input:
-		sift	="{base}/AnnotationInput.sift",
+		sift	="AnnotationInput.sift",
 		tool	=NGS_PIPELINE + "/scripts/ParseSIFT.pl"
 	output:
-		"{base}/AnnotationInput.sift.out"
+		"AnnotationInput.sift.out"
 	version: config["SIFT"]
 	resources: SIFT=1
 	params:
@@ -289,20 +289,20 @@ rule SIFT:
 ############
 rule CombineAnnotation:
 	input:
-		"{base}/AnnotationInput.gene",
-		"{base}/AnnotationInput.clinseq",
-		"{base}/AnnotationInput.cadd",
-		"{base}/AnnotationInput.cosmic",
-		"{base}/AnnotationInput.pcg",
-		"{base}/AnnotationInput.clinvar",
-		"{base}/AnnotationInput.hgmd",
-		"{base}/AnnotationInput.match",
-		"{base}/AnnotationInput.mcg",
-		"{base}/AnnotationInput.docm",
-		"{base}/AnnotationInput.candl",
-		"{base}/AnnotationInput.tcc",
-		"{base}/AnnotationInput.civic",
-		"{base}/AnnotationInput.sift.out",
+		"AnnotationInput.gene",
+		"AnnotationInput.clinseq",
+		"AnnotationInput.cadd",
+		"AnnotationInput.cosmic",
+		"AnnotationInput.pcg",
+		"AnnotationInput.clinvar",
+		"AnnotationInput.hgmd",
+		"AnnotationInput.match",
+		"AnnotationInput.mcg",
+		"AnnotationInput.docm",
+		"AnnotationInput.candl",
+		"AnnotationInput.tcc",
+		"AnnotationInput.civic",
+		"AnnotationInput.sift.out",
 		convertor   = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
 		geneanno    = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
 		filter      = NGS_PIPELINE + "/scripts/filterVariants.v1.pl",
@@ -310,8 +310,8 @@ rule CombineAnnotation:
 		blacklisted = config["annovar_data"]+config["blacklisted"],
 		ACMG	    = config["annovar_data"]+config['ACMG']
 	output: 
-		filtered="{base}/AnnotationInput.coding.rare.txt",
-		all	="{base}/AnnotationInput.annotations.final.txt"
+		filtered="AnnotationInput.coding.rare.txt",
+		all	="AnnotationInput.annotations.final.txt"
 	version: "1.0"
 	params:
 		rulename   = "combine",
@@ -319,27 +319,27 @@ rule CombineAnnotation:
 		dataDir    = config["annovar_data"]
 	shell: """
 	#######################
-echo "{wildcards.base}/AnnotationInput
-{wildcards.base}/AnnotationInput.gene
-{wildcards.base}/AnnotationInput.clinseq
-{wildcards.base}/AnnotationInput.cadd
-{wildcards.base}/AnnotationInput.sift.out
-{wildcards.base}/AnnotationInput.clinvar
-{wildcards.base}/AnnotationInput.cosmic
-{wildcards.base}/AnnotationInput.hgmd
-{wildcards.base}/AnnotationInput.match
-{wildcards.base}/AnnotationInput.docm
-{wildcards.base}/AnnotationInput.candl
-{wildcards.base}/AnnotationInput.tcc
-{wildcards.base}/AnnotationInput.mcg
-{wildcards.base}/AnnotationInput.civic
-{wildcards.base}/AnnotationInput.pcg" >{wildcards.base}/list
-	perl {input.convertor} {wildcards.base}/list >{output.all}.tmp
+echo "AnnotationInput
+AnnotationInput.gene
+AnnotationInput.clinseq
+AnnotationInput.cadd
+AnnotationInput.sift.out
+AnnotationInput.clinvar
+AnnotationInput.cosmic
+AnnotationInput.hgmd
+AnnotationInput.match
+AnnotationInput.docm
+AnnotationInput.candl
+AnnotationInput.tcc
+AnnotationInput.mcg
+AnnotationInput.civic
+AnnotationInput.pcg" >list
+	perl {input.convertor} list >{output.all}.tmp
 	perl {input.geneanno} {input.ACMG} {output.all}.tmp >{output.all}
 
-	perl {input.coding} {wildcards.base}/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 >{output.all}.tmp
+	perl {input.coding} AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 >{output.all}.tmp
 	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >{output.filtered}
 	grep -v -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >>{output.filtered}
-	rm -rf {output.all}.tmp {wildcards.base}/list
+	rm -rf {output.all}.tmp list
 	#######################
 	"""
