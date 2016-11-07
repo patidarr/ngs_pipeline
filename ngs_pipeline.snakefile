@@ -349,6 +349,7 @@ rule Khanlab_Pipeline:
 		NOW="\w+"
 	params:
 		rulename = "Final",
+		batch    = config[config['host']]["job_default"],
 		group    = config["group"],
 		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl",
 		sort 	 = NGS_PIPELINE + "/scripts/awk_sort_withHeader.awk",
