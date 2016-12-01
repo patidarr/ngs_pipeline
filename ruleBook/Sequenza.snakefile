@@ -77,7 +77,7 @@ rule Sequenza_geneAnnot:
         sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' | bedtools intersect  -wa -a {input.interval} -b - |grep -v NOTFOUND |sed -e 's/___/\\t/g'| cut -f 1-4| bedtools expand -c 4 >{output}.temp
         sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' |head -1 >{output}.temp1
         sed -i 's/end.pos\\tBf/end.pos\\tGene\\tBf/g' {output}.temp1
-        sed -e 's/"//g' {input} |sed -e 's/chromosome/#chromosome/' |intersectBed -a {input}.temp -b - -wb |cut -f 1-4,8-100 >>{output}.temp1
+        sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' |intersectBed -a {output}.temp -b - -wb |cut -f 1-4,8-100 >>{output}.temp1
         perl {input.convertor} {input.geneList} {output}.temp1 3 >{output}
         rm -rf {output}.temp {output}.temp1	
 	#######################
