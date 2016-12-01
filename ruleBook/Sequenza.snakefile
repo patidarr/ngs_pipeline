@@ -61,7 +61,10 @@ rule Sequenza:
 
 rule Sequenza_geneAnnot:
 	input:
-		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_segments.txt"
+		file="{subject}/{TIME}/{Tumor}/sequenza/{Tumor}/{Tumor}_segments.txt",
+		interval=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.Tumor]],
+		convertor=NGS_PIPELINE+"/scripts/GeneAnnotation.v1.pl",
+		geneList=config["annovar_data"]+config["geneList"]
 	output:
 		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.txt"
 	params:
@@ -69,9 +72,13 @@ rule Sequenza_geneAnnot:
 		batch    = config[config['host']]['job_Sequenza']
 	shell: """
 	#######################
-	#module load bedtools/2.25.0
-	##grep -v "chromosome" OM161/20160415/CL0034_T_E/sequenza/CL0034_T_E/CL0034_T_E_segments.txt |sed -e 's/"//g'|intersectBed -a /projects/Clinomics/Tools/ref/hg19/gene_coordinates.txt -b -
-	##sed -e 's/"//g' OM161/20160415/CL0034_T_E/sequenza/CL0034_T_E/CL0034_T_E_segments.txt |/projects/Clinomics/Tools/ngs_pipeline//scripts/AddGene.pl out.tmp -
-		
+	set +eo pipefail
+        module load bedtools
+        sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' | bedtools intersect  -wa -a {input.interval} -b - |grep -v NOTFOUND |sed -e 's/___/\\t/g'| cut -f 1-4| bedtools expand -c 4 >{output}.temp
+        sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' |head -1 >{output}.temp1
+        sed -i 's/end.pos\\tBf/end.pos\\tGene\\tBf/g' {output}.temp1
+        sed -e 's/"//g' {input} |sed -e 's/chromosome/#chromosome/' |intersectBed -a {input}.temp -b - -wb |cut -f 1-4,8-100 >>{output}.temp1
+        perl {input.convertor} {input.geneList} {output}.temp1 3 >{output}
+        rm -rf {output}.temp {output}.temp1	
 	#######################
 	"""

@@ -236,6 +236,7 @@ for sample in config['sample_references'].keys():
 	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.png"]
 	if config['sample_captures'][sample] not in config['Panel_List']:
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]
+		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
