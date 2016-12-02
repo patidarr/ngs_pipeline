@@ -6,7 +6,7 @@ rule bamUtil:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam",
 		ref=config["reference"],
-	output: "{base}/{TIME}/{sample}/{sample}.{aligner}.final.squeeze.bam"
+	output: "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.squeeze.done"
 	version: config["bamutil"]
 	params:
 		rulename  = "bamutil",
@@ -15,7 +15,8 @@ rule bamUtil:
 	#######################
 	module load bamutil/{version}
 	module load samtools
-	bam squeeze --in {input.bam} --out {output} --refFile {input.ref} --rmTags "PG:Z;RG:Z;BI:Z;BD:Z"
-	samtools index {output}
+	bam squeeze --in {input.bam} --out {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/{wildcards.sample}.{wildcards.aligner}.final.squeeze.bam --refFile {input.ref} --rmTags "PG:Z;RG:Z;BI:Z;BD:Z"
+	samtools index {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/{wildcards.sample}.{wildcards.aligner}.final.squeeze.bam
+	touch {output}
 	#######################
         """
