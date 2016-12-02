@@ -6,11 +6,11 @@ rule bamUtil:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.{aligner}.final.bam",
 		ref=config["reference"],
-	output: "{base}/{TIME}/{sample}/qc/{sample}.{aligner}.final.squeeze.bam"
+	output: "{base}/{TIME}/{sample}/{sample}.{aligner}.final.squeeze.bam"
 	version: config["bamutil"]
 	params:
 		rulename  = "bamutil",
-		batch     = config[config['host']]["job_default"]
+		batch     = config[config['host']]["job_annot"]
 	shell: """
 	#######################
 	module load bamutil/{version}
