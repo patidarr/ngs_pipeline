@@ -187,7 +187,7 @@ sub Germline{
 					elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
                                                 $level{"1.2"} = "yes";
                                         }
-					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/)){
+					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
 						$level{"1"} = "yes";
 					}
 					else{
