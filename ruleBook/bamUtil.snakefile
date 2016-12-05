@@ -10,7 +10,7 @@ rule bamUtil:
 	version: config["bamutil"]
 	params:
 		rulename  = "bamutil",
-		batch     = config[config['host']]["job_annot"]
+		batch     = config[config['host']]["job_bamUtil"]
 	shell: """
 	#######################
 	module load bamutil/{version}
