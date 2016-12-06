@@ -126,8 +126,8 @@ for subject  in config['RNASeq'].keys():
 # Many of the targets.
 ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.squeeze.done".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC      = ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.squeeze.done".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 #ALL_QC     += ["{subject}/{TIME}/{sample}/qc/BamQC/qualimapReport.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -277,8 +277,7 @@ for subject in SUBJECT_ANNO.keys():
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
-localrules: Khanlab_Pipeline RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, 
-#Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, CopyNovoBam, FormatInput, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3, Cuff_Mat
+localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, FormatInput, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3, Cuff_Mat
 #Circos, CoveragePlot, BoxPlot_Hotspot, makeConfig,Ideogram
 ###########################################################################
 #                               Rule Book				  #
