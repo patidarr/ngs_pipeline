@@ -1042,7 +1042,9 @@ rule DBinput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_ANNO[wildcards.subject][wildcards.group],
 		convertor=NGS_PIPELINE + "/scripts/makeDBVariantFile.pl",
-		tool=NGS_PIPELINE + "/scripts/AddSampleType.pl"
+		tool=NGS_PIPELINE + "/scripts/AddSampleType.pl",
+		tool1=NGS_PIPELINE + "/scripts/addFS.pl",
+		txtFiles1=lambda wildcards: SUBJECT_VCFS[wildcards.subject]
 	output: "{subject}/{TIME}/{subject}/db/{subject}.{group}"
 	params:
 		rulename = "makeDBinput",
@@ -1051,6 +1053,12 @@ rule DBinput:
 		hash1	 = lambda wc: " ".join("{} {}".format(a, b) for a, b in config["sample_captures"].items()),
 	shell: """
 	#######################
-	perl {input.convertor} {input.txtFiles} |perl {input.tool} - "{params.hash}" "{params.hash1}" >{output}
+	perl {input.convertor} {input.txtFiles} |perl {input.tool} - "{params.hash}" "{params.hash1}" >{output}.tmp
+	if [ {wildcards.group}  == 'germline' ]; then	
+		perl {input.tool1} {output}.tmp {input.txtFiles1} >{output}
+		rm -rf {output}.tmp
+	else
+		mv {output}.tmp {output}
+	fi
 	#######################
 	"""
