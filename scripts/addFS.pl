@@ -26,6 +26,9 @@ while(<FH>){
 		my $key="$a[0]\t$a[1]\t$a[2]\t$a[3]\t$a[4]\t$a[5]";
 		$a[10] = $HASH{$key};
 	}
-		print join("\t",@a)."\n";
+	else{
+		$a[10] = 'NA';
+	}
+	print join("\t",@a)."\n";
 }
 close FH;
