@@ -206,6 +206,8 @@ for sample in config['sample_references'].keys():
 		local = [w.replace('annotated','annotated.expressed') for w in local]
 	UNION_SOM_MUT[sample] = local
 	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
+	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
+
 ##########################################################################
 # To create lists to be filled in SUBJECT_ANNO
 for subject in config['subject']:
@@ -291,6 +293,7 @@ include: NGS_PIPELINE +"/ruleBook/failedExon.snakefile"
 include: NGS_PIPELINE +"/ruleBook/hsMetrix.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Consolidate.snakefile"
 include: NGS_PIPELINE +"/ruleBook/universal.snakefile"
+include: NGS_PIPELINE +"/ruleBook/mutationalSignature.snakefile"
 
 include: NGS_PIPELINE +"/ruleBook/haplotypeCaller.snakefile"
 include: NGS_PIPELINE +"/ruleBook/platypus.snakefile"

@@ -237,7 +237,7 @@ rule Annot_Custom:
 		tcc    ="AnnotationInput.tcc",
 		civic  ="AnnotationInput.civic"	
 	params:
-		rulename   = "Annot_PCG",
+		rulename   = "Annot_Anno",
 		batch      = config[config['host']]["job_annovar"],
 		RefData    = config["annovar_data"],
 		build      = config["build"],
