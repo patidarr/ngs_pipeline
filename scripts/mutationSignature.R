@@ -24,13 +24,22 @@ sigs.input <- mut.to.sigs.input(mut.ref = mut_data,
 		pos = "Start",
 		ref = "Ref",
 		alt = "Alt")
-sample_1 = whichSignatures(tumor.ref = sigs.input,
-		signatures.ref = signatures.nature2013,
+cosmic = whichSignatures(tumor.ref = sigs.input,
+		signatures.ref = signatures.cosmic,
 		sample.id = sample,
 		contexts.needed = TRUE,
 		tri.counts.method = 'default')
 
-pdf(output)
-plotSignatures(sample_1)
-makePie(sample_1)
+nature = whichSignatures(tumor.ref = sigs.input,
+                signatures.ref = signatures.nature2013,
+                sample.id = sample,
+                contexts.needed = TRUE,
+                tri.counts.method = 'default')
+
+pdf(output,width=10)
+plotSignatures(cosmic, sub='Mutational Signature Based on COSMIC')
+makePie(cosmic, sub='Mutational Signature Based on COSMIC')
+plotSignatures(nature, sub='Mutational Signature based on Nature 2013--23945592')
+makePie(nature, sub='Mutational Signature based on Nature 2013--23945592')
+
 dev.off()
