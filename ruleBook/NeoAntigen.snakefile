@@ -11,7 +11,7 @@ rule pVACSeq:
 	params:
 		rulename = "pVACSeq",
 		normal	 = lambda wildcards: config['sample_references'][wildcards.sample][0],
-		batch    = config[config['host']]["job_default"]
+		batch    = config[config['host']]["job_VEP"]
 	shell: """
 	#######################
 	module load vcftools VEP pvacseq
