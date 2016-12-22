@@ -19,7 +19,7 @@ sample=opt$sample
 mut_data <- read.table(input,sep="\t",header=T)
 
 sigs.input <- mut.to.sigs.input(mut.ref = mut_data,
-		sample.id = sample,
+		sample.id = "Sample",
 		chr = "Chr",
 		pos = "Start",
 		ref = "Ref",

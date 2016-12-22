@@ -10,6 +10,7 @@
 	"Novo_index"		: "/projects/Clinomics/Tools/ref/hg19/Index/novoalign/chr_all_hg19.nbx",
 	"STAR_ref"		: "/projects/Clinomics/Tools/ref/hg19/Index/STAR_hg19_index",
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
+	"version_R"		: "3.3.2",
 	"target_intervals"	:{
 		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/design/WholeGenome.target.hg19.merged.bed",
 		"seqcapez.hu.ex.v3"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",

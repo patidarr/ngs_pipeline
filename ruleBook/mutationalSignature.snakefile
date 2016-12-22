@@ -7,13 +7,14 @@ rule MutationalSignature:
 		tool   =NGS_PIPELINE + "/scripts/mutationSignature.R"
 	output: 
 		v1="{base}/{sample}.mutationalSignature.pdf"
+	version: config["version_R"]
 	params:
 		rulename = "MutationalSignature",
 		batch    = config[config['host']]["job_default"],
 	shell: """
 	#######################
-	module load R/3.3.2
-	awk '{{OFS="\\t"}}{{print $1,$2,$4,$5,"{wildcards.sample}"}}' {input.File} >{output.v1}.tmp
+	module load R/{version}
+	awk '{{OFS="\\t"}}{{print $1,$2,$4,$5,"{wildcards.sample}"}}' {input.File} |sed -e '1s/{wildcards.sample}/Sample/g'>{output.v1}.tmp
 	{input.tool} --input {output.v1}.tmp --sample {wildcards.sample} --output {output.v1}
 	rm -rf {output.v1}.tmp
 	#######################
