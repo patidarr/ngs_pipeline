@@ -14,7 +14,7 @@
 		"job_PPH2"       : "--partition=ccr,norm --time=24:00:00 --mem=04G  --cpus-per-task=2   --gres=lscratch:10",
 		"job_SIFT"       : "--partition=ccr,norm --time=24:00:00 --mem=04G  --cpus-per-task=2   --gres=lscratch:10",
 		"job_tophat"     : "--partition=ccr,norm --time=50:00:00 --mem=65G  --cpus-per-task=32  --gres=lscratch:400",
-		"job_markdup"    : "--partition=ccr,norm --time=05:00:00 --mem=19G  --cpus-per-task=15  --gres=lscratch:40",
+		"job_markdup"    : "--partition=ccr,norm --time=25:00:00 --mem=19G  --cpus-per-task=15  --gres=lscratch:40",
 		"job_hsMetrics"  : "--partition=ccr,norm --time=05:00:00 --mem=04G  --cpus-per-task=2   --gres=lscratch:40",
 		"job_covplot"    : "--partition=quick,norm,ccr    --time=01:00:00 --mem=01G  --cpus-per-task=1   --gres=lscratch:02",
 		"job_gatk"       : "--partition=ccr,norm --time=30:00:00 --mem=40G  --cpus-per-task=2   --gres=lscratch:100",
@@ -60,7 +60,7 @@
                 "job_PPH2"       : "--partition=batch --time=24:00:00 --mem=04G  --cpus-per-task=2  ",
                 "job_SIFT"       : "--partition=batch --time=24:00:00 --mem=04G  --cpus-per-task=2  ",
                 "job_tophat"     : "--partition=batch --time=50:00:00 --mem=45G  --cpus-per-task=16 ",
-                "job_markdup"    : "--partition=batch --time=05:00:00 --mem=19G  --cpus-per-task=12 ",
+                "job_markdup"    : "--partition=batch --time=25:00:00 --mem=19G  --cpus-per-task=12 ",
                 "job_hsMetrics"  : "--partition=batch --time=05:00:00 --mem=04G  --cpus-per-task=2  ",
                 "job_covplot"    : "--partition=batch --time=01:00:00 --mem=01G  --cpus-per-task=1  ",
                 "job_gatk"       : "--partition=batch --time=30:00:00 --mem=40G  --cpus-per-task=2  ",
@@ -88,7 +88,7 @@
                 "job_annot"      : "--partition=batch --time=03:00:00 --mem=05G  --cpus-per-task=2  ",
                 "job_bamUtil"    : "--partition=batch --time=20:00:00 --mem=05G  --cpus-per-task=2  ",
                 "job_igvtools"   : "--partition=batch --time=05:00:00 --mem=10G  --cpus-per-task=1  ",
-                "job_novoalign"  : "--partition=batch --time=20:00:00 --mem=40G  --cpus-per-task=16 ",
+                "job_novoalign"  : "--partition=mmem,hmem --time=20:00:00 --mem=60G  --cpus-per-task=16 ",
                 "job_deFuse"     : "--partition=mmem,hmem  --time=20:00:00 --mem=180G --cpus-per-task=10 "
         }
 }

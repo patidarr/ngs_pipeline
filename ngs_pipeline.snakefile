@@ -368,8 +368,8 @@ rule Khanlab_Pipeline:
 		subs     = PATIENTS
 	shell: """
 	#######################
-	find {PATIENTS} -group $USER -exec chgrp -f {params.group} {{}} \;
-	find {PATIENTS} \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
+	find {PATIENTS} log -group $USER -exec chgrp -f {params.group} {{}} \;
+	find {PATIENTS} log \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
 	
 	for sub in {params.subs}
