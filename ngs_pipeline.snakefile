@@ -206,7 +206,8 @@ for sample in config['sample_references'].keys():
 		local = [w.replace('annotated','annotated.expressed') for w in local]
 	UNION_SOM_MUT[sample] = local
 	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
-	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
+	if config['sample_captures'][sample] not in config['Panel_List']:
+		UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
 
 ##########################################################################
 # To create lists to be filled in SUBJECT_ANNO
@@ -241,7 +242,7 @@ for sample in config['sample_references'].keys():
 	if config['sample_captures'][sample] not in config['Panel_List']:
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
-		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/"+sample+".somatic.vep.vcf"]
+		#COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/"+sample+".somatic.vep.vcf"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -280,7 +281,8 @@ for subject in SUBJECT_ANNO.keys():
 		for varFile in SUBJECT_ANNO[subject][group]:
 			varFiles.append(varFile)
 ###########################################################################
-localrules: Khanlab_Pipeline, RNASeq, IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, FormatInput, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3, Cuff_Mat
+localrules: Khanlab_Pipeline, RNASeq
+#IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, FormatInput, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3, Cuff_Mat
 #Circos, CoveragePlot, BoxPlot_Hotspot, makeConfig,Ideogram
 ###########################################################################
 #                               Rule Book				  #

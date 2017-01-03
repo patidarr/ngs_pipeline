@@ -147,8 +147,11 @@ sub Germline{
 				$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
 			}
 			if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
-				if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i or $ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
-					$level{"1"} = "yes";
+				if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+					$level{"1.1"} = "yes";
+				}
+				elsif( $ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
+					$level{"1.3"} = "yes";
 				}
 				else{
 					$level{"2"} = "yes";
@@ -171,10 +174,10 @@ sub Germline{
                                                 $level{"1.1"} = "yes";
                                         }
                                         elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
-                                                $level{"1.2"} = "yes";
+                                                $level{"1.3"} = "yes";
                                         }
 					elsif ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
-                                                $level{"1"} = "yes";
+                                                $level{"1.2"} = "yes";
                                         }
                                         else{
                                                 $level{"2"} = "yes";
@@ -185,10 +188,18 @@ sub Germline{
 						$level{"1.1"} = "yes";
 					}
 					elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
-                                                $level{"1.2"} = "yes";
+                                                $level{"1.3"} = "yes";
                                         }
 					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
-						$level{"1"} = "yes";
+						if($source =~ /TumourSuppressorGene/){
+							$level{"1.3"} = "yes";
+						}
+						elsif($source =~ /LossOfFuncion/){
+							$level{"1.4"} = "yes";
+						}
+						else{
+							$level{"2"} = "yes";
+						}
 					}
 					else{
 						$level{"3.1"} = "yes";
@@ -321,7 +332,15 @@ sub Somatic{
 
 				}
 				elsif($local[3] =~ /stopgain/ or $local[3]=~ /^frameshift/ or $local[0] =~ /splicing/){
-					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier2\n";
+					if($CGC{$local[1]} =~ /TumourSuppressorGene/){
+                                        	print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.3\n";
+                                	}
+                                	elsif($CGC{$local[1]} =~ /LossOfFuncion/){
+                                        	print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.4\n";
+                                	}
+					else{
+						print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier2\n";
+					}
 				}
 				else{
 					print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier3\n";
