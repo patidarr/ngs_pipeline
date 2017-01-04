@@ -26,6 +26,7 @@ Bioinformatics Tools Listed in [config files](config/config_common.json)
 - [sequenza](https://cran.r-project.org/web/packages/sequenza/index.html)
 - [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html)
 - [stringr](https://cran.r-project.org/web/packages/stringr/vignettes/stringr.html) 
+- [deconstructSigs](https://github.com/raerose01/deconstructSigs)  
 
 ## Conventions
 
@@ -44,7 +45,9 @@ Bioinformatics Tools Listed in [config files](config/config_common.json)
 - Make Actionable Classification for Germline and Somatic Mutations 
 - Copy number based on the simple T/N LogRatio (N cov >=30), Corrected for Total # Reads
 - Copy number, tumor purity using sequenza 
-- LRR adjusted to center. 
+- LRR adjusted to center
+- Contamination using VerifyBamID
+
 
 ### RNASeq:
 - QC

@@ -1,7 +1,6 @@
 {
 	"group"			: "Clinomics",
 	"host"			: "biowulf.nih.gov",
-	"mail"			: "-c patidarr@mail.nih.gov",
 	"annovar_data"		: "/data/Clinomics/Ref/khanlab/annotation/",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/data/Clinomics/Ref/khanlab/Index/bwa/ucsc.hg19.fasta",
