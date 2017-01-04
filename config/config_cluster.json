@@ -66,7 +66,7 @@
                 "job_gatk"       : "--partition=batch --time=30:00:00 --mem=40G  --cpus-per-task=2  ",
                 "job_HC"         : "--partition=batch --time=30:00:00 --mem=20G  --cpus-per-task=2  ",
                 "job_gatk_RNA"   : "--partition=mmem,hmem  --time=30:00:00 --mem=150G --cpus-per-task=2  ",
-                "job_bam2mpg"    : "--partition=batch --time=24:00:00 --mem=45G  --cpus-per-task=16 ",
+                "job_bam2mpg"    : "--partition=mmem,hmem --time=24:00:00 --mem=80G  --cpus-per-task=10 ",
                 "job_mutect"     : "--partition=batch --time=24:00:00 --mem=10G  --cpus-per-task=2  ",
                 "job_strelka"    : "--partition=batch --time=10:00:00 --mem=45G  --cpus-per-task=16 ",
                 "job_platypus"   : "--partition=batch --time=10:00:00 --mem=40G  --cpus-per-task=16 ",

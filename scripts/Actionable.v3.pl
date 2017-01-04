@@ -76,7 +76,7 @@ sub Germline{
 		$ANNOTATION{$key} =$value;
 	}
 	close $ANN;
-	# Source from the combined file
+# Source from the combined file
 	my %SOURCE;
 	while(<$GL>){
 		chomp;
@@ -84,7 +84,7 @@ sub Germline{
 		$SOURCE{"$local[0]"} = "$local[1]";
 	}
 	close $GL;
-	# HotSpot site 
+# HotSpot site 
 	my %HOT_SPOT;
 	while(<$HOT>){
 		chomp;
@@ -93,7 +93,7 @@ sub Germline{
 		$HOT_SPOT{"$key"} = $local[3];
 	}
 	close $HOT;
-	# Germline mutation to work on.
+# Germline mutation to work on.
 	my $ORI =OpneFH($germline);
 	my $head =`grep -m1 -P "^Chr\tStart\tEnd\tRef\tAlt\t" $annotation |sort |uniq`;
 	chomp($head);
@@ -122,15 +122,15 @@ sub Germline{
 	close $ORI;
 	$ORI =OpneFH($germline);
 	while (<$ORI>){
-                chomp;
-                my @temp = split("\t", $_);
-                my $vcf;
-                my $end = @temp - 1 ;
-                my $site = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
-                $vcf = join "\t", @temp[5..$end];
-		# Position is called as germline 
-		# Position is not somatic called!!
-		# in tumor the capture is same as in normal
+		chomp;
+		my @temp = split("\t", $_);
+		my $vcf;
+		my $end = @temp - 1 ;
+		my $site = "$temp[0]\t$temp[1]\t$temp[2]\t$temp[3]\t$temp[4]";
+		$vcf = join "\t", @temp[5..$end];
+# Position is called as germline 
+# Position is not somatic called!!
+# in tumor the capture is same as in normal
 		my %level;
 		$level{"5"} = 'yes';
 		my $source = "";
@@ -138,7 +138,6 @@ sub Germline{
 		if ($temp[11] <1){
 			next;
 		}
-#		if (exists $Germline{"$site\t$temp[7]"} and !exists $DATA{$site} and $Germline{"$site\t$temp[7]"} eq $temp[7] and $vaf >=0.25){
 		if (exists $Germline{"$site\t$temp[7]"} and !exists $DATA{$site} and $Germline{"$site\t$temp[7]"} eq $temp[7] and $vaf >=0.25){
 			$level{"5"} = 'yes';
 			my @ANN = split("\t", $ANNOTATION{"$site"});
@@ -157,6 +156,39 @@ sub Germline{
 					$level{"2"} = "yes";
 				}
 			}
+			if (exists $SOURCE{$ANN[$index_of_Gene]}){ # ACMG
+				$source =$SOURCE{$ANN[$index_of_Gene]};
+				if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
+					$level{"1.1"} = "yes";
+				}
+				elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
+					$level{"1.3"} = "yes";
+				}
+				else{
+					if ($source =~ /CGCensus_Hereditary/){
+						if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+							$level{"1.2"} = "yes";
+						}
+						else{$level{"2"} = "yes";}
+					}
+					else{
+						if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+							if($source =~ /TumourSuppressorGene/){
+								$level{"1.3"} = "yes";
+							}
+							elsif($source =~ /LossOfFuncion/){
+								$level{"1.4"} = "yes";
+							}
+							else{
+								$level{"2"} = "yes";
+							}
+						}
+						else{
+							$level{"3.1"} = "yes";
+						}
+					}
+				}
+			}
 			if($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){  # HGMD
 				if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
 					$source = 'HGMD-clinvar';
@@ -165,45 +197,6 @@ sub Germline{
 				else{
 					$source = 'HGMD';
 					$level{"4"} = "yes";
-				}
-			}
-			if (exists $SOURCE{$ANN[$index_of_Gene]}){ # ACMG
-				$source =$SOURCE{$ANN[$index_of_Gene]};
-				if ($source =~ /CGCensus_Hereditary/){
-					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
-                                                $level{"1.1"} = "yes";
-                                        }
-                                        elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
-                                                $level{"1.3"} = "yes";
-                                        }
-					elsif ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
-                                                $level{"1.2"} = "yes";
-                                        }
-                                        else{
-                                                $level{"2"} = "yes";
-                                        }
-				}
-				else{
-					if ($ANN[$index_of_clinvar] =~ /^Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Pathogenic/i or $ANN[$index_of_clinvar] =~ /^Likely Pathogenic/i or $ANN[$index_of_clinvar] =~ /\|Likely Pathogenic/i){
-						$level{"1.1"} = "yes";
-					}
-					elsif ($ANN[$index_of_HGMD] =~ /^Disease causing mutation$/){
-                                                $level{"1.3"} = "yes";
-                                        }
-					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
-						if($source =~ /TumourSuppressorGene/){
-							$level{"1.3"} = "yes";
-						}
-						elsif($source =~ /LossOfFuncion/){
-							$level{"1.4"} = "yes";
-						}
-						else{
-							$level{"2"} = "yes";
-						}
-					}
-					else{
-						$level{"3.1"} = "yes";
-					}
 				}
 			}
 			my @l = sort { $a <=> $b } keys %level;
@@ -215,8 +208,6 @@ sub Germline{
 					$judge_tier{"$site\t$ANNOTATION{$site}\t$vcf\t$vaf\t$source\tTier$l[0]"} = $l[0];
 				}
 			}
-		}
-		else{
 		}
 	}
 	close $ORI;
