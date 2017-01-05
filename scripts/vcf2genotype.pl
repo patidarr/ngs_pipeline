@@ -18,11 +18,15 @@ unless (open(FH, "$file")){
 while(<FH>){
 	chomp;
 	$_ =~ s/chr//g;
-	my @local = split ("\t", $_);
+	my @local = split("\t", $_);
 	if ($_ =~ /#/){ #Print column Header
 		next;
 	}
-	elsif(length($local[3]) eq 1 and length($local[4]) eq 1 and $local[3] =~ /[ATCG]/ and $local[4] =~ /[ATCG]/ and $local[5] >=30){
+	my $depth =0;
+        if ($local[7] =~ /DP=(\d+);/){
+                $depth = $1;
+        }
+	if(length($local[3]) eq 1 and length($local[4]) eq 1 and $local[3] =~ /[ATCG]/ and $local[4] =~ /[ATCG]/ and $local[5] >=30 and $depth >=10){
 		if ($local[9] =~ /0\/1/){
 			print "$local[0]\t$local[1]\t$local[3]$local[4]\n";
 		}
