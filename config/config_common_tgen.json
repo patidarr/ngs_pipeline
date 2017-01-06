@@ -9,6 +9,7 @@
 	"Novo_index"		: "/projects/Clinomics/Tools/ref/hg19/Index/novoalign/chr_all_hg19.nbx",
 	"STAR_ref"		: "/projects/Clinomics/Tools/ref/hg19/Index/STAR_hg19_index",
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
+	"HLA"			: "/projects/Clinomics/Tools/ref/hg19/HLA/",
 	"version_R"		: "3.3.2",
 	"target_intervals"	:{
 		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/design/WholeGenome.target.hg19.merged.bed",

@@ -242,7 +242,7 @@ for sample in config['sample_references'].keys():
 	if config['sample_captures'][sample] not in config['Panel_List']:
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
-		#COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/"+sample+".somatic.vep.vcf"]
+		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/"+sample+".somatic.vep.vcf"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -323,7 +323,7 @@ for subject in SUBJECT_VCFS.keys():
 		ALL_VCFs +=[vcf]
 ###########################################################################
 onerror:
-	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
+	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
         shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find {PATIENTS} -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find {PATIENTS} \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")

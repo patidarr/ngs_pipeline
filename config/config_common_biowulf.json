@@ -9,6 +9,7 @@
 	"Novo_index"		: "/data/Clinomics/Ref/khanlab/Index/novoalign/chr_all_hg19.nbx",
 	"STAR_ref"		: "/data/Clinomics/Ref/khanlab/Index/STAR_hg19_index",
 	"reference"		: "/data/Clinomics/Ref/khanlab/ucsc.hg19.fasta",
+	"HLA"                   : "/data/Clinomics/Ref/khanlab/HLA/",
 	"version_R"		: "3.3.0_gcc-4.9.1",
 	"target_intervals"	:{
 		"wholegenome"		: "/data/Clinomics/Ref/khanlab/design/WholeGenome.target.hg19.merged.bed",
