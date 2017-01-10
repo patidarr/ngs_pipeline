@@ -3,7 +3,7 @@
 ############
 rule seq2HLA:
 	input:	R=lambda wildcards: FQ[wildcards.sample],
-		script=NGS_PIPELINE + "/scripts/seq2HLA.py"
+		script=NGS_PIPELINE + "/seq2HLA/seq2HLA.py"
 	output:
 		"{base}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits"
 	params:
@@ -12,8 +12,8 @@ rule seq2HLA:
 		HLA	= config['HLA']
 	shell: """
 	#######################
-	module load bowtie/1.1.1 python/2.7.10
-	python {input.script} {params.HLA}/seq2HLA/ -1 {input.R[0]} -2 {input.R[1]}  -p 2 -r {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/seq2HLA/ 
+	module load bowtie/1.1.1 python/2.7.10 R
+	python {input.script} {params.HLA}/seq2HLA/ -1 {input.R[0]} -2 {input.R[1]}  -p 2 -r {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/seq2HLA/{wildcards.sample}
 	#######################
 	"""
 ############
