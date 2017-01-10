@@ -47,6 +47,10 @@ Bioinformatics Tools Listed in [config files](config/config_common.json)
 - Copy number, tumor purity using sequenza 
 - LRR adjusted to center
 - Contamination using VerifyBamID
+- HLA Typing  
+	* [HLAminer](www.bcgsc.ca/platform/bioinfo/software/hlaminer)v1.3.1   
+	* [seq2HLA](https://bitbucket.org/sebastian_boegel/seq2hla)  
+
 
 
 ### RNASeq:
