@@ -34,7 +34,6 @@ rule HLAminer:
 	echo {input.R[1]} >>{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
 	
 	sh {input.script} {params.location}/HLAminer_v1.3.1/bin/ {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/
-		
 	#######################
 	"""
 ############
@@ -43,17 +42,19 @@ rule HLAminer:
 rule pVACSeq:
 	input:
 		files=lambda wildcards: UNION_SOM_MUT[wildcards.sample],
+		HLA  =lambda wildcards: HLA[wildcards.sample],
 		tool =NGS_PIPELINE + "/scripts/consensusSomaticVCF.pl",
-		hla_1="{base}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits",
-		hla_2="{base}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv",
 		merge=NGS_PIPELINE + "/scripts/consensusHLA.pl"
 	output: 
-		vcf="{base}/{TIME}/{sample}/NeoAntigen/{sample}.somatic.vep.vcf"
+		vcf	="{base}/{TIME}/{sample}/NeoAntigen/{sample}.final.vcf",
+		tsv	="{base}/{TIME}/{sample}/NeoAntigen/MHC_Class_I/{sample}.final.tsv",
+		calls	="{base}/{TIME}/{sample}/HLA/{sample}.Calls.txt"
 	version: config["R"]
 	params:
 		rulename = "pVACSeq",
 		normal	 = lambda wildcards: config['sample_references'][wildcards.sample][0],
-		batch    = config[config['host']]["job_VEP"]
+		batch    = config[config['host']]["job_VEP"],
+		host     = config["host"]
 	shell: """
 	#######################
 	module load vcftools VEP pvacseq python/2.7.10
@@ -61,9 +62,9 @@ rule pVACSeq:
 	variant_effect_predictor.pl -i {output.vcf}.tmp --plugin Downstream --plugin Wildtype --terms SO --offline --cache --dir_cache $VEPCACHEDIR --assembly GRCh37 --output_file {output.vcf} --vcf --force_overwrite
 	rm -rf {output.vcf}.tmp
 	
-	perl {input.merge} {input.hla_2} {input.hla_1}	>{wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt
+	perl {input.merge} {input.HLA[0]} {input.HLA[1]} | sort > {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt
 
-	allele=`cut -f1 {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt|grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
-	pvacseq run -e 8,9,10,11 {output.vcf} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/
+	allele=`cut -f1 {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt |grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
+	ssh {params.host} "module load pvacseq; cd {WORK_DIR} ; pvacseq run -e 8,9,10,11 {output.vcf} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/"
 	#######################
 	"""

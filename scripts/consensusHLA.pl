@@ -3,6 +3,7 @@ use 5.010;
 local $SIG{__WARN__} = sub {my $message =shift; die $message;};
 my $HLAminer="$ARGV[0]";
 my $seq2HLA="$ARGV[1]";
+print STDERR "consensusHLA.pl running on the $HLAminer and $seq2HLA\n";
 #4060/20161207/4060N/HLA/HLAminer/HLAminer_HPTASR.csv
 #4060/20161207/4060N/HLA/seq2HLA/4060N-ClassI.HLAgenotype4digits
 open(IN,$seq2HLA);
@@ -35,6 +36,10 @@ while(<IN>){
 			if ($ln =~ /,/){
 				my @allele = split(",",$ln);
 				$allele[0] =~ s/P//;
+				$allele[0] =~ s/Q//;
+				if (length($allele[0]) >7){
+					next;
+				}
 				if(exists $HASH{$allele[0]}){
 					print "HLA-$allele[0]\t$HASH{$allele[0]}\t$allele[1]\n";
 					delete $HASH{$allele[0]};

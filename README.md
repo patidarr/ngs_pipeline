@@ -48,8 +48,12 @@ Bioinformatics Tools Listed in [config files](config/config_common.json)
 - LRR adjusted to center
 - Contamination using VerifyBamID
 - HLA Typing  
-	* [HLAminer](www.bcgsc.ca/platform/bioinfo/software/hlaminer)v1.3.1   
+	* [HLAminer](www.bcgsc.ca/platform/bioinfo/software/hlaminer) v1.3.1   
 	* [seq2HLA](https://bitbucket.org/sebastian_boegel/seq2hla)  
+- Neoantigen Prediction 
+	* [pVAC-Seq](http://pvac-seq.readthedocs.io/en/latest/) 
+		methods: NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign
+		epitope length: 8,9,10,11
 
 
 
