@@ -1,8 +1,8 @@
 #!/usr/bin/perl -ws
 use 5.010;
 local $SIG{__WARN__} = sub {my $message =shift; die $message;};
-my $HLAminer="$ARGV[0]";
-my $seq2HLA="$ARGV[1]";
+my $seq2HLA="$ARGV[0]";
+my $HLAminer="$ARGV[1]";
 print STDERR "consensusHLA.pl running on the $HLAminer and $seq2HLA\n";
 #4060/20161207/4060N/HLA/HLAminer/HLAminer_HPTASR.csv
 #4060/20161207/4060N/HLA/seq2HLA/4060N-ClassI.HLAgenotype4digits
