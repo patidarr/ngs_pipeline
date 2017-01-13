@@ -64,6 +64,7 @@ rule pVACSeq:
 	perl {input.merge} {input.HLA[0]} {input.HLA[1]} | sort > {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt
 
 	allele=`grep -v -P "\\tNotCalled\\t" {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt |cut -f1 |grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
+	#--iedb-install-directory /data/khanlab/projects/HLA/ 
 	ssh {params.host} "module load pvacseq; cd {WORK_DIR} ; pvacseq run -e 8,9,10,11 --fasta-size=50 {output.vcf} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/"
 	#######################
 	"""
