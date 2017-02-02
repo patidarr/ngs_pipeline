@@ -12,6 +12,7 @@
 	"HLA"                   : "/data/Clinomics/Ref/khanlab/HLA/",
 	"version_R"		: "3.3.0_gcc-4.9.1",
 	"VEP"			: "86",
+	"IEDB"			: "/data/khanlab/projects/HLA/",
 	"target_intervals"	:{
 		"wholegenome"		: "/data/Clinomics/Ref/khanlab/design/WholeGenome.target.hg19.merged.bed",
 		"seqcapez.hu.ex.v3"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
