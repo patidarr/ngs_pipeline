@@ -6,7 +6,7 @@ rule CoveragePlot:
 		covFiles=lambda wildcards: SUB_COV[wildcards.subject],
 		coverage =NGS_PIPELINE + "/scripts/coverage.R"
 	output: "{subject}/{TIME}/qc/{subject}.coveragePlot.png",
-	version: config["R"]
+	version: config["version_R"]
 	params:
 		rulename = "covplot",
 		batch    = config[config['host']]["job_covplot"]
@@ -15,7 +15,7 @@ rule CoveragePlot:
 
 	cp -f {input.covFiles} ${{LOCAL}}
 
-	module load R
+	module load R/{version}
 	R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.coverage}
 	#######################
 	"""
@@ -28,14 +28,14 @@ rule Circos:
 		circos =NGS_PIPELINE + "/scripts/circos.R"
 	output:
 		"{subject}/{TIME}/qc/{subject}.circos.png",
-	version: config["R"]
+	version: config["version_R"]
 	params:
 		rulename = "Circos",
 		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
 	cp -f {input.lohFiles} ${{LOCAL}}
-	module load R
+	module load R/{version}
 	R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.circos}
 	#######################
 	"""
@@ -48,14 +48,14 @@ rule BoxPlot_Hotspot:
 		boxplot =NGS_PIPELINE + "/scripts/boxplot.R"
 	output:
 		"{subject}/{TIME}/qc/{subject}.hotspot_coverage.png",
-	version: config["R"]
+	version: config["version_R"]
 	params:
 		rulename = "Boxplot",
 		batch    = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
 	cp -f {input.covFiles} ${{LOCAL}}
-	module load R
+	module load R/{version}
 	R --vanilla --slave --silent --args ${{LOCAL}} {output} {wildcards.subject} <{input.boxplot}
 	#######################
 	"""

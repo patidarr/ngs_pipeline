@@ -9,15 +9,16 @@ rule Ideogram:
 	output: 
 		v1="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.raw.png",
 		v2="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.png",
-	version: config["R"]
+	version: config["version_R"]
 	params:
 		rulename = "ideogram",
+		bedtools = config['bedtools'],
 		batch    = config[config['host']]["job_default"],
 		genome   = config["reference"].replace('.fasta', '.genome'),
 	shell: """
 	#######################
-	module load R
-	module load bedtools
+	module load R/{version}
+	module load bedtools/{params.bedtools}
 	grep -v Failed {input.cnFile} |awk '{{OFS="\\t"}};{{print $1,$2,$3,$7,"-"}}' >${{LOCAL}}/{wildcards.Tumor}
 
 	echo -e "CHR\\tPOS\\tP"  >${{LOCAL}}/{wildcards.Tumor}.temp

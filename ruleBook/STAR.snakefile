@@ -71,13 +71,14 @@ rule FeatureCounts:
 		script=NGS_PIPELINE + "/scripts/featureCounts.R",
 	output:
 		gene="{base}/{TIME}/{sample}/TPM_{gtf}/{sample}_counts.Gene.txt",
+	version: config['version_R']
 	params:
 		rulename   = "featureCounts",
 		batch      =config[config['host']]['job_featCount'],
 		work_dir =  WORK_DIR
 	shell: """
 	#######################
-	module load R
+	module load R/{version}
 	cd ${{LOCAL}}
 	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --countOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/{wildcards.sample}_counts" --fpkmOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/{wildcards.sample}_fpkm"
 	#######################

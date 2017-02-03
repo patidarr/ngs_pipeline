@@ -47,13 +47,14 @@ rule Sequenza:
 	version: config['pypy']
 	params:
 		rulename = "sequenza",
+		R	 = config["version_R"],
 		batch    = config[config['host']]['job_Sequenza']
 	shell: """
 	#######################
 	module load pypy/{version}
 	pypy {input.seq} pileup2seqz -gc {input.gc_ref} -n {input.files[0]} -t {input.files[1]} |gzip >{output.all}
 	pypy {input.seq} seqz-binning -w 50 -s {output.all} | gzip > {output.bin}
-	module load R
+	module load R/{params_R}
 	cd {wildcards.subject}/{wildcards.TIME}/{wildcards.Tumor}/sequenza/
 	{input.RCode} --sample {wildcards.Tumor}
 	#######################
@@ -67,13 +68,14 @@ rule Sequenza_geneAnnot:
 		geneList=config["annovar_data"]+config["geneList"]
 	output:
 		"{subject}/{TIME}/{Tumor}/sequenza/{Tumor}.txt"
+	version: config["bedtools"]
 	params:
 		rulename = "sequenza_1",
 		batch    = config[config['host']]['job_Sequenza']
 	shell: """
 	#######################
 	set +eo pipefail
-        module load bedtools
+        module load bedtools/{version}
         sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' | bedtools intersect  -wa -a {input.interval} -b - |grep -v NOTFOUND |sed -e 's/___/\\t/g'| cut -f 1-4| bedtools expand -c 4 >{output}.temp
         sed -e 's/"//g' {input.file} |sed -e 's/chromosome/#chromosome/' |head -1 >{output}.temp1
         sed -i 's/end.pos\\tBf/end.pos\\tGene\\tBf/g' {output}.temp1

@@ -8,11 +8,14 @@ rule seq2HLA:
 		"{base}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits"
 	params:
 		rulename= "seq2HLA",
+		python  = config["version_python"],
+		R	= config['version_R'],
+		bowtie	= config['bowtie'],
 		batch	= config[config['host']]["job_annovar"],
 		HLA	= config['HLA']
 	shell: """
 	#######################
-	module load bowtie/1.1.1 python/2.7.10 R
+	module load bowtie/{params.bowtie} python/{params.python} R/{params.R}
 	python {input.script} {params.HLA}/seq2HLA/ -1 {input.R[0]} -2 {input.R[1]}  -p 2 -r {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/seq2HLA/{wildcards.sample}
 	#######################
 	"""
@@ -47,7 +50,6 @@ rule VEP:
 		merge=NGS_PIPELINE + "/scripts/consensusHLA.pl"
 	output: 
 		vcf	="{base}/{TIME}/{sample}/NeoAntigen/{sample}.final.vcf",
-	version: config["R"]
 	params:
 		rulename = "VEP",
 		VEP	 = config['VEP'],
@@ -70,6 +72,7 @@ rule pVACseq:
 		"{base}/{TIME}/{sample}/NeoAntigen/MHC_Class_I/{sample}.final.tsv"
 	params:
 		rulename = "pVACSeq",
+		python   = config["version_python"],
 		normal   = lambda wildcards: config['sample_references'][wildcards.sample][0],
 		IEDB	 = config['IEDB'],
 		batch    = config[config['host']]["job_VEP"],
@@ -78,7 +81,7 @@ rule pVACseq:
 	#######################
 	allele=`grep -v -P "\\tNotCalled\\t" {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt |cut -f1 |grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
 	
-	module load pvacseq python/2.7.10 
+	module load pvacseq python/{params.python}
 	pvacseq run --iedb-install-directory {params.IEDB} -e 8,9,10,11 --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/
 	#######################
 	"""

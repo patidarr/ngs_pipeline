@@ -660,13 +660,14 @@ rule CN_LRR:
 		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.txt",
 		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.annotated.txt",
 		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.filtered.txt"
+	version: config['version_R']
 	params:
 		rulename = "LRR",
 		batch    = config[config['host']]["job_default"],
 		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
 	shell: """
 	#######################
-	module load R
+	module load R/{version}
 	module load bedtools/2.25.0
 	mkdir -p {wildcards.subject}/{TIME}/Actionable/
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
@@ -725,10 +726,11 @@ rule HotSpotCoverage:
 	version: config["bedtools"]
 	params:
 		rulename  = "HotSpotCov",
+		samtools  = config['samtools'],
 		batch     = config[config['host']]["job_hotspot"],
 	shell: """
 	#######################
-	module load samtools
+	module load samtools/{params.samtools}
 	module load bedtools/{version}
 	slopBed -i {input.interval} -g {input.genome} -b 50 >${{LOCAL}}/Region.bed
 	samtools view -hF 0x400 -q 30 -L ${{LOCAL}}/Region.bed {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {input.interval} >{output}
@@ -869,13 +871,14 @@ rule MuTect:
 	version: config["MuTect"]
 	params:
 		rulename = "MuTect",
+		R	 = config['version_R'],
 		batch    = config[config['host']]["job_mutect"],
 		vcforder = NGS_PIPELINE + "/scripts/vcfOrderCol.R",
 		mt       = "--max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4 --min_qscore 20 -rf MappingQuality -mmq 30"
 	shell: """
 	#######################
 	module load muTect/{version}
-	module load R
+	module load R/{params.R}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $MUTECT_JAR -T MuTect \
 		--reference_sequence {input.ref} \
 		--cosmic {input.cosmic} \

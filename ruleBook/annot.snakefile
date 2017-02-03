@@ -214,12 +214,13 @@ rule SIFT:
 	resources: SIFT=1
 	params:
 		rulename   = "SIFT",
+		python     = config["version_python"],
 		batch      = config[config['host']]["job_SIFT"],
 		build      = config["SIFTbuild"]
 	shell: """
 	#######################
 	if [ -s {input.sift} ]; then
-		module load python/2.7.9
+		module load python/{params.python}
 		module load SIFT/{version}
 		DIR=`pwd`
 		cd ${{DIR}}/`dirname {input.sift}`

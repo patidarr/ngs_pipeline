@@ -11,6 +11,8 @@
 	"reference"		: "/data/Clinomics/Ref/khanlab/ucsc.hg19.fasta",
 	"HLA"                   : "/data/Clinomics/Ref/khanlab/HLA/",
 	"version_R"		: "3.3.0_gcc-4.9.1",
+	"version_python"	: "2.7",
+	"version_blast"		: "2.5.0+",
 	"VEP"			: "86",
 	"IEDB"			: "/data/Clinomics/Tools/IEDB/",
 	"target_intervals"	:{

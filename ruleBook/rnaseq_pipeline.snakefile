@@ -101,12 +101,13 @@ rule TOPHAT:
 	version: config["tophat"]
 	params:
 		rulename  = "tophat",
+		samtools  = config['samtools'],
 		batch     = config[config['host']]["job_tophat"],
 		ref=config['Bowtie2Index']
 	shell: """
 	#######################
 	module load tophat/{version}
-	module load samtools
+	module load samtools/{params.samtools}
 	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R[0]} {input.R[1]}
 	cp -rf ${{LOCAL}}/* {wildcards.base}/{TIME}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{TIME}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
@@ -146,6 +147,7 @@ rule TOPHAT_FUSION:
 	version: config["tophat"]
 	params:
 		rulename = "tp",
+		blast	 =config['version_blast'],
 		batch    =config[config['host']]['job_tophatPost'],
 		ref      =config['BowtieIndex'],
 		bowtie   =config['bowtie'],
@@ -154,7 +156,7 @@ rule TOPHAT_FUSION:
 	#######################
 	module load tophat/{version}
 	module load bowtie/{params.bowtie}
-	module load blast
+	module load blast/{params.blast}
 	cd {wildcards.base}/{TIME}/{wildcards.sample}/
 	rm -f blast ensGene.txt ensGtp.txt mcl refGene.txt
 	ln -s {params.tp_ref}/* .
@@ -344,6 +346,7 @@ rule STAR:
 	version: config["STAR"]
 	params:
 		rulename  = "STAR",
+		samtools  = config['samtools'],
 		batch     = config[config['host']]['job_STAR'],
 		star_ref  = config['STAR_ref'],
 		awk       = NGS_PIPELINE + "/scripts/SJDB.awk",
@@ -398,7 +401,7 @@ rule STAR:
 	SORT_ORDER=coordinate RGLB={wildcards.sample} RGPU={wildcards.sample} RGPL=ILLUMINA RGSM={wildcards.sample} RGCN=khanlab
 
 	echo "Finished Step 5"
-	module load samtools
+	module load samtools/{params.samtools}
 	samtools index {params.home}/{wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.star.bam
 	#######################
 	"""

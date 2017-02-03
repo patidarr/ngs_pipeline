@@ -11,12 +11,13 @@ rule QC:
         params:
                 rulename        = "consolidated_QC",
                 bedtools        = config['bedtools'],
+		python		= config["version_python"],
 		tool_perl       = NGS_PIPELINE+ "/scripts/addAttributes.pl",
                 batch           = config[config['host']]["job_c_QC"],
                 diagnosis       = lambda wildcards: config['Diagnosis'][wildcards.sample]
         shell:  """
         #######################
-        module load python/2.7.9
+        module load python/{params.python}
         module load samtools/{version}
         module load bedtools/{params.bedtools}
         python {input.tool} {input.bam} {input.target_intervals} ${{LOCAL}} {wildcards.base} {wildcards.sample}  "{params.diagnosis}" > {output}.tmp

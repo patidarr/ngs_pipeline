@@ -11,11 +11,12 @@ rule ReadDepth:
 	version: config['bedtools']
 	params:
 		rulename	= "readDepth",
+		R 		= config['version_R'],
 		batch		= config[config['host']]["job_bedtools"]
 	shell: """
 	#######################	
 	module load bedtools/{version}
-	module load R
+	module load R/{params.R}
 	echo -e "chr\\tstart\\tend\\tgene\\tposition\\tdepth" >  {output}
 	cut -f1-4 {input.target_intervals} | bedtools coverage -abam {input.bam} -b - -d >> {output}
 	#######################

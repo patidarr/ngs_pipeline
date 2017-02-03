@@ -16,7 +16,6 @@
 	"MuTect"		: "1.1.7",
 	"strelka"		: "1.0.14",
 	"vcftools"		: "0.1.13",
-	"R"			: "3.2.2_gcc-4.9.1",
 	"platypus"		: "0.8.1",
 	"freebayes"		: "0.9.21",
 	"snpEff"		: "4.1c",

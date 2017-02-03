@@ -11,6 +11,8 @@
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
 	"HLA"			: "/projects/Clinomics/Tools/ref/hg19/HLA/",
 	"version_R"		: "3.3.2",
+	"version_python"        : "2.7.10",
+	"version_blast"		: "2.2.31+",
 	"VEP"			: "81",
 	"IEDB"			: "/tmp/patidar/",
 	"target_intervals"	:{

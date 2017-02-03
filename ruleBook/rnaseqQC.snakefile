@@ -10,11 +10,12 @@ rule RNASeqQC:
 	version: config["picard"]
 	params:
 		rulename  = "RnaSeqMetrics",
+		R	  = config['version_R'],
 		batch     = config[config['host']]["job_markdup"],
 	shell: """
 	#######################
 	module load picard/{version}
-	module load R
+	module load R/{params.R}
 	java -Xmx${{MEM}}g -Djava.io.tmpdir=${{LOCAL}} -jar $PICARD_JAR CollectRnaSeqMetrics STRAND_SPECIFICITY=NONE VALIDATION_STRINGENCY=SILENT REF_FLAT={input.ref_flat} RIBOSOMAL_INTERVALS={input.rna_interval} INPUT={input.bam} OUTPUT={output.table} CHART_OUTPUT={output.pdf}
 	#######################
 	"""
@@ -58,12 +59,13 @@ rule RNASeqQC_2:
 	output: 
 		txt="{subject}/{TIME}/qc/{subject}.RnaSeqQC.txt",
 		plot="{subject}/{TIME}/qc/{subject}.transcriptCoverage.png"
+	version: config['version_R']
 	params:
 		rulename  = "QC_Sum",
 		batch     = config[config['host']]["job_covplot"]
 	shell: """
 	#######################
-	module load R
+	module load R/{version}
 	export LC_ALL=C
 	cat {input.files} |sort |uniq |sed -e '/^$/d'>{output.txt}
 	list=`echo {input.files}|sed -e 's/RnaSeqQC/RnaSeqMetrics/g'`
