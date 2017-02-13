@@ -19,7 +19,6 @@ rule ReadDepth:
 	module load bedtools/{version} samtools/{params.samtools}
 	echo -e "chr\\tstart\\tend\\tgene\\tposition\\tdepth" >  {output}
 	cut -f1-4 {input.target_intervals} >${{LOCAL}}/intervals.bed
-	samtools view -hF 0x400 -q 30 -L {input.target_intervals} {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b ${{LOCAL}}/intervals.bed -d >> {output}
-	#cut -f1-4 {input.target_intervals} | bedtools coverage -abam {input.bam} -b - -d >> {output}
+	samtools view -hF 0x400 -q 30 -L ${{LOCAL}}/intervals.bed {input.bam} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b ${{LOCAL}}/intervals.bed -d >> {output}
 	#######################
 	"""
