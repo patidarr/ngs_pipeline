@@ -1,7 +1,7 @@
 {
 	"pipeline_version"	: "v2.5",
-	"mails"			: "-c patidarr@mail.nih.gov",
-	"mail"			: "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov -c yujin.lee@nih.gov",
+	"mail"			: "-c patidarr@mail.nih.gov",
+	"mails"			: "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov -c yujin.lee@nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "0.1.19",
 	"samtools_old"		: "0.1.19",

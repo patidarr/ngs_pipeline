@@ -36,7 +36,7 @@
 		"job_cufflinks"  : "--partition=ccr,norm --time=10:00:00 --mem=50G  --cpus-per-task=30",
 		"job_featCount"  : "--partition=ccr,norm --time=05:00:00 --mem=20G  --cpus-per-task=10  --gres=lscratch:100",
 		"job_hotspot"    : "--partition=quick,norm,ccr    --time=02:00:00 --mem=10G  --cpus-per-task=4   --gres=lscratch:02",
-		"job_bedtools"   : "--partition=ccr,norm --time=10:00:00 --mem=20G  --cpus-per-task=2",
+		"job_bedtools"   : "--partition=ccr,norm --time=10:00:00 --mem=20G  --cpus-per-task=2 --gres=lscratch:02",
 		"job_vcf2txt"    : "--partition=quick,norm,ccr    --time=01:00:00 --mem=02G  --cpus-per-task=2",
 		"job_annovar"    : "--partition=ccr,norm --time=60:00:00 --mem=05G  --cpus-per-task=2",
 		"job_annot"      : "--partition=quick,norm,ccr    --time=02:00:00 --mem=05G  --cpus-per-task=2",
