@@ -1,7 +1,7 @@
 {
 	"pipeline_version"	: "v2.6",
-	"mails"			: "-c patidarr@mail.nih.gov",
-	"mail"			: "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov -c yujin.lee@nih.gov",
+	"mail"			: "-c patidarr@mail.nih.gov",
+	"mails"			: "-c patidarr@mail.nih.gov -c weij@mail.nih.gov -c manoj.tyagi@nih.gov -c khanjav@mail.nih.gov -c wangc@mail.nih.gov -c yujin.lee@nih.gov",
 	"platform"		: "Illumina",
 	"samtools"		: "0.1.19",
 	"samtools_old"		: "0.1.19",
@@ -49,6 +49,7 @@
 		"seqcapez.rms.v1"	:{"Normal":"100","Tumor":"100"},
 		"nbl.panel"		:{"Normal":"100","Tumor":"100"},
 		"Agilent.Exon50M"	:{"Normal":"20","Tumor":"20"},
+		"agilent.utr.v4"	:{"Normal":"20","Tumor":"20"},
 		"agilent.v4"		:{"Normal":"20","Tumor":"20"},
 		"agilent.v5"		:{"Normal":"20","Tumor":"20"},
 		"niaid.agilent.v5"	:{"Normal":"20","Tumor":"20"},
