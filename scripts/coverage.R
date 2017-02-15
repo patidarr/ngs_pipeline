@@ -17,13 +17,14 @@ labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.coverage\\.txt", "", files, pe
 
 library(RColorBrewer)
 
-total <- length(labs)+1
-if (total > 8){
-        cols <- brewer.pal(total, "Paired")
-} else{
-        cols <- brewer.pal(total, "Dark2")
-}
-
+cols <-('#26294a','#01545a','#bd544f','#017351',
+        '#03c383','#b8bd4f','#aad962','#fbbf45',
+        '#bd8b4f','#ef6a32','#ed0346','#d76e60',
+        '#a12a5e','#710162','#26294a','#01545a',
+        '#bd544f','#017351','#03c383','#b8bd4f',
+        '#aad962','#fbbf45','#bd8b4f','#ef6a32',
+        '#ed0346','#d76e60','#a12a5e','#710162'
+       )
 # Save the graph to a file
 png(FILE, h=1000, w=1000, pointsize=10, type=c("cairo"))
 
