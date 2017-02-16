@@ -17,7 +17,7 @@ labs <- paste("", gsub("Sample_|\\.bwa|\\.star|\\.coverage\\.txt", "", files, pe
 
 library(RColorBrewer)
 
-cols <-('#26294a','#01545a','#bd544f','#017351',
+cols <-c('#26294a','#01545a','#bd544f','#017351',
         '#03c383','#b8bd4f','#aad962','#fbbf45',
         '#bd8b4f','#ef6a32','#ed0346','#d76e60',
         '#a12a5e','#710162','#26294a','#01545a',
