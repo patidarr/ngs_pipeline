@@ -82,12 +82,17 @@ rule RNASeq:
 		RNA_CALLS,
 		RNASEQ_FUSION,
 		expand("{subject}/{TIME}"+ACT_DIR+"{subject}.fusion.actionable.txt", TIME=TIME, subject=config['RNASeq']),
+	output:
+		expand("ngs_pipeline_{NOW}.rnaseq.done", NOW=NOW)
+	wildcard_constraints:
+                NOW="\w+"	
 	params:
 		rulename  = "RNASeq_final",
 		batch     = config[config['host']]["job_default"]
 
 	shell: """
 	#######################
+	touch {output}
 	#######################
 	"""
 ############

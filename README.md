@@ -9,7 +9,7 @@ The easiest way to get this pipeline is to clone the repository.
 ```
 git clone https://github.com/patidarr/ngs_pipeline.git
 ```
-This pipeline is available on NIH biowulf cluster, contact me if you would like to do a test run. The data from this pipeline could directly be ported in [OncoGenomics-DB](https://fr-s-bsg-onc-d.ncifcrf.gov/oncogenomics/public/), an application created to visualize NGS data available to NIH users.
+This pipeline is available on NIH biowulf cluster, contact me if you would like to do a test run. The data from this pipeline could directly be ported in [OncoGenomics-DB](https://clinomics.ncifcrf.gov/production/public/), an application created to visualize NGS data available to NIH users.
 ## Requirements
 [mutt](http://www.mutt.org/)  
 [gnu parallel](http://www.gnu.org/software/parallel/)  

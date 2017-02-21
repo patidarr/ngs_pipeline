@@ -358,7 +358,8 @@ rule Khanlab_Pipeline:
 		varFiles,
 		DBFiles,
 		ActionableFiles,
-		UNION_SOM_MUT_LIST
+		UNION_SOM_MUT_LIST,
+		expand ("ngs_pipeline_{NOW}.rnaseq.done", NOW=NOW)
 	version: "1.0"
 	wildcard_constraints:
 		NOW="\w+"
@@ -374,6 +375,7 @@ rule Khanlab_Pipeline:
 		subs     = PATIENTS
 	shell: """
 	#######################
+	rm -rf ngs_pipeline_{NOW}.rnaseq.done
 	find {PATIENTS} log -group $USER -exec chgrp -f {params.group} {{}} \;
 	find {PATIENTS} log \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)
 	export LC_ALL=C
