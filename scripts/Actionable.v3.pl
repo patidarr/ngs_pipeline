@@ -317,20 +317,20 @@ sub Somatic{
 		}
 		else{
 			my @local = split("\t",$ANNOTATION{$key});
-			if($local[1] =~ /EGFR/ and $local[3] =~ /nonframeshift/ and ($local[4] =~ /:exon19:/ or $local[4] =~ /:exon20:/)){
+			if($local[1] =~ /^EGFR$/ and $local[3] =~ /nonframeshift/ and ($local[4] =~ /:exon19:/ or $local[4] =~ /:exon20:/)){
 				print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.1\n";
 				
 			}
-			elsif($local[1] =~ /ERBB2/ and $local[3] =~ /nonframeshift/ and ($local[4] =~ /:exon20:/)){
+			elsif($local[1] =~ /^ERBB2$/ and $local[3] =~ /nonframeshift/ and ($local[4] =~ /:exon20:/)){
                                 print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.1\n";
                         }
-			elsif($local[1] =~ /KIT/ and ($local[3] =~ /nonframeshift/ or $local[3] =~ /nonsynonymous/) and ($local[4] =~ /:exon8:/ or $local[4] =~ /:exon9:/ or $local[4] =~ /:exon11:/ or $local[4] =~ /:exon13:/ or $local[4] =~ /:exon14:/ or $local[4] =~ /:exon17:/)){
+			elsif($local[1] =~ /^KIT$/ and ($local[3] =~ /nonframeshift/ or $local[3] =~ /nonsynonymous/) and ($local[4] =~ /:exon8:/ or $local[4] =~ /:exon9:/ or $local[4] =~ /:exon11:/ or $local[4] =~ /:exon13:/ or $local[4] =~ /:exon14:/ or $local[4] =~ /:exon17:/)){
                                 print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.1\n";
                         }
-			elsif($local[1] =~ /PDGFRA/ and ($local[3] =~ /nonframeshift/ or $local[3] =~ /nonsynonymous/) and ($local[4] =~ /:exon12:/ or $local[4] =~ /:exon14:/ or $local[4] =~ /:exon18:/)){
+			elsif($local[1] =~ /^PDGFRA$/ and ($local[3] =~ /nonframeshift/ or $local[3] =~ /nonsynonymous/) and ($local[4] =~ /:exon12:/ or $local[4] =~ /:exon14:/ or $local[4] =~ /:exon18:/)){
                                 print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.1\n";
                         }
-			elsif($local[1] =~ /FLT3/ and $local[3] =~ /nonframeshift/ and ($local[4] =~ /:exon14:/ or $local[4] =~ /:exon15:/)){
+			elsif($local[1] =~ /^FLT3$/ and $local[3] =~ /nonframeshift/ and ($local[4] =~ /:exon14:/ or $local[4] =~ /:exon15:/)){
 				print "$key\t$ANNOTATION{$key}\t$vcf\t$vaf\t$CGC{$local[1]}\tTier1.1\n";
 			}
 			elsif (exists $CGC{$local[1]}){
