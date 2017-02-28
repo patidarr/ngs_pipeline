@@ -71,13 +71,13 @@ rule VEP:
 rule pVACseq:
 	input:
 		"{base}/{TIME}/{sample}/NeoAntigen/{sample}.final.vcf"
-		tool =NGS_PIPELINE + "/scripts/process_pVACSeq.pl"
 	output:
 		"{base}/{TIME}/{sample}/NeoAntigen/MHC_Class_I/{sample}.final.tsv"
 	params:
 		rulename = "pVACSeq",
 		python   = config["version_python"],
 		normal   = lambda wildcards: config['sample_references'][wildcards.sample][0],
+		tool 	 = NGS_PIPELINE + "/scripts/process_pVACSeq.pl",
 		IEDB	 = config['IEDB'],
 		batch    = config[config['host']]["job_VEP"],
 		host	 = config['host']
@@ -87,6 +87,6 @@ rule pVACseq:
 	
 	module load pvacseq python/{params.python}
 	pvacseq run --iedb-install-directory {params.IEDB} -e 8,9,10,11 --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/
-	perl {input.tool} {output} |sort |uniq >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/{wildcards.sample}.final.txt
+	perl {params.tool} {output} |sort |uniq >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/{wildcards.sample}.final.txt
 	#######################
 	"""
