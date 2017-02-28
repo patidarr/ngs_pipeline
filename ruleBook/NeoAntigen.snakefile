@@ -40,7 +40,7 @@ rule HLAminer:
 	#######################
 	"""
 ############
-#	pVACSeq
+#	VEP4pVACSeq
 ############
 rule VEP:
 	input:
@@ -65,9 +65,13 @@ rule VEP:
 	perl {input.merge} {input.HLA[0]} {input.HLA[1]} | sort > {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt
 	#######################
 	"""
+############
+##       pVACSeq
+#############
 rule pVACseq:
 	input:
 		"{base}/{TIME}/{sample}/NeoAntigen/{sample}.final.vcf"
+		tool =NGS_PIPELINE + "/scripts/process_pVACSeq.pl"
 	output:
 		"{base}/{TIME}/{sample}/NeoAntigen/MHC_Class_I/{sample}.final.tsv"
 	params:
@@ -83,5 +87,6 @@ rule pVACseq:
 	
 	module load pvacseq python/{params.python}
 	pvacseq run --iedb-install-directory {params.IEDB} -e 8,9,10,11 --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/
+	perl {input.tool} {output} |sort |uniq >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/{wildcards.sample}.final.txt
 	#######################
 	"""
