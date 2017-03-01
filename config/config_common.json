@@ -42,7 +42,7 @@
 		"wholegenome"		:{"Normal":"5","Tumor":"5"},
 		"seqcapez.hu.ex.v3"	:{"Normal":"20","Tumor":"20"},
 		"seqcapez.hu.ex.utr.v1"	:{"Normal":"20","Tumor":"20"},
-		"clin.ex.v1"		:{"Normal":"20","Tumor":"20"},
+		"clin.ex.v1"		:{"Normal":"10","Tumor":"20"},
 		"clin.snv.v1"		:{"Normal":"20","Tumor":"50"},
 		"clin.cnv.v2"		:{"Normal":"20","Tumor":"20"},
 		"clin.snv.v2"		:{"Normal":"20","Tumor":"50"},
