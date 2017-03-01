@@ -246,7 +246,7 @@ for sample in config['sample_references'].keys():
 	if config['sample_captures'][sample] not in config['Panel_List']:
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]
 		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
-		#COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
+		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -525,7 +525,6 @@ rule GENOTYPING:
 rule SampleGT:
 	input:
 		gtFiles=lambda wildcards: SUB_GT[wildcards.subject],
-		mail =NGS_PIPELINE + "/scripts/tsv2html.sh",
 		score=NGS_PIPELINE + "/scripts/scoreGenotyes.pl"
 	output:
 		"{subject}/{TIME}/qc/{subject}.genotyping.txt",
@@ -533,6 +532,7 @@ rule SampleGT:
 		rulename 	= "SampleGT",
 		batch    	= config[config['host']]["job_default"],
 		mail     	= config["mail"],
+		mail_tool 	= NGS_PIPELINE + "/scripts/tsv2html.sh",
 		host	 	= config["host"],
 		diagnosis	= lambda wildcards: config['Diagnosis'][SUBJECT_TO_SAMPLE[wildcards.subject][0]]
 	shell: """
@@ -557,7 +557,7 @@ rule SampleGT:
 	sed -i 's/Sample_//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' {wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt
-	ssh {params.host} "sh {input.mail} --name {wildcards.subject} --diagnosis '{params.diagnosis}' --head {WORK_DIR}/{wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt | mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
+	ssh {params.host} "sh {params.mail_tool} --name {wildcards.subject} --diagnosis '{params.diagnosis}' --head {WORK_DIR}/{wildcards.subject}/{TIME}/qc/{wildcards.subject}.genotyping.txt | mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on {wildcards.subject}' `whoami`@mail.nih.gov {params.mail} "
 	#######################
 	"""
 ############

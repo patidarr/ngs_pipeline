@@ -11,7 +11,7 @@ while(<FH>){
 	my @list =split("\t", $_);
 	print "$list[0]\t$list[2]\t$list[2]\t$list[3]\t$list[4]\t";
 	for (my $i=10; $i<=43; $i++){
-		if ($list[$i] =~ /^\d+/){
+		if ($list[$i] =~ /^\d+\.\d+/){
 			$list[$i] =  sprintf("%.2f", $list[$i]);
 		}
 	}
