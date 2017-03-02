@@ -7,6 +7,23 @@ local $SIG{__WARN__} = sub {
 	my $message =shift;
 	die $message;
 };
+
+
+
+# Author: Rajesh Patidar patidarr@nih.gov
+# version: 03022017 ==> LOF in ACMG genes are Tier1.2 (germline)
+#
+
+
+
+
+
+
+
+
+
+
+
 my $index_of_clinvar=57; # This does not include chr/alt, Func_RefGene==0
 my $index_of_ACMG=182; 
 my $index_of_HGMD=64;
@@ -153,7 +170,12 @@ sub Germline{
 					$level{"1.3"} = "yes";
 				}
 				else{
-					$level{"2"} = "yes";
+					if ($ANN[$idx_anno_region] =~ /splicing/ or $ANN[$idx_anno_eff] =~ /stopgain/ or $ANN[$idx_anno_eff]=~ /^frameshift/){
+						$level{"1.2"} = "yes";
+					}
+					else{
+						$level{"2"} = "yes";
+					}
 				}
 			}
 			if (exists $SOURCE{$ANN[$index_of_Gene]}){ # ACMG
