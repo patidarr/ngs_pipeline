@@ -20,6 +20,7 @@
 		"seqcapez.hu.ex.v3"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",
 		"seqcapez.hu.ex.utr.v1"	: "/data/Clinomics/Ref/khanlab/design/SeqCap_EZ_Exome_UTR_v1_capture_trimed.target.hg19.merged.bed",
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+		"clin.snv.v0"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Killian_Version3.target.hg19.merged.bed",
 		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
 		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/design/clin_cnv_v2_S0784012.target.hg19.merged.bed",
 		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/design/clin_snv_v2_0783981.target.hg19.merged.bed",
@@ -33,6 +34,8 @@
 		"agilent.v4"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect.target.v4.bed",
 		"agilent.v5"		: "/data/Clinomics/Ref/khanlab/design/Agilent_SureSelect.target.v5.bed",
 		"niaid.agilent.v5"	: "/data/Clinomics/Ref/khanlab/design/Agilent_AV5_reduced_02192013.target.bed",
+		"agilent.utr.v5"	: "/data/Clinomics/Ref/khanlab/design/Agilent.SureSelectXT.Human.All.Exon.V5.target.hg19.bed",
+		"nextera"		: "/data/Clinomics/Ref/khanlab/design/nextera.target.refseq.ensembl.noUTR.notfound.bed",
 		"strexome"		: "/data/Clinomics/Ref/khanlab/design/Strexome.target.bed"
 	},
 	"hotspot_bed"		:{
@@ -40,6 +43,7 @@
 		"seqcapez.hu.ex.v3"     : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"seqcapez.hu.ex.utr.v1" : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"clin.ex.v1"            : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"clin.snv.v0"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.snv.v1"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.cnv.v2"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"clin.snv.v2"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_2.bed",
@@ -50,9 +54,11 @@
 		"nbl.panel"             : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"Agilent.Exon50M"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"agilent.utr.v4"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"agilent.utr.v5"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"agilent.v4"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"agilent.v5"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"niaid.agilent.v5"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"nextera"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"strexome"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
 	},
 	"verifyBamID_vcf"       :{

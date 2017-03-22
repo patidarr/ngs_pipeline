@@ -1069,7 +1069,7 @@ rule DBinput:
 	shell: """
 	#######################
 	perl {input.convertor} {input.txtFiles} |perl {input.tool} - "{params.hash}" "{params.hash1}" >{output}.tmp
-	if [ {wildcards.group}  == 'germline' ]; then	
+	if [ {wildcards.group}  == 'germline' ] || [ {wildcards.group} == 'variants' ]; then	
 		perl {input.tool1} {output}.tmp {input.txtFiles1} >{output}
 		rm -rf {output}.tmp
 	else

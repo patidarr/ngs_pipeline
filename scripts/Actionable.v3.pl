@@ -159,7 +159,7 @@ sub Germline{
 			$level{"5"} = 'yes';
 			my @ANN = split("\t", $ANNOTATION{"$site"});
 			if (exists $HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"}){
-				$level{"1"} = "yes";
+				$level{"1.0"} = "yes";
 				$source = $source.";".$HOT_SPOT{"$temp[0]\t$temp[1]\t$temp[2]"};
 			}
 			if ($ANN[$index_of_Gene] eq $ANN[$index_of_ACMG]){
