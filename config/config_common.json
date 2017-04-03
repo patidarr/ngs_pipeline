@@ -52,6 +52,7 @@
 		"agilent.utr.v4"	:{"Normal":"20","Tumor":"20"},
 		"agilent.v4"		:{"Normal":"20","Tumor":"20"},
 		"agilent.v5"		:{"Normal":"20","Tumor":"20"},
+		"agilent.utr.v5"	:{"Normal":"20","Tumor":"20"},
 		"niaid.agilent.v5"	:{"Normal":"20","Tumor":"20"},
 		"strexome"		:{"Normal":"20","Tumor":"20"}
 	}
