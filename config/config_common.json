@@ -54,6 +54,8 @@
 		"agilent.v5"		:{"Normal":"20","Tumor":"20"},
 		"agilent.utr.v5"	:{"Normal":"20","Tumor":"20"},
 		"niaid.agilent.v5"	:{"Normal":"20","Tumor":"20"},
+		"niaid.seqcapez.exome.v2":{"Normal":"20","Tumor":"20"},
+		"niaid.truseq.exome"	:{"Normal":"20","Tumor":"20"},
 		"nextera"		:{"Normal":"20","Tumor":"20"},
 		"strexome"		:{"Normal":"20","Tumor":"20"}
 	}
