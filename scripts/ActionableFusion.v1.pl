@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use List::Util qw(first);
 ###########################################################
 #
 #   Author: Rajesh Patidar rajbtpatidar@gmail.com
@@ -24,12 +25,17 @@ unless (open(DEFUSE_OUT, ">$destination/$library.defuse.filtered.txt")){
 	print STDERR "Can not open the file $destination/$library.defuse.filtered.txt\n";
 	die $!;
 }
+my $idx;
 while(<DEFUSE>){
 	chomp;
 	my @local =split("\t", $_);
-	if($_ =~ /^cluster_id/){print DEFUSE_OUT "$_\n"; next}	
+	if($_ =~ /^cluster_id/){
+		print DEFUSE_OUT "$_\n"; 
+		$idx = first { $local[$_] eq 'span_count' } 0..$#local;
+		next;
+	}	
 	print DEFUSE_OUT "$_\n";
-	print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t$local[60]\n";
+	print "$local[30]\t$local[31]\tchr$local[24]\t$local[37]\tchr$local[25]\t$local[38]\t$library\tDefuse\t$local[$idx]\n";
 }
 close DEFUSE;
 close DEFUSE_OUT;
@@ -67,6 +73,7 @@ while(<FC>){
         chomp;
 	my @local =split("\t", $_);
 	if($_ =~ /^Gene_1_symbol/){print FC_OUT "$_\n"; next}
+	if($_ =~ /not-converted/){next;}
 	my @left  = split(":", $local[8]);
 	my @right = split(":", $local[9]);
 	print "$local[0]\t$local[1]\tchr$left[0]\t$left[1]\tchr$right[0]\t$right[1]\t$library\tFusionCatcher\t$local[5]\n";
