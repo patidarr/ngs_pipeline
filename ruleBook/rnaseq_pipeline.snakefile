@@ -19,6 +19,9 @@ for subject  in config['RNASeq'].keys():
 	RNA_QC_ALL	+=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
 	ALL_QC		+=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
 	for sample in config['RNASeq'][subject]:
+		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/seq2HLA/"+sample+"-ClassI.HLAgenotype4digits"]
+                ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/"+sample+".Calls.txt"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+"_ucsc.SJ.out.tab"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]

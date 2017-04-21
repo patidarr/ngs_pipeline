@@ -40,6 +40,24 @@ rule HLAminer:
 	#######################
 	"""
 ############
+##       MergeHLA Calls
+#############
+rule MergeHLA:
+	input:
+		A="{base}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv",
+		B="{base}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits",
+		Tool=NGS_PIPELINE + "/scripts/consensusHLA.pl"
+	output:
+		"{base}/{TIME}/{sample}/HLA/{sample}.Calls.txt"
+	params:
+		rulename = "MergeHLA",
+		batch    = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	perl {input.Tool} {input.B} {input.A} | sort > {output}	
+	#######################
+	"""
+############
 #	VEP4pVACSeq
 ############
 rule VEP:
