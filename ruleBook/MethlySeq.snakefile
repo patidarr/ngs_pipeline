@@ -4,7 +4,8 @@ if 'methylseq' in config:
 			PATIENTS.append(subject)
 		for library in config['methylseq'][subject]:
 			ALL_FASTQC += [subject+"/"+TIME+"/"+library+"/qc/fastqc/"+library+"_R2_fastqc.html"]
-			ALL_FASTQC += [subject+"/"+TIME+"/"+library+"/"+library+".bismark.bam"]
+			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+".bismark.bam"]
+			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+".bismark.report.txt"]
 	for subject in config['methylseq']:
 		SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['methylseq'][subject])
 ############
@@ -35,9 +36,9 @@ rule Bismark:
 ############
 #       Bismark Methylation Extractor
 ############
-rule Bismark:
+rule BismarkMethExt:
 	input:
-		bam="{base}/{TIME}/{sample}/{sample}.bismark.bam"
+		bam="{base}/{TIME}/{sample}/{sample}.bismark.bam",
 		ref=config["BismarkIndex"]
 	output:
 		"{base}/{TIME}/{sample}/{sample}.bismark.report.txt",
@@ -52,4 +53,4 @@ rule Bismark:
 	module load samtools/{params.samtools}
 	bismark_methylation_extractor {input.bam} --genome_folder {input.ref} --ample_memory  --multicore ${{THREADS}} --report --merge_non_CpG --output {wildcards.base}/{TIME}/{wildcards.sample}/ --comprehensive 
 	#######################
-	"""	
+	"""
