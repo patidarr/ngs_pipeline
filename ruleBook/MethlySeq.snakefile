@@ -11,7 +11,8 @@ if 'methylseq' in config:
 #       Bismark
 ############
 rule Bismark:
-	input: R=lambda wildcards: FQ[wildcards.sample],
+	input: 
+		R=lambda wildcards: FQ[wildcards.sample],
 		ref=config["BismarkIndex"]
 	output:
 		"{base}/{TIME}/{sample}/{sample}.bismark.bam",
@@ -31,3 +32,24 @@ rule Bismark:
 	samtools index {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bismark.bam
 	#######################
 	"""
+############
+#       Bismark Methylation Extractor
+############
+rule Bismark:
+	input:
+		bam="{base}/{TIME}/{sample}/{sample}.bismark.bam"
+		ref=config["BismarkIndex"]
+	output:
+		"{base}/{TIME}/{sample}/{sample}.bismark.report.txt",
+	version: config["bismark"]
+	params:
+		rulename  = "BisMetExt",
+		samtools  = config["samtools"],
+		batch     = config[config['host']]["job_bismark"]
+	shell: """
+	#######################
+	module load bismark/{version} bowtie
+	module load samtools/{params.samtools}
+	bismark_methylation_extractor {input.bam} --genome_folder {input.ref} --ample_memory  --multicore ${{THREADS}} --report --merge_non_CpG --output {wildcards.base}/{TIME}/{wildcards.sample}/ --comprehensive 
+	#######################
+	"""	
