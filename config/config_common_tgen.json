@@ -4,6 +4,7 @@
 	"annovar_data"		: "/projects/Clinomics/Tools/ref/hg19/annotation/",
 	"genotypeDest"		: "/data/khanlab/projects/Genotyping/GenotypeFiles/",
 	"bwaIndex"		: "/projects/Clinomics/Tools/ref/hg19/Index/bwa/ucsc.hg19.fasta",
+	"BismarkIndex"		: "/projects/Clinomics/Tools/ref/hg19/Index/Bismark",
 	"Bowtie2Index"		: "/projects/Clinomics/Tools/ref/hg19/Index/Bowtie2Index/genome",
 	"BowtieIndex"		: "/projects/Clinomics/Tools/ref/hg19/Index/BowtieIndex/genome",
 	"Novo_index"		: "/projects/Clinomics/Tools/ref/hg19/Index/novoalign/chr_all_hg19.nbx",

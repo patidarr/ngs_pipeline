@@ -147,6 +147,16 @@ ALL_QC     += expand("{subject}/{TIME}/annotation/AnnotationInput.coding.rare.tx
 ALL_QC     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.config.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
+
+for subject in config['subject']:
+	for library in config['subject'][subject]:
+		if config['sample_captures'][library] not in config['Panel_List']:
+			if config['sample_type'][library] == 'Normal':
+				# This might be temporary, if needed on all sample remove line above line.
+				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
+				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
+
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
