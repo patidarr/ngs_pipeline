@@ -317,6 +317,7 @@ include: NGS_PIPELINE +"/ruleBook/STAR.snakefile"
 
 include: NGS_PIPELINE +"/ruleBook/Sequenza.snakefile"
 
+include: NGS_PIPELINE +"/ruleBook/MethlySeq.snakefile"
 
 ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
