@@ -17,7 +17,6 @@ rule Bismark:
 		ref=config["BismarkIndex"]
 	output:
 		"{base}/{TIME}/{sample}/{sample}.bismark.bam",
-		"{base}/{TIME}/{sample}/{sample}.bismark.bam.bai"
 	version: config["bismark"]
 	params:
 		rulename  = "bismark",
@@ -29,8 +28,29 @@ rule Bismark:
 	module load bismark/{version} bowtie
 	module load samtools/{params.samtools}
 	bismark -p ${{THREADS}} {input.ref} -1 {input.R[0]} -2 {input.R[1]} --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --basename {wildcards.sample} --temp_dir ${{LOCAL}}
-	mv {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}_pe.bam {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bismark.bam
-	samtools index {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bismark.bam
+
+	deduplicate_bismark -p {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}_pe.bam --bam 
+
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}_pe.deduplicated.bam {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bismark.bam
+	#######################
+	"""
+############
+#       Bismark Deduplicate
+############
+rule BisDedup:
+	input:
+		"{base}/{TIME}/{sample}/{sample}.bismark.bam"
+	output:
+		"{base}/{TIME}/{sample}/{sample}.bismark.deduplicated.bam"
+	version: config["bismark"]
+	params:
+		rulename  = "bisdedup",
+		samtools  = config["samtools"],
+		batch     = config[config['host']]["job_bismark"]
+	shell: """
+	#######################
+	module load bismark/{version} bowtie samtools/{params.samtools}
+	deduplicate_bismark -p {input} --bam
 	#######################
 	"""
 ############
@@ -38,10 +58,10 @@ rule Bismark:
 ############
 rule BismarkMethExt:
 	input:
-		bam="{base}/{TIME}/{sample}/{sample}.bismark.bam",
+		bam="{base}/{TIME}/{sample}/{sample}.bismark.deduplicated.bam",
 		ref=config["BismarkIndex"]
 	output:
-		"{base}/{TIME}/{sample}/{sample}.bismark.CpG_report.txt.gz",
+		"{base}/{TIME}/{sample}/{sample}.bismark.deduplicated.CpG_report.txt.gz",
 	version: config["bismark"]
 	params:
 		rulename  = "BisMetExt",
