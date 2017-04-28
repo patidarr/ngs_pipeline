@@ -5,7 +5,7 @@ if 'methylseq' in config:
 		for library in config['methylseq'][subject]:
 			ALL_FASTQC += [subject+"/"+TIME+"/"+library+"/qc/fastqc/"+library+"_R2_fastqc.html"]
 			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+".bismark.bam"]
-			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+".bismark.report.txt"]
+			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+".bismark.CpG_report.txt.gz"]
 	for subject in config['methylseq']:
 		SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['methylseq'][subject])
 ############
@@ -41,7 +41,7 @@ rule BismarkMethExt:
 		bam="{base}/{TIME}/{sample}/{sample}.bismark.bam",
 		ref=config["BismarkIndex"]
 	output:
-		"{base}/{TIME}/{sample}/{sample}.bismark.report.txt",
+		"{base}/{TIME}/{sample}/{sample}.bismark.CpG_report.txt.gz",
 	version: config["bismark"]
 	params:
 		rulename  = "BisMetExt",
@@ -51,6 +51,7 @@ rule BismarkMethExt:
 	#######################
 	module load bismark/{version} bowtie
 	module load samtools/{params.samtools}
-	bismark_methylation_extractor {input.bam} --genome_folder {input.ref} --ample_memory  --multicore ${{THREADS}} --report --merge_non_CpG --output {wildcards.base}/{TIME}/{wildcards.sample}/ --comprehensive 
+	bismark_methylation_extractor --gzip {input.bam} --ample_memory  --multicore ${{THREADS}} --output {wildcards.base}/{TIME}/{wildcards.sample}/ --genome_folder {input.ref} --bedGraph --cytosine_report --report 
+	#bismark_methylation_extractor {input.bam} --genome_folder {input.ref} --ample_memory  --multicore ${{THREADS}} --report --merge_non_CpG --output {wildcards.base}/{TIME}/{wildcards.sample}/ --comprehensive 
 	#######################
 	"""
