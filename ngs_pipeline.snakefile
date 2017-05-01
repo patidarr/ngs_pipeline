@@ -111,8 +111,8 @@ for subject in config['subject'].keys():
 	SUB_CON_QC[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	#SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+	#SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
 ###########################################################################
@@ -229,8 +229,9 @@ for subject in config['subject']:
 	local  = []
 	for sample in config['subject'][subject]:
 		local.extend([(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_DNASeq.snpEff.txt"),
-			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".Platypus.snpEff.txt"),
-			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")])
+			      (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".Platypus.snpEff.txt")
+			      #(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bam2mpg.snpEff.txt")
+			    ])
 	if subject not in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject] = local
 	if subject in ACT_TYPE:
