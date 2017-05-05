@@ -15,7 +15,7 @@
 	"version_python"        : "2.7.10",
 	"version_blast"		: "2.2.31+",
 	"VEP"			: "81",
-	"IEDB"			: "/home/patidarr/",
+	"IEDB"			: "/projects/Clinomics/Tools/ngs_pipeline/",
 	"target_intervals"	:{
 		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/design/WholeGenome.target.hg19.merged.bed",
 		"seqcapez.hu.ex.v3"	: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Exome_v3_capture_trimed.target.hg19.merged.bed",

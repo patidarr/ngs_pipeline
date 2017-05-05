@@ -9,7 +9,7 @@ my $mode = 'd';
 my $time='20160415';
 my $dataDir="";
 my $sheet="samplesheet.json";
-if (`dirname $0` =~ /\./){
+if (`dirname $0` =~ /^\./){
 	$NGS_PIPELINE = `pwd`;
 	chomp $NGS_PIPELINE;
 }
@@ -120,7 +120,7 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
 	}
 	else{
 		`mkdir -p "$workDir/log/"`;
-		`sbatch -e $workDir/log/ngs-pipeline.e -o $workDir/log/ngs-pipeline.o --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet --cpus-per-task=1 --partition=batch --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`;
+		`sbatchT -e $workDir/log/ngs-pipeline.e -o $workDir/log/ngs-pipeline.o --export=time=$mode,ngs=$NGS_PIPELINE,dataDir=$dataDir,workDir=$workDir,sheet=$sheet --cpus-per-task=1 --partition=batch --time=10-00:00:00 $NGS_PIPELINE/submit_snakemake.sh`;
 	}
 }
 else{
