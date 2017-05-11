@@ -58,6 +58,8 @@
 		"niaid.seqcapez.exome.v2":{"Normal":"20","Tumor":"20"},
 		"niaid.truseq.exome"	:{"Normal":"20","Tumor":"20"},
 		"nextera"		:{"Normal":"20","Tumor":"20"},
-		"strexome"		:{"Normal":"20","Tumor":"20"}
+		"strexome"		:{"Normal":"20","Tumor":"20"},
+		"sureselect.exon.v5_utr":{"Normal":"20","Tumor":"20"},
+		"sureselect.exon.v6"	:{"Normal":"20","Tumor":"20"}
 	}
 }
