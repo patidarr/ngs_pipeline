@@ -27,7 +27,10 @@ rule Bismark:
 	#######################
 	module load bismark/{version} bowtie
 	module load samtools/{params.samtools}
-	bismark -p ${{THREADS}} {input.ref} -1 {input.R[0]} -2 {input.R[1]} --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --basename {wildcards.sample} --temp_dir ${{LOCAL}}
+	module load trimgalore/0.4.2 cutadapt/1.12 fastqc/0.11.5
+	trim_galore --paired --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --trim1 {input.R[0]} {input.R[1]} 
+	address=`basename {input.R[0]} _R1.fastq.gz`
+	bismark -p ${{THREADS}} {input.ref} -1 {wildcards.base}/{TIME}/{wildcards.sample}/${{address}}_R1_val_1.fq.gz -2 {wildcards.base}/{TIME}/{wildcards.sample}/${{address}}_R2_val_2.fq.gz --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --basename {wildcards.sample} --temp_dir ${{LOCAL}} --nucleotide_coverage 
 	#######################
 	"""
 ############
@@ -67,7 +70,7 @@ rule BismarkMethExt:
 	#######################
 	module load bismark/{version} bowtie
 	module load samtools/{params.samtools}
-	bismark_methylation_extractor --gzip {input.bam} --ample_memory  --multicore ${{THREADS}} --output {wildcards.base}/{TIME}/{wildcards.sample}/ --genome_folder {input.ref} --bedGraph --cytosine_report --report 
+	bismark_methylation_extractor --gzip {input.bam} --ample_memory  --multicore ${{THREADS}} --output {wildcards.base}/{TIME}/{wildcards.sample}/ --genome_folder {input.ref} --bedGraph --cytosine_report --report --no_overlap 
 	#bismark_methylation_extractor {input.bam} --genome_folder {input.ref} --ample_memory  --multicore ${{THREADS}} --report --merge_non_CpG --output {wildcards.base}/{TIME}/{wildcards.sample}/ --comprehensive 
 	#######################
 	"""
@@ -95,7 +98,7 @@ rule bam2nuc:
 rule BisReport: 
 	input:
 		"{base}/{TIME}/{sample}/{sample}_pe.deduplicated.CpG_report.txt.gz",
-		"{base}/{TIME}/{sample}/{sample}.nucleotide_stats.txt"
+		#"{base}/{TIME}/{sample}/{sample}.nucleotide_stats.txt"
 	output:
 		"{base}/{TIME}/{sample}/{sample}_PE_report.html"
 	version: config["bismark"]

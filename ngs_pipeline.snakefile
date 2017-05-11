@@ -143,7 +143,6 @@ ALL_QC     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.consolidated_QC.txt", TIME=TIME, subject=SUBS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.circos.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
@@ -153,6 +152,7 @@ ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, su
 for subject in config['subject']:
 	for library in config['subject'][subject]:
 		if config['sample_captures'][library] not in config['Panel_List']:
+			ALL_QC    += [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
 			if config['sample_type'][library] == 'Normal':
 				# This might be temporary, if needed on all sample remove line above line.
 				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
