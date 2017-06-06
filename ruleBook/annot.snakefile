@@ -255,9 +255,9 @@ rule CombineAnnotation:
 		"{base}/AnnotationInput.sift.out",
 		convertor   = NGS_PIPELINE + "/scripts/CombineAnnotations.pl",
 		geneanno    = NGS_PIPELINE + "/scripts/GeneAnnotation.pl",
-		filter      = NGS_PIPELINE + "/scripts/filterVariants.v1.pl",
-		coding      = NGS_PIPELINE + "/scripts/ProteinCoding.pl",
+		coding      = NGS_PIPELINE + "/scripts/ProteinCodingRare.pl",
 		blacklisted = config["annovar_data"]+config["blacklisted"],
+		whitelisted = config["annovar_data"]+config["whitelisted"],
 		ACMG	    = config["annovar_data"]+config['ACMG']
 	output: 
 		filtered="{base}/AnnotationInput.coding.rare.txt",
@@ -286,7 +286,7 @@ echo "{wildcards.base}/AnnotationInput
 	perl {input.convertor} {wildcards.base}/list >{output.all}.tmp
 	perl {input.geneanno} {input.ACMG} {output.all}.tmp >{output.all}
 
-	perl {input.coding} {wildcards.base}/AnnotationInput.annotations.final.txt | perl {input.filter} - {input.blacklisted} 0.05 >{output.all}.tmp
+	perl {input.coding} {input.blacklisted} {input.whitelisted} {wildcards.base}/AnnotationInput.annotations.final.txt 0.05 >{output.all}.tmp
 	grep -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >{output.filtered}
 	grep -v -P "Chr\\tStart\\tEnd\\tRef\\tAlt" {output.all}.tmp >>{output.filtered}
 	rm -rf {output.all}.tmp {wildcards.base}/list

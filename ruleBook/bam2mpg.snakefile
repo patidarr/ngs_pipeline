@@ -25,7 +25,7 @@ rule Bam2MPG:
 	fi
 
 	module load bam2mpg/{version}
-	module load vcftools/{params.vcftools}
+	module load vcftools/{params.vcftools} {params.samtools}
 	for CHR in `seq 1 22` X Y;
 	do
 	echo "bam2mpg --shorten --vcf_spec --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{LOCAL}}/chr${{CHR}}{wildcards.sample}.indel.vcf {input.ref} {input.bam}"

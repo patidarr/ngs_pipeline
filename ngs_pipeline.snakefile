@@ -152,12 +152,11 @@ ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, su
 for subject in config['subject']:
 	for library in config['subject'][subject]:
 		if config['sample_captures'][library] not in config['Panel_List']:
+			# any output which is desired on all libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
 			ALL_QC    += [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
-			if config['sample_type'][library] == 'Normal':
-				# This might be temporary, if needed on all sample remove line above line.
-				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
-				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-				ALL_QC    +=  [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
+			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
+			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
 
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
@@ -172,6 +171,7 @@ if len(config['sample_references']) > 0:
 			seq2HLA	   = "{subject}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			HLAminer   = "{subject}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			if config['sample_captures'][Tumor] not in config['Panel_List']:
+				# any output which is desired on all somatic libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
 				HLA[Tumor] = [seq2HLA, HLAminer]
 				SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
 ###########################################################################
@@ -223,6 +223,7 @@ for sample in config['sample_references'].keys():
 	UNION_SOM_MUT[sample] = local
 	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
 	if config['sample_captures'][sample] not in config['Panel_List']:
+		# any output which is desired on all libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
 		UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
 
 ##########################################################################
@@ -374,15 +375,13 @@ rule Khanlab_Pipeline:
 		ActionableFiles,
 		UNION_SOM_MUT_LIST,
 		expand ("ngs_pipeline_{NOW}.rnaseq.done", NOW=NOW)
-	version: "1.0"
+	version: config["pipeline_version"]
 	wildcard_constraints:
 		NOW="\w+"
 	params:
 		rulename = "Final",
 		batch    = config[config['host']]["job_default"],
 		group    = config["group"],
-		wait4job = NGS_PIPELINE + "/scripts/block_for_jobid.pl",
-		sort 	 = NGS_PIPELINE + "/scripts/awk_sort_withHeader.awk",
 		mail 	 = NGS_PIPELINE + "/scripts/tsv2html.final.sh",
 		email    = config["mail"],
 		host     = config["host"],
@@ -400,7 +399,7 @@ rule Khanlab_Pipeline:
 		chmod g+rw {WORK_DIR}/${{sub}}/{TIME}/successful.txt 	
 		chgrp {params.group} {WORK_DIR}/${{sub}}/{TIME}/successful.txt
         done
-	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head {WORK_DIR}/ngs_pipeline_{NOW}.csv |mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
+	ssh {params.host} "{params.mail} --location {WORK_DIR} --host {params.host} --head --version {version} {WORK_DIR}/ngs_pipeline_{NOW}.csv |mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {params.email}"
 	rm -rf {WORK_DIR}/ngs_pipeline_{NOW}.csv
 	#######################
 	"""
@@ -685,6 +684,7 @@ rule CN_LRR:
 	#######################
 	module load R/{version}
 	module load bedtools/2.25.0
+	export LC_ALL=C
 	mkdir -p {wildcards.subject}/{TIME}/Actionable/
 	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
 	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
@@ -1004,6 +1004,7 @@ rule FormatInput:
 	shell: """
 	#######################
 	module load annovar/{version}
+	export LC_ALL=C
 	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph"

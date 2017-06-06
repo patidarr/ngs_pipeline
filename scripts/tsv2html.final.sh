@@ -13,30 +13,11 @@ Options:
  
   -d       Specify delimiter to look for, instead of "\t".
  
+  --version Pipeline version.
   --head   Treat first line as header, enclosing in <thead> and <th> tags.
- 
   --foot   Treat last line as footer, enclosing in <tfoot> and <th> tags. 
 
-  --Name   To include in Mail
-  --Diagnosis To include in the mail body  
-Examples:
- 
-  1. $(baselocation $0) --Name NCI00001 input.csv
- 
-  Above will parse file 'input.csv' with comma as the field separator and
-  output HTML tables to STDOUT.
- 
-  2. $(baselocation $0) -d '|' < input.psv > output.htm
- 
-  Above will parse file "input.psv", looking for the pipe character as the
-  delimiter, then output results to "output.htm".
- 
-  3. $(baselocation $0) -d '\t' --head --foot < input.tsv > output.htm
- 
-  Above will parse file "input.tsv", looking for tab as the delimiter, then
-  process first and last lines as header/footer (that contain data labels), then
-  write output to "output.htm".
- 
+
 EOF
 }
  
@@ -45,6 +26,10 @@ while true; do
     -d)
       shift
       d="$1"
+      ;;
+    --version)
+      shift
+      version="$1"
       ;;
     --foot)
       foot="-v ftr=1"
@@ -121,7 +106,7 @@ echo "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www
 <body>
 <p>
 Hello,<br><br>
-      ngs-pipeline finished successfully on <b>$host</b><br><br> 
+      ngs-pipeline version <b>$version</b> finished successfully on <b>$host</b><br><br> 
 	
 
 Subject(s) Processed:<br><br>
