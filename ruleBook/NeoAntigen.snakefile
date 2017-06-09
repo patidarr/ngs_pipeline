@@ -63,7 +63,9 @@ rule MergeHLA:
 ############
 rule VEP:
 	input:
-		files=lambda wildcards: UNION_SOM_MUT[wildcards.sample],
+		"{base}/{TIME}/{sample}/calls/{sample}.strelka.indels.raw.vcf",
+		"{base}/{TIME}/{sample}/calls/{sample}.strelka.snvs.raw.vcf",
+		"{base}/{TIME}/{sample}/calls/{sample}.MuTect.raw.vcf",
 		HLA  =lambda wildcards: HLA[wildcards.sample],
 		tool =NGS_PIPELINE + "/scripts/consensusSomaticVCF.pl",
 		merge=NGS_PIPELINE + "/scripts/consensusHLA.pl"
