@@ -24,6 +24,7 @@ elif HOST == 'login01':
 
 config['host'] = HOST
 GROUP=config['group']
+VERSION=config["pipeline_version"]
 MAIL=config['mail']
 #HOST = config['host']
 ###########################################################################
@@ -130,7 +131,7 @@ for subject  in config['RNASeq'].keys():
 ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.squeeze.done".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+#ALL_QC     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 #ALL_QC     += ["{subject}/{TIME}/{sample}/qc/BamQC/qualimapReport.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
@@ -346,7 +347,7 @@ onerror:
         shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find {PATIENTS} -group $USER -exec chgrp -f {GROUP} {{}} \;")
 	shell("find {PATIENTS} \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
-	shell("ssh {HOST} \"echo 'Pipeline failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
+	shell("ssh {HOST} \"echo ''ngs-pipeline version {VERSION} failed on {PATIENTS}. Error occured on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov  {MAIL} \"")
 	shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
 onstart:
 	f = open('ngs_pipeline_%s.csv' % NOW , 'w')
@@ -356,7 +357,7 @@ onstart:
 		print (subject,diagnosis,TIME,sep='\t', end='\n',file=f)
 	
 	shell("for sub in {PATIENTS}; do rm -rf {WORK_DIR}/${{sub}}/{TIME}/successful.txt ; done")
-	shell("ssh {HOST} \"echo 'ngs-pipeline started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
+	shell("ssh {HOST} \"echo 'ngs-pipeline version {VERSION} started on {PATIENTS} on {HOST}. Working Dir:  {WORK_DIR}' |mutt -s 'Khanlab ngs-pipeline Status' `whoami`@mail.nih.gov {MAIL} \"")
 onsuccess:
 	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+r {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
 	shell("find .snakemake/ ! -readable -prune -group $USER -exec chgrp -f {GROUP} {{}} \;")
