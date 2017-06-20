@@ -119,16 +119,17 @@ for subject  in config['RNASeq'].keys():
                 PATIENTS.append(subject)
 ###########################################################################
 # Many of the targets.
-ALL_QC      = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt", TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.config.txt", TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
+TARGET      = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
+TARGET     += expand("{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt", TIME=TIME, subject=PATIENTS)
+TARGET     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
+TARGET     += expand("{subject}/{TIME}/qc/{subject}.config.txt", TIME=TIME, subject=PATIENTS)
+TARGET     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
 
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
@@ -227,15 +228,12 @@ if len(config['sample_RNASeq']) > 0:
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
-varFiles=[]
-DBFiles =[]
-ActionableFiles =[]
 for subject in SUBJECT_ANNO.keys():
 	for group in SUBJECT_ANNO[subject].keys():
-		DBFiles +=[subject+"/"+TIME+"/"+subject+"/db/"+subject+"."+group]
-		ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+"."+group+".actionable.txt"]
+		TARGET +=[subject+"/"+TIME+"/"+subject+"/db/"+subject+"."+group]
+		TARGET +=[subject+"/"+TIME+ACT_DIR+subject+"."+group+".actionable.txt"]
 		for varFile in SUBJECT_ANNO[subject][group]:
-			varFiles.append(varFile)
+			TARGET.append(varFile)
 ###########################################################################
 localrules: Khanlab_Pipeline, RNASeq
 #IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, FormatInput, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3, Cuff_Mat
@@ -271,13 +269,12 @@ include: NGS_PIPELINE +"/ruleBook/Sequenza.snakefile"
 
 include: NGS_PIPELINE +"/ruleBook/MethlySeq.snakefile"
 
-ALL_VCFs =[]
 for subject in SUBJECT_VCFS.keys():
 	for vcf in SUBJECT_VCFS[subject]:
 		vcf = vcf.replace('snpEff.txt', 'raw.vcf')
-		ALL_VCFs +=[vcf]
+		TARGET +=[vcf]
 		vcf = vcf.replace('raw.vcf', 'raw.snpEff.vcf')
-		ALL_VCFs +=[vcf]
+		TARGET +=[vcf]
 ###########################################################################
 onerror:
 	shell("find .snakemake/ ! -readable -prune \( -type f -user $USER -exec chmod g+rw {{}} \; \) , \( -type d -user $USER -exec chmod g+rwx {{}} \; \)")
@@ -302,12 +299,7 @@ onsuccess:
 ###########################################################################
 rule Khanlab_Pipeline:
 	input:
-		SUB_IGV.values(),
-		ALL_VCFs,
-		ALL_QC,
-		varFiles,
-		DBFiles,
-		ActionableFiles,
+		TARGET,
 		expand ("ngs_pipeline_{NOW}.rnaseq.done", NOW=NOW)
 	version: config["pipeline_version"]
 	wildcard_constraints:
@@ -533,7 +525,7 @@ rule BamQC:
 ############
 rule QC_Sum:
 	input:
-		ALL_QC,
+		TARGET,
 		convertor = NGS_PIPELINE + "/scripts/makeQC.pl"
 	output:
 		"QC_AllSamples.txt"

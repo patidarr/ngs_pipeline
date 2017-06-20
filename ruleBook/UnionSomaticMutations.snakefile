@@ -7,7 +7,7 @@ for sample in config['sample_references'].keys():
 	if sample in config['sample_RNASeq'].keys():
 		local = [w.replace('annotated','annotated.expressed') for w in local]
 	UNION_SOM_MUT[sample] = local
-	ALL_QC +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
+	TARGET +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
 ############
 #       Union Somatic Calls
 ############

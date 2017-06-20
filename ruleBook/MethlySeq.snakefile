@@ -4,8 +4,8 @@ if 'methylseq' in config:
 			PATIENTS.append(subject)
 		for library in config['methylseq'][subject]:
 			ALL_FASTQC += [subject+"/"+TIME+"/"+library+"/qc/fastqc/"+library+"_R2_fastqc.html"]
-			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+"_pe.deduplicated.CpG_report.txt.gz"]
-			ALL_QC += [subject+"/"+TIME+"/"+library+"/"+library+"_PE_report.html"]
+			TARGET += [subject+"/"+TIME+"/"+library+"/"+library+"_pe.deduplicated.CpG_report.txt.gz"]
+			TARGET += [subject+"/"+TIME+"/"+library+"/"+library+"_PE_report.html"]
 	for subject in config['methylseq']:
 		SUBJECT_TO_SAMPLE[subject] = expand("{sample}", sample = config['methylseq'][subject])
 ############

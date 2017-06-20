@@ -1,8 +1,5 @@
-RNASEQ_BAM =[]
 RNA_QC_ALL =[]
-RNASEQ_FUSION =[]
-EXPRESSION=[]
-RNA_CALLS =[]
+TARGET_R=[]
 SUB2RNA = {}
 SUB_RNASEQ=[]
 SUB_FUSION={}
@@ -12,36 +9,32 @@ for subject,samples in config['RNASeq'].items():
 	for sample in samples:
 		SUB2RNA[sample]=subject
 for subject  in config['RNASeq'].keys():
-	DBFiles         +=[subject+"/"+TIME+"/"+subject+"/db/"+subject+".rnaseq"]
-	ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+".fusion.actionable.txt"]
-	ActionableFiles +=[subject+"/"+TIME+ACT_DIR+subject+".rnaseq.actionable.txt"]
-	ALL_QC          +=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
-	RNA_QC_ALL	+=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
-	ALL_QC		+=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
+	RNA_QC_ALL +=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
+	TARGET_R   +=[subject+"/"+TIME+"/"+subject+"/db/"+subject+".rnaseq"]
+	TARGET_R   +=[subject+"/"+TIME+ACT_DIR+subject+".fusion.actionable.txt"]
+	TARGET_R   +=[subject+"/"+TIME+ACT_DIR+subject+".rnaseq.actionable.txt"]
+	TARGET_R   +=[subject+"/"+TIME+"/qc/"+subject+".RnaSeqQC.txt"]
+	TARGET_R   +=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
 	for sample in config['RNASeq'][subject]:
-		ALL_QC    +=  [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
-		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
-		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+"_ucsc.SJ.out.tab"]
-		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]
-		ALL_QC += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
-		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/tophat-fusion.txt"]
-		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/fusion-catcher.txt"]
-		RNASEQ_FUSION += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.txt"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.pdf"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqQC.txt"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/fusion/"+sample+".actionable.fusion.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/"+sample+"_ucsc.SJ.out.tab"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/fusion/tophat-fusion.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/fusion/fusion-catcher.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/fusion/defuse.filtered.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/fastqc/"+sample+"_R2_fastqc.html"]
+		TARGET_R += [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.flagstat.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.hotspot.depth"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqMetrics.pdf"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".RnaSeqQC.txt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.gt"]
+		TARGET_R += [subject+"/"+TIME+"/"+sample+"/fusion/"+sample+".actionable.fusion.txt"]
 		add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
-		#EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_UCSC/"+sample+".exonExpression.UCSC.txt"]
-		#EXPRESSION += [subject+"/"+TIME+"/"+sample+"/exonExp_ENS/"+sample+".exonExpression.ENS.txt"]
 		for gtf in config['GTF']:
-			#EXPRESSION += [subject+"/"+TIME+"/"+sample+"/cufflinks_"+gtf+"/genes.fpkm_tracking_log2"]
-			EXPRESSION += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+"_counts.Gene.txt"]
-			#ALL_QC     += [subject+"/"+TIME+"/"+subject+"/db/matrixInput_"+sample+"_"+gtf]
-	RNA_CALLS  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+			TARGET_R += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+"_counts.Gene.txt"]
+	TARGET_R  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_FUSION[subject] = ["{subject}/{TIME}/{sample}/fusion/{sample}.actionable.fusion.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	SUB_QC[subject]     = ["{subject}/{TIME}/{sample}/qc/{sample}.RnaSeqQC.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	if subject in SUBJECT_VCFS:
@@ -68,11 +61,7 @@ for subject  in config['RNASeq'].keys():
 ############
 rule RNASeq:
 	input:
-		RNASEQ_BAM,
-		EXPRESSION,
-		RNA_CALLS,
-		RNASEQ_FUSION,
-		expand("{subject}/{TIME}"+ACT_DIR+"{subject}.fusion.actionable.txt", TIME=TIME, subject=config['RNASeq']),
+		TARGET_R,
 	output:
 		expand("ngs_pipeline_{NOW}.rnaseq.done", NOW=NOW)
 	wildcard_constraints:

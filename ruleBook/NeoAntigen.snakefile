@@ -2,9 +2,9 @@ HLA ={}
 for subject in config['subject']:
 	for library in config['subject'][subject]:
 		if config['sample_captures'][library] not in config['Panel_List']:
-			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
-			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
+			TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
+			TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+			TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
@@ -15,13 +15,13 @@ if len(config['sample_references']) > 0:
 				HLA[Tumor] = [seq2HLA, HLAminer]
 for sample in config['sample_references'].keys():
 	if config['sample_captures'][sample] not in config['Panel_List']:
-		ALL_QC    +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
+		TARGET    +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
 
 for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
-		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/seq2HLA/"+sample+"-ClassI.HLAgenotype4digits"]
-		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/"+sample+".Calls.txt"]
+		TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/seq2HLA/"+sample+"-ClassI.HLAgenotype4digits"]
+		TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+		TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/"+sample+".Calls.txt"]
 
 ############
 #	seq2HLA

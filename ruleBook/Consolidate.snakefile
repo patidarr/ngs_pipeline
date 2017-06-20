@@ -2,8 +2,8 @@ SUB_CON_QC = {}
 for subject in config['subject'].keys():
 	SUB_CON_QC[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 CON_QC = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC += ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC += expand("{subject}/{TIME}/qc/{subject}.consolidated_QC.txt", TIME=TIME, subject=SUBS)
+TARGET += ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET += expand("{subject}/{TIME}/qc/{subject}.consolidated_QC.txt", TIME=TIME, subject=SUBS)
 
 ############
 #       QC

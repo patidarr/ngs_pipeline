@@ -1,6 +1,6 @@
 for sample in config['sample_references'].keys():
 	if config['sample_captures'][sample] not in config['Panel_List']:
-		ALL_QC +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
+		TARGET +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
 ############
 #	Mutational Signature
 ############

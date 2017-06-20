@@ -1,5 +1,5 @@
 ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
-ALL_QC += expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
+TARGET += expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
 ############
 #	table_annovar for:
 #		refGene

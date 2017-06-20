@@ -1,7 +1,7 @@
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.squeeze.done".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.squeeze.done".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 for subject  in config['RNASeq'].keys():
 	for sample in config['RNASeq'][subject]:
-		ALL_QC      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.squeeze.done"]
+		TARGET      += [subject+"/"+TIME+"/"+sample+"/qc/"+sample+".star.squeeze.done"]
 ############
 #       bamUtil
 ############

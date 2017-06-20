@@ -6,8 +6,8 @@ if len(config['sample_references']) > 0:
 				SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
 for sample in config['sample_references'].keys():
 	if config['sample_captures'][sample] not in config['Panel_List']:
-		ALL_QC +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]	
-		ALL_QC +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
+		TARGET +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]	
+		TARGET +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
 
 ############
 #       GenotypeFile

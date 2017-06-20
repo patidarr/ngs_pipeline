@@ -1,5 +1,5 @@
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.failExons".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.failGenes".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.failExons".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.failGenes".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 rule  FailedExons:
 	input: depth_file="{base}/{TIME}/{sample}/qc/{sample}.depth_per_base"
 	output:

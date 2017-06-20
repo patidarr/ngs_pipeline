@@ -1,4 +1,4 @@
-ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.depth_per_base".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.depth_per_base".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ############
 ##      Depth Per Base for entire target intervals
 ############

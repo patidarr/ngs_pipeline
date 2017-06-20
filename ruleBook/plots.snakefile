@@ -1,10 +1,10 @@
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
+TARGET     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
+TARGET     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 for subject in config['subject']:
 	for library in config['subject'][subject]:
 		if config['sample_captures'][library] not in config['Panel_List']:
 			# any output which is desired on all libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
-			ALL_QC    += [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
+			TARGET    += [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
 ############
 # CoveragePlot
 ############

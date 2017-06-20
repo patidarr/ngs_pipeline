@@ -50,10 +50,10 @@ fi
 #for subject in config['subject'].keys():
 #        PATIENTS.append(subject)
 ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
-ALL_QC = expand("AnnotationInput.{suff}", suff=ANNO_FILES)
+TARGET = expand("AnnotationInput.{suff}", suff=ANNO_FILES)
 rule final:
         input:
-                ALL_QC
+                TARGET
 ############
 #	table_annovar for:
 #		refGene
