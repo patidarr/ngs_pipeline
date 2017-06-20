@@ -1,3 +1,11 @@
+SUB_CON_QC = {}
+for subject in config['subject'].keys():
+	SUB_CON_QC[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+CON_QC = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+ALL_QC += ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+############
+#       QC
+############
 rule QC:
         input:
                 bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
@@ -25,6 +33,9 @@ rule QC:
 	rm -rf {output}.tmp
         #######################
         """
+############
+#       QC Summary for Patient
+############
 rule QC_Summary_Patient:
 	input : lambda wildcards: SUB_CON_QC[wildcards.subject]
 	output: "{subject}/{TIME}/qc/{subject}.consolidated_QC.txt"
@@ -37,6 +48,9 @@ rule QC_Summary_Patient:
 	cat {input} |sort |uniq |sed -e '/^$/d'>{output}
 	#######################
 	"""
+############
+#	QC Summary for Cohort
+############
 rule QC_Summary:
 	input : CON_QC
 	output: "Consolidated_QC.txt"

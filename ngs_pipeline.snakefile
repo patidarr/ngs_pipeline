@@ -94,14 +94,10 @@ SUB_COV = {}
 SUB_LOH = {}
 SUB_GT  = {}
 SUB_HOT = {}
-SUB_IGV = {}
-SUB_CON_QC = {}
 SAMPLES =[]
 somaticPairs = {}
 somaticCopy = {}
-SequenzaPairs ={}
 pairedCapture = {}
-HLA ={}
 # Inputs for the targets, where direct list can not be used.
 for subject in config['subject'].keys():
 	SUBS.append(subject)
@@ -111,11 +107,6 @@ for subject in config['subject'].keys():
 	SUB_HOT[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_LOH[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.loh".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_GT[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_CON_QC[subject]  = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	#SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	#SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.novo.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	for sample in config['subject'][subject]:
 		SAMPLES.append(sample)
 ###########################################################################
@@ -131,33 +122,19 @@ for subject  in config['RNASeq'].keys():
 ALL_FASTQC  = ["{subject}/{TIME}/{sample}/qc/fastqc/{sample}_R2_fastqc.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC      = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.squeeze.done".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-#ALL_QC     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-#ALL_QC     += ["{subject}/{TIME}/{sample}/qc/BamQC/qualimapReport.html".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.depth_per_base".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.failExons".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.failGenes".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC	   += ["{subject}/{TIME}/{sample}/qc/{sample}.hsmetrics".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-CON_QC	    = ["{subject}/{TIME}/{sample}/qc/{sample}.consolidated_QC".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.consolidated_QC.txt", TIME=TIME, subject=SUBS)
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
-ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/qc/{subject}.config.txt", TIME=TIME, subject=PATIENTS)
 ALL_QC     += expand("{subject}/{TIME}/igv/session_{subject}.xml", TIME=TIME, subject=PATIENTS)
-
-for subject in config['subject']:
-	for library in config['subject'][subject]:
-		if config['sample_captures'][library] not in config['Panel_List']:
-			# any output which is desired on all libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
-			ALL_QC    += [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
-			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
-			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-			ALL_QC    += [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
 
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
@@ -169,12 +146,6 @@ if len(config['sample_references']) > 0:
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
 			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
-			seq2HLA	   = "{subject}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			HLAminer   = "{subject}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			if config['sample_captures'][Tumor] not in config['Panel_List']:
-				# any output which is desired on all somatic libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
-				HLA[Tumor] = [seq2HLA, HLAminer]
-				SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
 ###########################################################################
 # This is to make list of DB file list. (germline, variants, somatic, rnaseq)
 SUBJECT_ANNO = dict([(key, {}) for key in PATIENTS])
@@ -185,7 +156,6 @@ def add_to_SUBJECT_ANNO(subject, category, file_list):
 		SUBJECT_ANNO[subject][category].extend(file_list)
 ###########################################################################
 SUBJECT_VCFS = {}
-COPY_NUMBER=[]
 SOMATIC =[]
 ###########################################################################
 # This is to find out if we need to make variants db file or germline file.
@@ -209,24 +179,6 @@ for subject in config['subject'].keys():
 			DECIDE_GL[subject] = 'gl_only'
 		else:
 			ACT_TYPE +=[subject]
-###########################################################################
-# To make union somatic file for every library. 
-#	This includes logic to get files based on sample_ref and sample_rnaseq
-UNION_SOM_MUT={}
-UNION_SOM_MUT_LIST =[]
-for sample in config['sample_references'].keys():
-	subject=SAMPLE_TO_SUBJECT[sample]
-	local =[(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"),
-		(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"),
-		(subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt")]
-	if sample in config['sample_RNASeq'].keys():
-		local = [w.replace('annotated','annotated.expressed') for w in local]
-	UNION_SOM_MUT[sample] = local
-	UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".unionSomaticVars.txt"]
-	if config['sample_captures'][sample] not in config['Panel_List']:
-		# any output which is desired on all libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
-		UNION_SOM_MUT_LIST +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
-
 ##########################################################################
 # To create lists to be filled in SUBJECT_ANNO
 for subject in config['subject']:
@@ -253,15 +205,6 @@ for sample in config['sample_references'].keys():
 		  (subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.snpEff.txt")
 		]
 	)
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".copyNumber.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".hq.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.annotated.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.filtered.txt"]
-	COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/copyNumber/"+sample+".CN.png"]
-	if config['sample_captures'][sample] not in config['Panel_List']:
-		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]
-		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
-		COPY_NUMBER +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
@@ -366,15 +309,12 @@ onsuccess:
 rule Khanlab_Pipeline:
 	input:
 		SUB_IGV.values(),
-		COPY_NUMBER,
 		ALL_VCFs,
-		CON_QC,
 		ALL_QC,
 		ALL_FASTQC,
 		varFiles,
 		DBFiles,
 		ActionableFiles,
-		UNION_SOM_MUT_LIST,
 		expand ("ngs_pipeline_{NOW}.rnaseq.done", NOW=NOW)
 	version: config["pipeline_version"]
 	wildcard_constraints:

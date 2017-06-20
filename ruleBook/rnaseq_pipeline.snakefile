@@ -20,9 +20,6 @@ for subject  in config['RNASeq'].keys():
 	ALL_QC		+=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
 	for sample in config['RNASeq'][subject]:
 		ALL_QC    +=  [subject+"/"+TIME+"/qc/"+subject+".circos.png"]
-		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/seq2HLA/"+sample+"-ClassI.HLAgenotype4digits"]
-                ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-		ALL_QC    +=  [subject+"/"+TIME+"/"+sample+"/HLA/"+sample+".Calls.txt"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+"_ucsc.SJ.out.tab"]
 		RNASEQ_BAM += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]
@@ -58,24 +55,15 @@ for subject  in config['RNASeq'].keys():
 		SUB_LOH[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.loh".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_COV[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.coverage.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{TIME}/{sample}/qc/{sample}.star.gt".format(TIME=TIME,subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 	else:
 		SUB_HOT[subject] = []
 		SUB_LOH[subject] = []
 		SUB_COV[subject] = []
 		SUB_GT[subject]  = []
-		SUB_IGV[subject] = []
 		SUB_HOT[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.hotspot.depth".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_LOH[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.loh".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_COV[subject] += ["{subject}/{TIME}/{sample}/qc/{sample}.star.coverage.txt".format(TIME=TIME,subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_GT[subject]  += ["{subject}/{TIME}/{sample}/qc/{sample}.star.gt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 ############
 #       RNASeq All
 ############
