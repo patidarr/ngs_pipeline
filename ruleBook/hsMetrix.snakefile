@@ -1,3 +1,4 @@
+ALL_QC     += ["{subject}/{TIME}/{sample}/qc/{sample}.hsmetrics".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 rule TargetIntervals:
 	input:
 		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",

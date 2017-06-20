@@ -14,7 +14,6 @@ for subject  in config['RNASeq'].keys():
 		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-
 ############
 ##	Tiled data file(.tdf)
 ############
