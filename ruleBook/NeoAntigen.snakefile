@@ -1,28 +1,31 @@
 HLA ={}
-for subject in config['subject']:
-	for library in config['subject'][subject]:
-		if config['sample_captures'][library] not in config['Panel_List']:
-			TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
-			TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-			TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
-if len(config['sample_references']) > 0:
-	for Tumor in config['sample_references']:
-		for Normal in config['sample_references'][Tumor]:
-			seq2HLA    = "{subject}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			HLAminer   = "{subject}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			if config['sample_captures'][Tumor] not in config['Panel_List']:
-				# any output which is desired on all somatic libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
-				HLA[Tumor] = [seq2HLA, HLAminer]
-for sample in config['sample_references'].keys():
-	subject=SAMPLE_TO_SUBJECT[sample]
-	if config['sample_captures'][sample] not in config['Panel_List']:
-		TARGET    +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
+if 'subject' in config:
+	for subject in config['subject']:
+		for library in config['subject'][subject]:
+			if config['sample_captures'][library] not in config['Panel_List']:
+				TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/seq2HLA/"+library+"-ClassI.HLAgenotype4digits"]
+				TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+				TARGET    += [subject+"/"+TIME+"/"+library+"/HLA/"+library+".Calls.txt"]
+if 'sample_references' in config:
+	if len(config['sample_references']) > 0:
+		for Tumor in config['sample_references']:
+			for Normal in config['sample_references'][Tumor]:
+				seq2HLA    = "{subject}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+				HLAminer   = "{subject}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+				if config['sample_captures'][Tumor] not in config['Panel_List']:
+					# any output which is desired on all somatic libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
+					HLA[Tumor] = [seq2HLA, HLAminer]
+	for sample in config['sample_references'].keys():
+		subject=SAMPLE_TO_SUBJECT[sample]
+		if config['sample_captures'][sample] not in config['Panel_List']:
+			TARGET    +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
 
-for subject  in config['RNASeq'].keys():
-	for sample in config['RNASeq'][subject]:
-		TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/seq2HLA/"+sample+"-ClassI.HLAgenotype4digits"]
-		TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
-		TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/"+sample+".Calls.txt"]
+if 'RNASeq' in config:
+	for subject  in config['RNASeq'].keys():
+		for sample in config['RNASeq'][subject]:
+			TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/seq2HLA/"+sample+"-ClassI.HLAgenotype4digits"]
+			TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/HLAminer/HLAminer_HPTASR.csv"]
+			TARGET    +=  [subject+"/"+TIME+"/"+sample+"/HLA/"+sample+".Calls.txt"]
 
 ############
 #	seq2HLA

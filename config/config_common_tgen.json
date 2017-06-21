@@ -45,6 +45,7 @@
 		"nbl.panel"		: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged.bed"
 	},
 	"verifyBamID_vcf"	:{
+		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel1.recode.vcf",
 		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel1.recode.vcf",

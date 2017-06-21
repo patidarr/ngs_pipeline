@@ -1,14 +1,15 @@
 SequenzaPairs ={}
-if len(config['sample_references']) > 0:
-	for Tumor in config['sample_references']:
-		for Normal in config['sample_references'][Tumor]:
-			if config['sample_captures'][Tumor] not in config['Panel_List']:
-				SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
-for sample in config['sample_references'].keys():
-	subject=SAMPLE_TO_SUBJECT[sample]
-	if config['sample_captures'][sample] not in config['Panel_List']:
-		TARGET +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]	
-		TARGET +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
+if 'sample_references' in config:
+	if len(config['sample_references']) > 0:
+		for Tumor in config['sample_references']:
+			for Normal in config['sample_references'][Tumor]:
+				if config['sample_captures'][Tumor] not in config['Panel_List']:
+					SequenzaPairs[Tumor] = ["{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal), "{subject}/{TIME}/{sample}/{sample}.mpileup.gz".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor) ]
+	for sample in config['sample_references'].keys():
+		subject=SAMPLE_TO_SUBJECT[sample]
+		if config['sample_captures'][sample] not in config['Panel_List']:
+			TARGET +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+"/"+sample+"_alternative_fit.pdf"]	
+			TARGET +=[subject+"/"+TIME+"/"+sample+"/sequenza/"+sample+".txt"]
 
 ############
 #       GenotypeFile

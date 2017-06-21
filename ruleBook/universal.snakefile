@@ -1,19 +1,18 @@
 SUB_IGV = {}
-for subject in config['subject'].keys():
-	SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-	SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
-for subject  in config['RNASeq'].keys():
-	if subject in SUB_IGV:
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-	else:
-		SUB_IGV[subject] = []
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
-		SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+if 'subject' in config:
+	for subject in config['subject'].keys():
+		SUB_IGV[subject] = ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+		SUB_IGV[subject]+= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam.tdf".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
+if 'RNASeq' in config:
+	for subject  in config['RNASeq'].keys():
+		if subject in SUB_IGV:
+			SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+			SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		else:
+			SUB_IGV[subject] = []
+			SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+			SUB_IGV[subject] += ["{subject}/{TIME}/{sample}/{sample}.star.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
+		TARGET += ["{subject}/{TIME}/{sample}/{sample}.tophat.final.bam.tdf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 TARGET +=SUB_IGV.values()
 ############
 ##	Tiled data file(.tdf)
