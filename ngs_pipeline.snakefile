@@ -2,6 +2,7 @@ import itertools
 import os
 import collections
 import json
+import glob
 from snakemake.utils import R
 from snakemake.utils import min_version
 min_version("3.2")
@@ -79,8 +80,9 @@ for sample in config['library'].keys():
 			elif os.path.isfile(DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R1.fastq.gz"):
 				FQ[sample] =[DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R1.fastq.gz", DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R2.fastq.gz"]
 			else:
-				print("can not locate fastq file for sample", fq)
-	  			exit()
+				R1=glob.glob(DATA_DIR+fq+"/*_R1_*.fastq.gz")
+				R2=glob.glob(DATA_DIR+fq+"/*_R2_*.fastq.gz")
+				FQ[sample] =[R1,R2]
 		else:
 			exit()
 ###########################################################################
@@ -353,11 +355,23 @@ rule FASTQC:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	ln -sf {input.R[0]} ${{LOCAL}}/{wildcards.sample}_R1.fastq.gz
-	ln -sf {input.R[1]} ${{LOCAL}}/{wildcards.sample}_R2.fastq.gz
-
-	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} ${{LOCAL}}/{wildcards.sample}_R1.fastq.gz
-	fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} ${{LOCAL}}/{wildcards.sample}_R2.fastq.gz
+	count=`echo {input.R}|grep -o R2 |wc -l`
+	count=`expr ${{count}} - 1`
+	read -a arr <<<"{input.R}"
+	for index in `seq 0 ${{count}}`; do
+	        R1+="${{arr[${{index}}]}} "
+	done
+	R2=`echo ${{R1}}|sed -e 's/_R1_/_R2_/g'`
+	echo "Working on ${{R1}}"
+	zcat ${{R1}} |fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} /dev/stdin
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc.html {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R1_fastqc.html
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc      {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R1_fastqc
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc.zip  {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R1_fastqc.zip
+	echo "Working on ${{R2}}"
+	zcat ${{R2}} |fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} /dev/stdin
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc.html {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R2_fastqc.html
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc      {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R2_fastqc
+	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc.zip  {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R2_fastqc.zip
 	#######################
 	"""
 ############
