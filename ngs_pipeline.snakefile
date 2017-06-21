@@ -197,6 +197,7 @@ for sample in config['sample_references'].keys():
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".MuTect.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.snvs.annotated.txt"]
 	SOMATIC     +=[subject+"/"+TIME+"/"+sample+"/calls/"+sample+".strelka.indels.annotated.txt"]
+	TARGET.extend(SOMATIC)
 	if subject in SUBJECT_VCFS:
 		SUBJECT_VCFS[subject].extend(local)
 	somatic = [w.replace('snpEff','annotated') for w in local]
@@ -220,9 +221,8 @@ if 'sample_RNASeq' in config:
 					TARGET += ["{subject}/{TIME}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
 					TARGET += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
 					TARGET += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.indels.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
-			else:
-				# Its possible to have Matched RNASeq, i.e. Tumor only sequencing (Exome/RNA) but missing Corrosponding Normal
-				#print(Tumor, "Corrosponding RNASeq found but matched Normal not found")
+			# Its possible to have Matched RNASeq, i.e. Tumor only sequencing (Exome/RNA) but missing Corrosponding Normal
+			#print(Tumor, "Corrosponding RNASeq found but matched Normal not found")
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
@@ -237,7 +237,7 @@ localrules: Khanlab_Pipeline, RNASeq
 #IGV_Session, DBinput, AttachAnnotation, Expressed, vcf2txt, symlink_tophatBam, copyNovoBam, Actionable_Germline, Actionable_RNAseq, Actionable_Somatic, Actionable_Variants, Actionable_fusion, Sub_Fusion, makeConfig, TargetInterval, QC_Summary_Patient,QC_Summary,UnionSomaticCalls,TOPHAT_LINK, SampleGT,QC_Sum, FormatInput, RNASeqQC_1,RNASeqQC1 RNASeqQC_2,RNASeqQC_3, Cuff_Mat
 #Circos, CoveragePlot, BoxPlot_Hotspot, makeConfig,Ideogram
 ###########################################################################
-#                               Rule Book				  #
+#				Include Rule Book			  #
 ###########################################################################
 include: NGS_PIPELINE +"/ruleBook/bamUtil.snakefile"
 include: NGS_PIPELINE +"/ruleBook/verifyBamID.snakefile"
