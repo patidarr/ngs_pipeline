@@ -88,7 +88,6 @@ for sample in config['library'].keys():
 #### Targets
 ####
 PATIENTS =[]
-SUBS  = []
 SUB_BAMS= {}
 SUB_COV = {}
 SUB_LOH = {}
@@ -96,11 +95,9 @@ SUB_GT  = {}
 SUB_HOT = {}
 SAMPLES =[]
 somaticPairs = {}
-somaticCopy = {}
 pairedCapture = {}
 # Inputs for the targets, where direct list can not be used.
 for subject in config['subject'].keys():
-	SUBS.append(subject)
 	PATIENTS.append(subject)
 	SUB_BAMS[subject]= ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
 	SUB_COV[subject] = ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.coverage.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in config['subject'][subject]]
@@ -124,7 +121,6 @@ TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt".format(T
 TARGET     += ["{subject}/{TIME}/{sample}/{sample}.bwa.final.bam".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.hotspot.depth".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 TARGET     += ["{subject}/{TIME}/{sample}/qc/{sample}.bwa.gt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
-TARGET     += ["{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
 TARGET     += expand("{subject}/{TIME}/qc/{subject}.genotyping.txt", TIME=TIME, subject=PATIENTS)
 TARGET     += expand("{subject}/{TIME}/annotation/AnnotationInput.coding.rare.txt", TIME=TIME, subject=PATIENTS)
 TARGET     += expand("{subject}/{TIME}/annotation/{subject}.Annotations.coding.rare.txt", TIME=TIME, subject=PATIENTS)
@@ -135,12 +131,9 @@ if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
 			TumorBam   = "{subject}/{TIME}/{sample}/{sample}.bwa.final".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
-			TumorCopy  = "{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
 			NormalBam  = "{subject}/{TIME}/{sample}/{sample}.bwa.final".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
-			NormalCopy = "{subject}/{TIME}/{sample}/copyNumber/{sample}.count.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
 			pairedCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bam.bai", NormalBam + ".bam", NormalBam + ".bam.bai"]
-			somaticCopy[Tumor] = [NormalCopy, TumorCopy]
 ###########################################################################
 # This is to make list of DB file list. (germline, variants, somatic, rnaseq)
 SUBJECT_ANNO = dict([(key, {}) for key in PATIENTS])
@@ -190,7 +183,8 @@ for subject in config['subject']:
 		add_to_SUBJECT_ANNO(subject,"variants",germline)
 	else:
 		germline = [w.replace('snpEff','annotated') for w in local]
-		add_to_SUBJECT_ANNO(subject,"germline",germline)	
+		add_to_SUBJECT_ANNO(subject,"germline",germline)
+	TARGET.extend(local)	
 for sample in config['sample_references'].keys():
 	local  = []
 	subject=SAMPLE_TO_SUBJECT[sample]
@@ -214,17 +208,21 @@ for sample in config['sample_references'].keys():
 ###########################################################################
 ###########################################################################
 # Expressed Mutations
-ALL_EXPRESSED =[]
 expressedPairs = {}
-if len(config['sample_RNASeq']) > 0:
-	for Tumor in config['sample_RNASeq']:
-		for RNASample in config['sample_RNASeq'][Tumor]:
-			subject=SAMPLE_TO_SUBJECT[Tumor]
-			RNASeqBam    = subject + "/"+TIME+ "/" + RNASample + "/calls/"+RNASample + ".HC_RNASeq.snpEff.txt"
-			expressedPairs[Tumor] = RNASeqBam
-			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
-			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
-			ALL_EXPRESSED += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.indels.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+if 'sample_RNASeq' in config:
+	if len(config['sample_RNASeq']) > 0:
+		for Tumor in config['sample_RNASeq']:
+			if Tumor in config['sample_references'].keys():
+				for RNASample in config['sample_RNASeq'][Tumor]:
+					subject=SAMPLE_TO_SUBJECT[Tumor]
+					RNASeqBam    = subject + "/"+TIME+ "/" + RNASample + "/calls/"+RNASample + ".HC_RNASeq.snpEff.txt"
+					expressedPairs[Tumor] = RNASeqBam
+					TARGET += ["{subject}/{TIME}/{sample}/calls/{sample}.MuTect.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor],  sample=Tumor)]
+					TARGET += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.snvs.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+					TARGET += ["{subject}/{TIME}/{sample}/calls/{sample}.strelka.indels.annotated.expressed.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+			else:
+				# Its possible to have Matched RNASeq, i.e. Tumor only sequencing (Exome/RNA) but missing Corrosponding Normal
+				#print(Tumor, "Corrosponding RNASeq found but matched Normal not found")
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
 ###########################################################################
@@ -252,11 +250,9 @@ include: NGS_PIPELINE +"/ruleBook/Consolidate.snakefile"
 include: NGS_PIPELINE +"/ruleBook/universal.snakefile"
 include: NGS_PIPELINE +"/ruleBook/mutationalSignature.snakefile"
 include: NGS_PIPELINE +"/ruleBook/NeoAntigen.snakefile"
-
 include: NGS_PIPELINE +"/ruleBook/haplotypeCaller.snakefile"
 include: NGS_PIPELINE +"/ruleBook/platypus.snakefile"
 include: NGS_PIPELINE +"/ruleBook/bam2mpg.snakefile"
-
 include: NGS_PIPELINE +"/ruleBook/gatk_RNASeq.snakefile"
 include: NGS_PIPELINE +"/ruleBook/ideogram.snakefile"
 include: NGS_PIPELINE +"/ruleBook/Actionable.snakefile"
@@ -264,9 +260,7 @@ include: NGS_PIPELINE +"/ruleBook/UnionSomaticMutations.snakefile"
 include: NGS_PIPELINE +"/ruleBook/plots.snakefile"
 include: NGS_PIPELINE +"/ruleBook/annot.snakefile"
 include: NGS_PIPELINE +"/ruleBook/STAR.snakefile"
-
 include: NGS_PIPELINE +"/ruleBook/Sequenza.snakefile"
-
 include: NGS_PIPELINE +"/ruleBook/MethlySeq.snakefile"
 
 for subject in SUBJECT_VCFS.keys():
@@ -552,107 +546,6 @@ rule FLAGSTAT:
 	#######################
 	module load samtools/{version}
 	samtools flagstat {input} > {output}
-	#######################
-	"""
-############
-#       Reads Count for every Bed Region on bam file
-#	 capture region corrected
-############
-rule CopyNumber:
-	input:
-		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
-		interval= lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample]].replace("target","targetbp"),
-		flagstat="{base}/{TIME}/{sample}/qc/{sample}.bwa.flagstat.txt",
-		tool=NGS_PIPELINE+ "/scripts/copyNumber.sh"
-	output:
-		"{base}/{TIME}/{sample}/copyNumber/{sample}.count.txt"
-	version: config["samtools"]
-	params:
-		rulename  = "CN",
-		batch     = config[config['host']]["job_copynumber"]
-	shell: """
-	#######################
-	module load samtools/{version}
-	TotalReads=`samtools view -bh -L {input.interval} {input.bam} |samtools flagstat - |head -1|sed -e 's/\s/\\t/g' |cut -f 1`
-	#TotalReads=`head -1 {input.flagstat} | sed -e 's/\s/\\t/g' |cut -f 1`
-	split -a 5 -d -l 12000 {input.interval} ${{LOCAL}}/input
-	for file in ${{LOCAL}}/input*
-	do
-		sh {input.tool} ${{TotalReads}} ${{file}} {input.bam} ${{file}}.out &
-	done
-	wait;
-	cat ${{LOCAL}}/input*.out >{output}
-	#######################
-	"""
-############
-#       Somatic Copy Number LRR (Median Corrected)
-############
-rule CN_LRR:
-	input:
-		files=lambda wildcards: somaticCopy[wildcards.Tumor],
-		ref=config["gene_coord"],
-		index=config["reference"].replace('.fasta', '.index.txt'),
-		tool=NGS_PIPELINE+ "/scripts/AddGene.pl",
-		cgc    = config["annovar_data"]+config["geneList"],
-		filter=NGS_PIPELINE+ "/scripts/filterCNV.pl"
-	output:
-		out=     "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.copyNumber.txt",
-		hq=      "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.hq.txt",
-		final=   "{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.annotated.txt",
-		filtered="{subject}/{TIME}/{Tumor}/copyNumber/{Tumor}.CN.filtered.txt"
-	version: config['version_R']
-	params:
-		rulename = "LRR",
-		batch    = config[config['host']]["job_default"],
-		tool     = NGS_PIPELINE+ "/scripts/ListStatistics.R"
-	shell: """
-	#######################
-	module load R/{version}
-	module load bedtools/2.25.0
-	export LC_ALL=C
-	mkdir -p {wildcards.subject}/{TIME}/Actionable/
-	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}
-	paste {input.files} |cut -f 1-4,8 |awk '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,($5+1)/($4+1),log(($5+1)/($4+1))/log(2)}}' >{output.out}.temp1
-
-	intersectBed -a {input.ref} -b {input.files[0]} >{output.out}.temp
-	perl {input.tool} {output.out}.temp {output.out}.temp1 >>{output.out}
-
-	# Created the first file
-
-	awk '{{if($4>=30) print $0}}' {output.out} >{output.hq}
-	median=`cut -f7 {output.hq}|grep -v LRR | {params.tool} --stat median --file - `
-
-	corr_factor=`echo "0 - ${{median}}"|bc`
-	echo -e "#Chr\\tStart\\tEnd\\tNormalCoverage\\tTumorCoverage\\tRatio\\tLRR\\tGene(s)\\tStrand(s)" >{output.out}.corrected
-	grep -v Ratio {output.out} |awk -v factor=${{corr_factor}} '{{OFS="\\t"}};{{print $1,$2,$3,$4,$5,$6,$7 + (factor),$8,$9}}' >>{output.out}.corrected
-
-	# Created corrected file
-	awk '{{if($4>=30) print $0}}' {output.out}.corrected >{output.hq}
-
-	median=`cut -f7 {output.hq}| grep -v LRR |sort -n |{params.tool} --stat median --file - `
-
-	MAD=`cut -f7 {output.hq}|grep -v LRR |{params.tool} --stat MAD --file - `
-	min=`echo "${{median}}-(2.5*${{MAD}})"|bc`
-	max=`echo "${{median}}+(2.5*${{MAD}})"|bc`
-
-	perl {input.filter} filter {output.out}.corrected ${{min}} ${{max}} {input.cgc} |sortBed -faidx {input.index} -header -i - >{output.final}
-	cp -f {output.final} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.copyNumber.txt
-	set +eo pipefail
-	geneList=`grep -P "Gain|Loss" {output.final} |cut -f 11 |sort |uniq |grep -v "^-$"`
-
-	head -1 {output.final} >{output.filtered}
-	if [ -n "${{geneList}}" ]; then
-		for gene in ${{geneList}};
-		do
-			awk -v gene=${{gene}} '{{if($11 == gene) print $0}}' {output.final}
-		done |sort |uniq |sortBed -faidx {input.index} -header -i - >>{output.filtered}
-		cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v2.filtered.txt
-		rm -rf {output.out}.temp1 {output.out}.temp
-	else
-		echo "No Gains or Losses Found in this sample" >>{output.filtered}
-		cp -f {output.filtered} {wildcards.subject}/{TIME}{ACT_DIR}{wildcards.Tumor}.CN.v2.filtered.txt
-                rm -rf {output.out}.temp1 {output.out}.temp
-	fi
 	#######################
 	"""
 ############

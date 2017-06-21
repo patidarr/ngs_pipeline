@@ -14,6 +14,7 @@ if len(config['sample_references']) > 0:
 				# any output which is desired on all somatic libraries but Panel goes here, the list of panel captures should be maintained in the Panel_List in config file
 				HLA[Tumor] = [seq2HLA, HLAminer]
 for sample in config['sample_references'].keys():
+	subject=SAMPLE_TO_SUBJECT[sample]
 	if config['sample_captures'][sample] not in config['Panel_List']:
 		TARGET    +=[subject+"/"+TIME+"/"+sample+"/NeoAntigen/MHC_Class_I/"+sample+".final.tsv"]
 

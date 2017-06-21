@@ -1,4 +1,5 @@
 for sample in config['sample_references'].keys():
+	subject=SAMPLE_TO_SUBJECT[sample]
 	if config['sample_captures'][sample] not in config['Panel_List']:
 		TARGET +=[subject+"/"+TIME+ACT_DIR+sample+".mutationalSignature.pdf"]
 ############
