@@ -1,3 +1,5 @@
+# vim: syntax=python tabstop=4 expandtab
+# coding: utf-8
 RNA_QC_ALL =[]
 TARGET_R=[]
 SUB2RNA = {}
