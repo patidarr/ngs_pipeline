@@ -1,2 +1,3 @@
 *.rules linguist-language=Python
 *.snakefile linguist-language=Python
+scripts/parallel linguist-vendored=true
