@@ -1,2 +1,2 @@
-*.rules linguist-language=python
-*.snakefile linguist-language=python
+*.rules linguist-language=Python
+*.snakefile linguist-language=Python
