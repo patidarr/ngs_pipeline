@@ -1,3 +1,5 @@
+# vim: syntax=python tabstop=4 expandtab
+# coding: utf-8
 TARGET     += expand("{subject}/{TIME}/qc/{subject}.coveragePlot.png",TIME=TIME, subject=PATIENTS)
 TARGET     += expand("{subject}/{TIME}/qc/{subject}.hotspot_coverage.png", TIME=TIME, subject=PATIENTS)
 if 'subject' in config:

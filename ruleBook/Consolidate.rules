@@ -1,3 +1,6 @@
+# vim: syntax=python tabstop=4 expandtab
+# coding: utf-8
+
 SUB_CON_QC = {}
 if 'subject' in config:
 	for subject in config['subject'].keys():

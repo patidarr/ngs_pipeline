@@ -1,3 +1,5 @@
+# vim: syntax=python tabstop=4 expandtab
+# coding: utf-8
 ANNO_FILES =["gene","clinseq","cadd","cosmic","pcg","clinvar","hgmd","match","mcg","docm","candl","tcc","civic","sift.out","coding.rare.txt","annotations.final.txt"]
 TARGET += expand("{subject}/{TIME}/annotation/AnnotationInput.{suff}", suff=ANNO_FILES, TIME=TIME, subject=PATIENTS)
 ############
