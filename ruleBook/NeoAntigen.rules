@@ -63,11 +63,12 @@ rule HLAminer:
 		rulename="HLAminer",
 		batch	=config[config['host']]["job_annovar"],
 		HLA	=config['HLA'],
+        workdir=WORK_DIR,
 		location=NGS_PIPELINE
 	shell: """
 	#######################
-	echo {input.R1} >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
-	echo {input.R2} >>{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
+	echo {params.workdir}/{input.R1} >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
+	echo {params.workdir}/{input.R2} >>{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
 	
 	sh {input.script} {params.location}/HLAminer_v1.3.1/bin/ {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/
 	#######################
