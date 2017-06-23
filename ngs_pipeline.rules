@@ -1,6 +1,3 @@
-# vim: syntax=python tabstop=4 expandtab
-# coding: utf-8
-
 import itertools
 import os
 import collections
@@ -342,7 +339,38 @@ rule makeConfig:
 	echo '{params.hash}'  >{output}
 	#######################
 	"""
+############
+#       Merge Fastq Files
+############
+rule MergeFQ:
+	input: R=lambda wildcards: FQ[wildcards.sample]
+	output:
+		R1 = "{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		R2 = "{base}/{TIME}/FQ/{sample}_R2.fastq.gz"
+	params:
+		rulename = "mergeFQ",
+		batch    = config[config['host']]["job_default"],
+		work_dir =  WORK_DIR
+	shell: """
+	#######################
+	count=`echo {input.R}|grep -o R2 |wc -l`
+	count=`expr ${{count}} - 1`
+	read -a arr <<<"{input.R}"
+	for index in `seq 0 ${{count}}`; do
+		R1+="${{arr[${{index}}]}} "
+	done
+	R2=`echo ${{R1}}|sed -e 's/_R1_/_R2_/g'`
 	
+	if [ ${{count}} >0 ] ; then
+		zcat ${{R1}} |gzip >{output.R1} &
+		zcat ${{R2}} |gzip >{output.R2} &
+	else
+		ln -sf {input.R[0]} {params.work_dir}/{output.R1}
+		ln -sf {input.R[1]} {params.work_dir}/{output.R2}
+	fi
+	wait
+	#######################
+	"""
 ############
 #	FASTQC
 ############

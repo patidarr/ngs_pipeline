@@ -4,9 +4,10 @@
 #       STAR
 ############
 rule STAR_TPM:
-	input:  R=lambda wildcards: FQ[wildcards.sample],
-		ref=config["reference"],
-		gtf1=config['GTF']['UCSC'],
+	input:  R1="{subject}/{TIME}/FQ/{sample}_R1.fastq.gz",
+            R2="{subject}/{TIME}/FQ/{sample}_R2.fastq.gz",
+		    ref=config["reference"],
+		    gtf1=config['GTF']['UCSC'],
 	output:
 		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam"),
 		"{subject}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab"
@@ -24,7 +25,7 @@ rule STAR_TPM:
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
 		--genomeDir {params.star_ref} \
-		--readFilesIn {input.R[0]} {input.R[1]} \
+		--readFilesIn {input.R1} {input.R2} \
 		--readFilesCommand zcat\
 		--outSAMtype BAM SortedByCoordinate\
 		--outFileNamePrefix {wildcards.sample} \
@@ -53,7 +54,7 @@ rule STAR_TPM:
 		--genomeDir GenomeForPass2\
 		--runThreadN ${{THREADS}}\
 		--outSAMattributes All\
-		--readFilesIn {input.R[0]} {input.R[1]}\
+		--readFilesIn {input.R1} {input.R2}\
 		--outSAMtype BAM SortedByCoordinate\
 		--sjdbGTFfile {input.gtf1}\
 		--readFilesCommand zcat\

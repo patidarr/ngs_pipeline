@@ -14,9 +14,9 @@ if 'methylseq' in config:
 #       Bismark
 ############
 rule Bismark:
-	input: 
-		R=lambda wildcards: FQ[wildcards.sample],
-		ref=config["BismarkIndex"]
+	input:  R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+            R2 = "{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
+		    ref=config["BismarkIndex"]
 	output:
 		"{base}/{TIME}/{sample}/{sample}_pe.bam",
 	version: config["bismark"]
@@ -30,8 +30,8 @@ rule Bismark:
 	module load bismark/{version} bowtie
 	module load samtools/{params.samtools}
 	module load trimgalore/0.4.2 cutadapt/1.12 fastqc/0.11.5
-	trim_galore --paired --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --trim1 {input.R[0]} {input.R[1]} 
-	address=`basename {input.R[0]} _R1.fastq.gz`
+	trim_galore --paired --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --trim1 {input.R1} {input.R2} 
+	address=`basename {input.R1} _R1.fastq.gz`
 	bismark -p ${{THREADS}} {input.ref} -1 {wildcards.base}/{TIME}/{wildcards.sample}/${{address}}_R1_val_1.fq.gz -2 {wildcards.base}/{TIME}/{wildcards.sample}/${{address}}_R2_val_2.fq.gz --output_dir {wildcards.base}/{TIME}/{wildcards.sample}/ --basename {wildcards.sample} --temp_dir ${{LOCAL}} --nucleotide_coverage 
 	#######################
 	"""

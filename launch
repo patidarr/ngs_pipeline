@@ -86,7 +86,7 @@ if (`hostname` =~ /cn/ or `hostname` =~ /biowulf.nih.gov/){
 		export DATA_DIR=$dataDir
 		export ACT_DIR=\"/Actionable/\"
 		export HOST=\"biowulf.nih.gov\"
-		SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+		SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
 		SAM_CONFIG=$sheet
 		snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri -R RNASeq
 		rm -rf $workDir/ngs_pipeline_$NOW.csv
@@ -110,7 +110,7 @@ elsif(`hostname` =~ /tghighmem/ or `hostname` =~ /tgcompute/ or `hostname` =~ /l
                 export DATA_DIR=$dataDir
                 export ACT_DIR=\"/Actionable/\"
                 export HOST=\"login01\"
-                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
                 SAM_CONFIG=$sheet
                 snakemake --directory \$WORK_DIR --snakefile \$SNAKEFILE --configfile \$SAM_CONFIG --dryrun -p -r --ri -R RNASeq
 		rm -rf $workDir/ngs_pipeline_$NOW.csv
@@ -179,7 +179,7 @@ else{
                 #export DATA_DIR="/data/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
                 export HOST="biowulf.nih.gov"
-                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
                 SAM_CONFIG=$WORK_DIR/samplesheet.json
 		snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r
 	#
@@ -194,7 +194,7 @@ else{
                 export DATA_DIR="/projects/Clinomics/DATA/"
                 export ACT_DIR="/Actionable/"
                 export HOST="login01"
-                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+                SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
                 SAM_CONFIG=$WORK_DIR/samplesheet.json
 		snakemake --directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --dryrun -p -r                                  
 	
