@@ -57,7 +57,7 @@ if [ ! -d log ]; then
 fi
 
 export ACT_DIR="/Actionable/"
-SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.snakefile
+SNAKEFILE=$NGS_PIPELINE/ngs_pipeline.rules
 
 cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobscript $NGS_PIPELINE/scripts/jobscript.sh --jobname {params.rulename}.{jobid} --nolock  --ri -k -p -T -r -j 3000 --resources DeFuse=25 --resources SIFT=8 --stats ngs_pipeline_${NOW}.stats -R RNASeq "
 #cmd="--directory $WORK_DIR --snakefile $SNAKEFILE --configfile $SAM_CONFIG --jobscript $NGS_PIPELINE/scripts/jobscript.sh --jobname {params.rulename}.{jobid} --nolock  --ri -k -p -T -r -j 3000 --resources DeFuse=25 --resources SIFT=8 --stats ngs_pipeline_${NOW}.stats -R makeConfig RNASeq "

@@ -345,29 +345,27 @@ rule makeConfig:
 rule MergeFQ:
 	input: R=lambda wildcards: FQ[wildcards.sample]
 	output:
-		R1 = "{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-		R2 = "{base}/{TIME}/FQ/{sample}_R2.fastq.gz"
+		R1 = temp("{base}/{TIME}/FQ/{sample}_R1.fastq.gz"),
+		R2 = temp("{base}/{TIME}/FQ/{sample}_R2.fastq.gz")
 	params:
 		rulename = "mergeFQ",
 		batch    = config[config['host']]["job_default"],
 		work_dir =  WORK_DIR
 	shell: """
 	#######################
-	count=`echo {input.R}|grep -o R2 |wc -l`
-	count=`expr ${{count}} - 1`
-	read -a arr <<<"{input.R}"
-	for index in `seq 0 ${{count}}`; do
-		R1+="${{arr[${{index}}]}} "
-	done
-	R2=`echo ${{R1}}|sed -e 's/_R1_/_R2_/g'`
-	
-	if [ ${{count}} >0 ] ; then
-		zcat ${{R1}} |gzip >{output.R1} &
-		zcat ${{R2}} |gzip >{output.R2} &
-	else
+	R1=`echo "{input.R}" |sed -e 's/ /\\n/g' |grep "_R1.fastq.gz"`
+	R2=`echo "{input.R}" |sed -e 's/ /\\n/g' |grep "_R2.fastq.gz"`	
+
+	count=`echo {input.R}|grep -o _R2.fastq.gz |wc -l`
+	echo "#########${{count}}#########"
+	if [ ${{count}} == '1' ] ; then
 		ln -sf {input.R[0]} {params.work_dir}/{output.R1}
 		ln -sf {input.R[1]} {params.work_dir}/{output.R2}
+	else
+		zcat ${{R1}} |gzip >{output.R1} &
+		zcat ${{R2}} |gzip >{output.R2} &
 	fi
+	
 	wait
 	#######################
 	"""
@@ -386,13 +384,9 @@ rule FASTQC:
 	shell: """
 	#######################
 	module load fastqc/{version}
-	count=`echo {input.R}|grep -o R2 |wc -l`
-	count=`expr ${{count}} - 1`
-	read -a arr <<<"{input.R}"
-	for index in `seq 0 ${{count}}`; do
-	        R1+="${{arr[${{index}}]}} "
-	done
-	R2=`echo ${{R1}}|sed -e 's/_R1_/_R2_/g'`
+	R1=`echo "{input.R}" |sed -e 's/ /\\n/g' |grep "_R1"`
+	R2=`echo "{input.R}" |sed -e 's/ /\\n/g' |grep "_R2"`
+
 	echo "Working on ${{R1}}"
 	zcat ${{R1}} |fastqc --extract -t ${{THREADS}} -o {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/ -d ${{LOCAL}} /dev/stdin
 	mv {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/stdin_fastqc.html {wildcards.base}/{TIME}/{wildcards.sample}/qc/fastqc/{wildcards.sample}_R1_fastqc.html
@@ -424,13 +418,9 @@ rule BWA:
 	#######################
 	module load bwa/{version}
 	module load samtools/{params.samtools}
-	count=`echo {input.R}|grep -o R2 |wc -l`
-	count=`expr ${{count}} - 1`
-	read -a arr <<<"{input.R}"
-	for index in `seq 0 ${{count}}`; do 
-		R1+="${{arr[${{index}}]}} "
-	done
-	R2=`echo ${{R1}}|sed -e 's/_R1_/_R2_/g'`
+	R1=`echo "{input.R}" |sed -e 's/ /\\n/g' |grep "_R1"`
+	R2=`echo "{input.R}" |sed -e 's/ /\\n/g' |grep "_R2"`
+	
 	THREADS=`expr ${{THREADS}} - 2`
 	
 	bwa mem -M -t ${{THREADS}} -R '@RG\\tID:{wildcards.sample}\\tSM:{wildcards.sample}\\tLB:{wildcards.sample}\\tPL:{params.platform}' {input.ref} "<zcat ${{R1}}" "<zcat ${{R2}}" | samtools view -Sbh - | samtools sort -m 30000000000 - {wildcards.base}/{TIME}/{wildcards.sample}/{wildcards.sample}.bwa
