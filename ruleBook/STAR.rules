@@ -67,8 +67,7 @@ rule STAR_TPM:
 #############
 rule FeatureCounts:
 	input:
-		bam="{base}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab",
-		#bam="{base}/{TIME}/{sample}/{sample}.star_UCSC.bam",
+		bam="{base}/{TIME}/{sample}/{sample}.star_UCSC.bam",
 		ref=lambda wildcards: config['GTF'][wildcards.gtf],
 		script=NGS_PIPELINE + "/scripts/featureCounts.v2.R",
 		trasncriptRDS=lambda wildcards: config['RDS'][wildcards.gtf]
