@@ -2,13 +2,14 @@
 #       STAR
 ############
 rule STAR_TPM:
-	input:  R1="{subject}/{TIME}/FQ/{sample}_R1.fastq.gz",
+	input:  R=lambda wildcards: FQ[wildcards.sample],
+		R1="{subject}/{TIME}/FQ/{sample}_R1.fastq.gz",
         	R2="{subject}/{TIME}/FQ/{sample}_R2.fastq.gz",
 		ref=config["reference"],
 		gtf1=config['GTF']['UCSC'],
 	output:
 		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam"),
-		"{subject}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab"
+		temp("{subject}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab")
 	version: config["STAR"]
 	params:
 		rulename  = "STAR",
@@ -23,7 +24,7 @@ rule STAR_TPM:
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
 		--genomeDir {params.star_ref} \
-		--readFilesIn {input.R1} {input.R2} \
+		--readFilesIn {input.R[0]} {input.R[1]} \
 		--readFilesCommand zcat\
 		--outSAMtype BAM SortedByCoordinate\
 		--outFileNamePrefix {wildcards.sample} \
@@ -52,7 +53,7 @@ rule STAR_TPM:
 		--genomeDir GenomeForPass2\
 		--runThreadN ${{THREADS}}\
 		--outSAMattributes All\
-		--readFilesIn {input.R1} {input.R2}\
+		--readFilesIn {input.R[0]} {input.R[1]}\
 		--outSAMtype BAM SortedByCoordinate\
 		--sjdbGTFfile {input.gtf1}\
 		--readFilesCommand zcat\
@@ -70,7 +71,7 @@ rule FeatureCounts:
 		bam="{base}/{TIME}/{sample}/{sample}.star_UCSC.bam",
 		ref=lambda wildcards: config['GTF'][wildcards.gtf],
 		script=NGS_PIPELINE + "/scripts/featureCounts.v2.R",
-		trasncriptRDS=lambda wildcards: config['RDS'][wildcards.gtf]
+		trasncriptRDS=lambda wildcards: config['RDS'][wildcards.gtf],
 		geneRDS=lambda wildcards: config['RDS'][wildcards.gtf].replace('transcript', 'gene'),
 		exonRDS=lambda wildcards: config['RDS'][wildcards.gtf].replace('transcript', 'exon'),
 	output:

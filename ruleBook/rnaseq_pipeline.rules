@@ -35,7 +35,9 @@ if 'RNASeq' in config:
 			TARGET_R += [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"]
 			add_to_SUBJECT_ANNO(subject, "rnaseq", [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".HC_RNASeq.annotated.txt"])
 			for gtf in config['GTF']:
-				TARGET_R += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+"_counts.Gene.txt"]
+				TARGET_R += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+".transcript.TPM.txt"]
+				TARGET_R += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+".gene.TPM.txt"]
+				TARGET_R += [subject+"/"+TIME+"/"+sample+"/TPM_"+gtf+"/"+sample+".exon.TPM.txt"]
 		TARGET_R  += ["{subject}/{TIME}/{sample}/calls/{sample}.HC_RNASeq.raw.vcf".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_FUSION[subject] = ["{subject}/{TIME}/{sample}/fusion/{sample}.actionable.fusion.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]
 		SUB_QC[subject]     = ["{subject}/{TIME}/{sample}/qc/{sample}.RnaSeqQC.txt".format(TIME=TIME, subject=SUB2RNA[s], sample=s) for s in config['RNASeq'][subject]]

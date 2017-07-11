@@ -13,18 +13,16 @@ option_list <- list(
                 make_option("--referenceGTF", help="GTF file"),
 		make_option("--featureType", help="gene or transcript or exon"),
 		make_option("--annotationRDS", help="UCSC or ENSEMBL RDS "),
-                make_option("--countOut", help="outputFile for read Count"),
                 make_option("--resultOut", help="outputFile for Normalized FPKM")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 threads=opt$nt
-library=opt$lib
+libName=opt$lib
 target_file=opt$targetFile	
 referenceGTF_file=opt$referenceGTF
 featureType=opt$featureType
 annotationRDS = opt$annotationRDS
-count_file=opt$countOut
-exprssion_file=opt$resultOut
+resultOut=paste(opt$resultOut, "/", sep="")
 
 
 fpkmToTpm <- function(fpkm){
@@ -36,21 +34,16 @@ if(toupper(featureType) == "GENE") GTFAttrType="gene_id"
 if(toupper(featureType) == "TRANSCRIPT") GTFAttrType="transcript_id"
 if(toupper(featureType) == "EXON") GTFAttrType="exon_id"
 
-print(paste(GTFAttrType,annotationRDS))
 # count numbers of reads mapped to reference genome at Gene Transcript & Exon
 fc <- featureCounts(files=target_file,annot.ext=referenceGTF_file,isGTFAnnotationFile=TRUE,GTF.featureType="exon" ,GTF.attrType=GTFAttrType,useMetaFeatures=TRUE,allowMultiOverlap=FALSE,nthreads=threads,isPairedEnd=TRUE,requireBothEndsMapped=FALSE,countChimericFragments=TRUE,reportReads=FALSE)
 
-#fc <- readRDS("/data/khanlab/apps/featureCountTPM.FPKM.CPM/counts.UCSC.transcript.fc.RDS")
-
-#Save Binary count files of Gene Transcript & Exon
-saveRDS(fc, file=paste(count_file,annotationType, featureType, "fc.RDS",sep="."))
+##fc <- readRDS("/data/khanlab/apps/featureCountTPM.FPKM.CPM/counts.UCSC.transcript.fc.RDS")
 
 ##Get count & annotation Obejct
 countObj=fc$counts
 Annotation=readRDS(annotationRDS)
 
 ########################################### Choose the Annotation
-print(paste("Chooseing the Annotation"))
 if( toupper(featureType) == "EXON" )
 {
   rownames(Annotation) <- Annotation$ExonID
@@ -79,12 +72,11 @@ GeneDF_EdgeR       <- DGEList(counts=countObj, genes=genesObj)
 ## Estimate Normalising Factors
 GeneDF.Norm  <- calcNormFactors(GeneDF_EdgeR) ; 
 ## Regularized Log Transformation using CPM, FPKM & TPM values
-GeneDF.CPM   <- as.data.frame(cpm(GeneDF.Norm,  normalized.lib.sizes = TRUE,log = FALSE))
-GeneDF.rpkm  <- as.data.frame(rpkm(GeneDF.Norm, normalized.lib.sizes = TRUE, log = FALSE))
-GeneDF.tpm   <- apply(rpkm(GeneDF.Norm, normalized.lib.sizes = TRUE), 2 , fpkmToTpm)
+GeneDF.CPM   <- as.data.frame(cpm(GeneDF.Norm,  normalized.lib.sizes = TRUE,log = FALSE))  ; colnames(GeneDF.CPM) <- c(libName)
+GeneDF.rpkm  <- as.data.frame(rpkm(GeneDF.Norm, normalized.lib.sizes = TRUE, log = FALSE)) ; colnames(GeneDF.rpkm) <- c(libName)
+GeneDF.tpm   <- apply(rpkm(GeneDF.Norm, normalized.lib.sizes = TRUE), 2 , fpkmToTpm)       ; colnames(GeneDF.tpm) <- c(libName)
 
 ########################################### Prepare final files
-print(paste("Prepare final files"))
 if( toupper(featureType) == "EXON" )
 {
   GeneDF_Norm_CPM  <- cbind(data.frame(Annotation[,c("Chr","Start","End","GeneName","TranscriptID","ExonID")]), GeneDF.CPM )
@@ -104,6 +96,8 @@ if( toupper(featureType) == "EXON" )
 }
 
 ########################################### Choose approprite folder and write files
-write.table(GeneDF_Norm_CPM, file=paste(exprssion_file, featureType, "CPM.txt",sep="."), sep="\t",row.names = FALSE, quote = FALSE)
-write.table(GeneDF_Norm_rpkm, file=paste(exprssion_file, featureType, "FPKM.txt",sep="."), sep="\t",row.names = FALSE, quote = FALSE)
-write.table(GeneDF_Norm_tpm, file=paste(exprssion_file, featureType, "TPM.txt",sep="."), sep="\t",row.names = FALSE, quote = FALSE)
+filePrefix = paste(resultOut,libName, ".", featureType, sep="")
+saveRDS(fc, file=paste(filePrefix, "fc.RDS",sep="."))
+write.table(GeneDF_Norm_CPM, file=paste(filePrefix, "CPM.txt",sep="."), sep="\t",row.names = FALSE, quote = FALSE)
+write.table(GeneDF_Norm_rpkm, file=paste(filePrefix, "FPKM.txt",sep="."), sep="\t",row.names = FALSE, quote = FALSE)
+write.table(GeneDF_Norm_tpm, file=paste(filePrefix, "TPM.txt",sep="."), sep="\t",row.names = FALSE, quote = FALSE)
