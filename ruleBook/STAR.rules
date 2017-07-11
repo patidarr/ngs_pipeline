@@ -1,13 +1,11 @@
-# vim: syntax=python tabstop=4 expandtab
-# coding: utf-8
 ############
 #       STAR
 ############
 rule STAR_TPM:
 	input:  R1="{subject}/{TIME}/FQ/{sample}_R1.fastq.gz",
-            R2="{subject}/{TIME}/FQ/{sample}_R2.fastq.gz",
-		    ref=config["reference"],
-		    gtf1=config['GTF']['UCSC'],
+        	R2="{subject}/{TIME}/FQ/{sample}_R2.fastq.gz",
+		ref=config["reference"],
+		gtf1=config['GTF']['UCSC'],
 	output:
 		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam"),
 		"{subject}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab"
@@ -69,11 +67,17 @@ rule STAR_TPM:
 #############
 rule FeatureCounts:
 	input:
-		bam="{base}/{TIME}/{sample}/{sample}.star_UCSC.bam",
+		bam="{base}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab",
+		#bam="{base}/{TIME}/{sample}/{sample}.star_UCSC.bam",
 		ref=lambda wildcards: config['GTF'][wildcards.gtf],
-		script=NGS_PIPELINE + "/scripts/featureCounts.R",
+		script=NGS_PIPELINE + "/scripts/featureCounts.v2.R",
+		trasncriptRDS=lambda wildcards: config['RDS'][wildcards.gtf]
+		geneRDS=lambda wildcards: config['RDS'][wildcards.gtf].replace('transcript', 'gene'),
+		exonRDS=lambda wildcards: config['RDS'][wildcards.gtf].replace('transcript', 'exon'),
 	output:
-		gene="{base}/{TIME}/{sample}/TPM_{gtf}/{sample}_counts.Gene.txt",
+		"{base}/{TIME}/{sample}/TPM_{gtf}/{sample}.transcript.TPM.txt",
+		"{base}/{TIME}/{sample}/TPM_{gtf}/{sample}.gene.TPM.txt",
+		"{base}/{TIME}/{sample}/TPM_{gtf}/{sample}.exon.TPM.txt",
 	version: config['version_R']
 	params:
 		rulename   = "featureCounts",
@@ -83,6 +87,8 @@ rule FeatureCounts:
 	#######################
 	module load R/{version}
 	cd ${{LOCAL}}
-	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --countOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/{wildcards.sample}_counts" --fpkmOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/{wildcards.sample}_fpkm"
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="transcript" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/ --annotationRDS={input.trasncriptRDS}
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="gene" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/ --annotationRDS={input.geneRDS}
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="exon" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/ --annotationRDS={input.exonRDS}
 	#######################
 	"""

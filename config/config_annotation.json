@@ -34,6 +34,7 @@
 	"geneList"     : "geneLists/combinedList_01032017",
 	"cgc"          : "geneLists/CancerGeneCensus.v78.txt",
 	"somaticActSites" : "hg19_SomaticActionableSites.txt",
+	"hotspot_call" : "hg19_hotspot_pos.txt",
 	"ACMG"	       : "hg19_ACMG.txt",
 	"gc50Base"     : "hg19.gc50Base.txt.gz"
 

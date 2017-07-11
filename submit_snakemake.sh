@@ -1,5 +1,4 @@
 #!/bin/sh
-#PBS -l walltime=96:00:00
 #PBS -N ngs-pipeline
 #
 # Author: Rajesh Patidar
@@ -66,12 +65,13 @@ if [ $HOST   == 'biowulf.nih.gov' ]; then
 	echo "Host identified as $HOST"
 	echo "Variables are $cmd"
 	snakemake $cmd --cluster "sbatch -o log/{params.rulename}.%j.o -e log/{params.rulename}.%j.e {params.batch}" >& ngs_pipeline_${NOW}.log
-	python $NGS_PIPELINE/scripts/stats2Table.py ngs_pipeline_${NOW}.stats >ngs_pipeline_${NOW}.stats.txt
 elif [ $HOST == 'login01' ]; then
 	echo "Host identified as $HOST"
 	echo "Variables are $cmd"
 	snakemake $cmd --cluster "sbatchT -o log/{params.rulename}.%j.o -e log/{params.rulename}.%j.e {params.batch}" >& ngs_pipeline_${NOW}.log
-	#snakemake $cmd --cluster "qsub -W umask=022 -V -e $WORK_DIR/log/ -o $WORK_DIR/log/ {params.batch}" >& ngs_pipeline_${NOW}.log
 	rm -rf /projects/scratch/ngs_pipeline_${NOW}_*
+fi
+
+if [ -f ngs_pipeline_${NOW}.stats ]; then
 	python $NGS_PIPELINE/scripts/stats2Table.py ngs_pipeline_${NOW}.stats >ngs_pipeline_${NOW}.stats.txt
 fi

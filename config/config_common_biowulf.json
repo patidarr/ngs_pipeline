@@ -96,5 +96,9 @@
 	"GTF"			: {
 				"ENS" : "/data/Clinomics/Ref/khanlab/GTF/06302016_ensembl.gtf",
 				"UCSC": "/data/Clinomics/Ref/khanlab/GTF/06302016_refseq.gtf"
+	},
+	"RDS"                   : {
+				"ENS" : "/data/Clinomics/Ref/khanlab/AnnotationRDS/annotation_ENSEMBL_transcript.RDS",
+				"UCSC": "/data/Clinomics/Ref/khanlab/AnnotationRDS/annotation_UCSC_transcript.RDS"
 	}
 }
