@@ -1,5 +1,3 @@
-# vim: syntax=python tabstop=4 expandtab
-# coding: utf-8
 HLA ={}
 if 'subject' in config:
 	for subject in config['subject']:
@@ -33,8 +31,9 @@ if 'RNASeq' in config:
 #	seq2HLA
 ############
 rule seq2HLA:
-	input:  R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-            R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
+	input:  R=lambda wildcards: FQ[wildcards.sample],
+		#R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		#R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
 		    script=NGS_PIPELINE + "/seq2HLA/seq2HLA.py"
 	output:
 		"{base}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits"
@@ -48,16 +47,17 @@ rule seq2HLA:
 	shell: """
 	#######################
 	module load bowtie/{params.bowtie} python/{params.python} R/{params.R}
-	python {input.script} {params.HLA}/seq2HLA/ -1 {input.R1} -2 {input.R2}  -p 2 -r {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/seq2HLA/{wildcards.sample}
+	python {input.script} {params.HLA}/seq2HLA/ -1 {input.R[0]} -2 {input.R[1]}  -p 2 -r {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/seq2HLA/{wildcards.sample}
 	#######################
 	"""
 ############
 #	HLAminer
 ############
 rule HLAminer:
-	input:  R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-            R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
-		    script=NGS_PIPELINE+"/HLAminer_v1.3.1/bin/HPTASRwgs_classI.sh"
+	input:	R=lambda wildcards: FQ[wildcards.sample],
+		#R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		#R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
+		script=NGS_PIPELINE+"/HLAminer_v1.3.1/bin/HPTASRwgs_classI.sh"
 	output: "{base}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv"
 	params:
 		rulename="HLAminer",
@@ -67,8 +67,8 @@ rule HLAminer:
 		location=NGS_PIPELINE
 	shell: """
 	#######################
-	echo {params.workdir}/{input.R1} >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
-	echo {params.workdir}/{input.R2} >>{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
+	echo {params.workdir}/{input.R[0]} >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
+	echo {params.workdir}/{input.R[1]} >>{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/patient.fof
 	
 	sh {input.script} {params.location}/HLAminer_v1.3.1/bin/ {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/HLA/HLAminer/
 	#######################

@@ -8,8 +8,7 @@ rule STAR_TPM:
 		ref=config["reference"],
 		gtf1=config['GTF']['UCSC'],
 	output:
-		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam"),
-		temp("{subject}/{TIME}/{sample}/{sample}_ucsc.SJ.out.tab")
+		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam")
 	version: config["STAR"]
 	params:
 		rulename  = "STAR",
@@ -59,7 +58,6 @@ rule STAR_TPM:
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample}_ucsc
 	mv -f {wildcards.sample}_ucscAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_UCSC.bam
-	mv -f {wildcards.sample}_ucscSJ.out.tab {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}_ucsc.SJ.out.tab
 	echo "Finished Step 4"
 	#######################
 	"""
@@ -87,8 +85,8 @@ rule FeatureCounts:
 	#######################
 	module load R/{version}
 	cd ${{LOCAL}}
-	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="transcript" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/ --annotationRDS={input.trasncriptRDS}
-	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="gene" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/ --annotationRDS={input.geneRDS}
-	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="exon" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/ --annotationRDS={input.exonRDS}
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="transcript" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/" --annotationRDS={input.trasncriptRDS}
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="gene" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/" --annotationRDS={input.geneRDS}
+	{input.script} --nt ${{THREADS}} --lib="{wildcards.sample}" --targetFile="{params.work_dir}/{input.bam}" --referenceGTF="{input.ref}" --featureType="exon" --resultOut="{params.work_dir}/{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/TPM_{wildcards.gtf}/" --annotationRDS={input.exonRDS}
 	#######################
 	"""

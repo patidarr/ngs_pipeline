@@ -254,7 +254,7 @@ include: NGS_PIPELINE +"/ruleBook/annot.rules"
 include: NGS_PIPELINE +"/ruleBook/STAR.rules"
 include: NGS_PIPELINE +"/ruleBook/Sequenza.rules"
 include: NGS_PIPELINE +"/ruleBook/MethlySeq.rules"
-#include: NGS_PIPELINE +"/ruleBook/HotSpot_Pileup.rules"
+include: NGS_PIPELINE +"/ruleBook/HotSpot_Pileup.rules"
 
 ###########################################################################
 # we have to do it this way as some samples may not have rna or tumor     #
@@ -845,6 +845,7 @@ rule VCF2TXT:
 rule FormatInput:
 	input:
 		txtFiles=lambda wildcards: SUBJECT_VCFS[wildcards.subject],
+		hotspot ="{subject}/{TIME}/{subject}/db/{subject}.hotspot",
 		convertor= NGS_PIPELINE + "/scripts/MakeAnnotationInputs.pl"
 	output:
 		temp("{subject}/{TIME}/annotation/AnnotationInput.anno"),
@@ -858,7 +859,7 @@ rule FormatInput:
 	#######################
 	module load annovar/{version}
 	export LC_ALL=C
-	cut -f 1-5 {input.txtFiles} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
+	cut -f 1-5 {input.txtFiles} {input.hotspot} |sort |uniq > {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	perl {input.convertor} {wildcards.subject}/{TIME}/annotation/AnnotationInput
 	rm -rf "{wildcards.subject}/{TIME}/annotation/AnnotationInput.pph"
 	#######################

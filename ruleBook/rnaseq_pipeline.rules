@@ -18,7 +18,6 @@ if 'RNASeq' in config:
 		TARGET_R   +=[subject+"/"+TIME+"/qc/"+subject+".transcriptCoverage.png"]
 		for sample in config['RNASeq'][subject]:
 			TARGET_R += [subject+"/"+TIME+"/"+sample+"/"+sample+".star.final.bam"]
-			TARGET_R += [subject+"/"+TIME+"/"+sample+"/"+sample+"_ucsc.SJ.out.tab"]
 			TARGET_R += [subject+"/"+TIME+"/"+sample+"/"+sample+".tophat.final.bam"]
 			TARGET_R += [subject+"/"+TIME+"/"+sample+"/fusion/tophat-fusion.txt"]
 			TARGET_R += [subject+"/"+TIME+"/"+sample+"/fusion/fusion-catcher.txt"]
@@ -83,8 +82,9 @@ rule RNASeq:
 #	Tophat
 ############
 rule TOPHAT:
-	input:	R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-		R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz", 
+	input:	R=lambda wildcards: FQ[wildcards.sample],
+		#R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		#R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz", 
 	output:
 		"{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam",
 		"{base}/{TIME}/{sample}/tophat_{sample}/accepted_hits.bam.bai"
@@ -98,7 +98,7 @@ rule TOPHAT:
 	#######################
 	module load tophat/{version}
 	module load samtools/{params.samtools}
-	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R1} {input.R2}
+	tophat -p ${{THREADS}} -o ${{LOCAL}} --keep-fasta-order --rg-id {wildcards.sample} --no-coverage-search --rg-sample {wildcards.sample} --rg-library {wildcards.sample} --rg-platform ILLUMINA --fusion-search --fusion-min-dist 100000 --mate-inner-dist 84 --mate-std-dev 74 {params.ref} {input.R[0]} {input.R[1]}
 	cp -rf ${{LOCAL}}/* {wildcards.base}/{TIME}/{wildcards.sample}/tophat_{wildcards.sample}/
 	samtools index {wildcards.base}/{TIME}/{wildcards.sample}/tophat_{wildcards.sample}/accepted_hits.bam
 	#######################
@@ -266,8 +266,9 @@ rule EXON_EXP_ENS:
 ############
 rule FUSION_CATCHER:
 	input:
-		R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-		R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz"
+		R=lambda wildcards: FQ[wildcards.sample],
+		#R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		#R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz"
 	output:
 		"{base}/{TIME}/{sample}/fusion/fusion-catcher.txt"
 	version: config['fusioncatcher']
@@ -277,7 +278,7 @@ rule FUSION_CATCHER:
 	shell: """
 	#######################
 	module load fusioncatcher/{version}
-	fusioncatcher -p ${{THREADS}} -i {input.R1},{input.R2} -o ${{LOCAL}}/
+	fusioncatcher -p ${{THREADS}} -i {input.R[0]},{input.R[1]} -o ${{LOCAL}}/
 	cp ${{LOCAL}}/final-list_candidate-fusion-genes.GRCh37.txt {wildcards.base}/{TIME}/{wildcards.sample}/fusion/fusion-catcher.txt
 	#######################
 	"""
@@ -286,8 +287,9 @@ rule FUSION_CATCHER:
 ############
 rule DeFuse:
 	input:
-		R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-		R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
+		R=lambda wildcards: FQ[wildcards.sample],
+		#R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		#R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
 	output:
 		"{base}/{TIME}/{sample}/fusion/defuse.raw.txt",
 		"{base}/{TIME}/{sample}/fusion/defuse.filtered.txt",
@@ -306,8 +308,8 @@ rule DeFuse:
 	export TMP="${{LOCAL}}/temp/R"
 	export TEMP="${{LOCAL}}/temp/R"
 
-	gunzip -c {input.R1} >${{LOCAL}}/{wildcards.sample}_R1.fastq &
-	gunzip -c {input.R2} >${{LOCAL}}/{wildcards.sample}_R2.fastq &
+	gunzip -c {input.R[0]} >${{LOCAL}}/{wildcards.sample}_R1.fastq &
+	gunzip -c {input.R[1]} >${{LOCAL}}/{wildcards.sample}_R2.fastq &
 	wait
 	defuse.pl -c {params.defuse_config} \
 		-1 ${{LOCAL}}/{wildcards.sample}_R1.fastq\
@@ -333,8 +335,9 @@ rule DeFuse:
 ############
 rule STAR:
 	input:
-		R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
-		R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
+		R=lambda wildcards: FQ[wildcards.sample],
+		#R1="{base}/{TIME}/FQ/{sample}_R1.fastq.gz",
+		#R2="{base}/{TIME}/FQ/{sample}_R2.fastq.gz",
 		ref=config["reference"],
 	output:
 		temp("{base}/{TIME}/{sample}/{sample}.star.bam"),
@@ -355,7 +358,7 @@ rule STAR:
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
 		--genomeDir {params.star_ref} \
-		--readFilesIn {input.R1} {input.R2} \
+		--readFilesIn {input.R[0]} {input.R[1]} \
 		--readFilesCommand zcat\
 		--outFileNamePrefix {wildcards.sample} \
 		--runThreadN ${{THREADS}} \
@@ -383,7 +386,7 @@ rule STAR:
 		--genomeDir GenomeForPass2\
 		--runThreadN ${{THREADS}}\
 		--outSAMattributes All\
-		--readFilesIn {input.R1} {input.R2}\
+		--readFilesIn {input.R[0]} {input.R[1]}\
 		--readFilesCommand zcat\
 		--genomeLoad NoSharedMemory\
 		--outFileNamePrefix {wildcards.sample}_pass2
