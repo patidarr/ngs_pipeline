@@ -1,0 +1,66 @@
+HOT_SPOT ={}
+TARGET     += ["{subject}/{TIME}/{sample}/calls/{sample}.bwa.pileup.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+if 'RNASeq' in config:
+	for subject  in config['RNASeq'].keys():
+		TARGET    += [subject+"/"+TIME+"/"+subject+"/db/"+subject+".hotspot"]
+		for sample in config['RNASeq'][subject]:
+			TARGET    +=  [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".star.pileup.txt"]
+			if subject not in HOT_SPOT:
+				HOT_SPOT[subject] = [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".star.pileup.txt"]
+			else:
+				HOT_SPOT[subject].extend([subject+"/"+TIME+"/"+sample+"/calls/"+sample+".star.pileup.txt"])
+		
+if 'subject' in config:
+	local =[]
+	for subject in config['subject']:
+		TARGET    += [subject+"/"+TIME+"/"+subject+"/db/"+subject+".hotspot"]
+		for sample in config['subject'][subject]:
+			TARGET    += [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bwa.pileup.txt"]
+			if subject not in HOT_SPOT:
+				HOT_SPOT[subject] = [subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bwa.pileup.txt"]
+			else:
+				HOT_SPOT[subject].extend([subject+"/"+TIME+"/"+sample+"/calls/"+sample+".bwa.pileup.txt"])
+############
+#       HotSpotPileup
+############
+rule HotSpotPileup:
+	input:
+		bam="{subject}/{TIME}/{sample}/{sample}.{caller}.final.bam",
+		bai="{subject}/{TIME}/{sample}/{sample}.{caller}.final.bam.bai",
+		hotspot= config["annovar_data"]+config["hotspot_call"],
+		ref=config["reference"],
+		script=NGS_PIPELINE + "/scripts/hotspot_mpileup.pl",
+	output:
+		out="{subject}/{TIME}/{sample}/calls/{sample}.{caller}.pileup.txt"
+	version:
+		config["samtools"]
+	params:
+		rulename  = "HotspotPileup",
+		batch     = config[config['host']]["job_default"],
+		type      = lambda wildcards: config['sample_type'][wildcards.sample],
+		capture	  = lambda wildcards: config['sample_captures'][wildcards.sample],
+	shell: """
+	#######################
+	module load samtools/{version}
+	{input.script} {input.hotspot} {input.ref} {input.bam} {wildcards.sample} {params.type} {params.capture} >{output.out}
+	#######################
+	"""
+############
+#       makeHotSpotDB
+############
+rule makeHotSpotDB:
+	input:
+		lambda wildcards: HOT_SPOT[wildcards.subject]	
+	output:
+		"{subject}/{TIME}/{subject}/db/{subject}.hotspot"
+	params:
+		rulename  = "hotspotDB",
+		batch     = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	cat {input} |sort >{output}
+	#######################
+	"""
+
+	
+

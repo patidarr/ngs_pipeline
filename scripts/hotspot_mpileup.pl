@@ -12,8 +12,8 @@ my $FILE = $ARGV[0]; # Hotspot input file
 my $REF  = $ARGV[1];
 my $BAM  = $ARGV[2]; # Bam file in question
 my $sample=$ARGV[3];
-my $type=$ARGV[4]
-my $capture=$ARGV[5]
+my $type=$ARGV[4];
+my $capture=$ARGV[5];
 my $pileup;
 $pileup = `samtools mpileup -d1000000000000 -Q 20 -q 30 -f $REF -l $FILE "$BAM" 2>/dev/null|cut -f 1,2,3,5`;
 chomp $pileup;

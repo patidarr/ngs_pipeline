@@ -26,7 +26,7 @@ resultOut=paste(opt$resultOut, "/", sep="")
 
 
 fpkmToTpm <- function(fpkm){
-    exp(log(fpkm) - log(sum(fpkm)) + log(1e6))
+    exp(log(fpkm) - log(sum(fpkm,na.rm =TRUE)) + log(1e6))
 }
 
 
@@ -37,11 +37,9 @@ if(toupper(featureType) == "EXON") GTFAttrType="exon_id"
 # count numbers of reads mapped to reference genome at Gene Transcript & Exon
 fc <- featureCounts(files=target_file,annot.ext=referenceGTF_file,isGTFAnnotationFile=TRUE,GTF.featureType="exon" ,GTF.attrType=GTFAttrType,useMetaFeatures=TRUE,allowMultiOverlap=FALSE,nthreads=threads,isPairedEnd=TRUE,requireBothEndsMapped=FALSE,countChimericFragments=TRUE,reportReads=FALSE)
 
-##fc <- readRDS("/data/khanlab/apps/featureCountTPM.FPKM.CPM/counts.UCSC.transcript.fc.RDS")
-
 ##Get count & annotation Obejct
 countObj=fc$counts
-Annotation=readRDS(annotationRDS)
+Annotation=readRDS(annotationRDS) %>% data.frame()
 
 ########################################### Choose the Annotation
 if( toupper(featureType) == "EXON" )
@@ -74,7 +72,7 @@ GeneDF.Norm  <- calcNormFactors(GeneDF_EdgeR) ;
 ## Regularized Log Transformation using CPM, FPKM & TPM values
 GeneDF.CPM   <- as.data.frame(cpm(GeneDF.Norm,  normalized.lib.sizes = TRUE,log = FALSE))  ; colnames(GeneDF.CPM) <- c(libName)
 GeneDF.rpkm  <- as.data.frame(rpkm(GeneDF.Norm, normalized.lib.sizes = TRUE, log = FALSE)) ; colnames(GeneDF.rpkm) <- c(libName)
-GeneDF.tpm   <- apply(rpkm(GeneDF.Norm, normalized.lib.sizes = TRUE), 2 , fpkmToTpm)       ; colnames(GeneDF.tpm) <- c(libName)
+GeneDF.tpm   <- apply(GeneDF.rpkm, 2 , fpkmToTpm)       ; colnames(GeneDF.tpm) <- c(libName)
 
 ########################################### Prepare final files
 if( toupper(featureType) == "EXON" )

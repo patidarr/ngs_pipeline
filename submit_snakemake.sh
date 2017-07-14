@@ -75,3 +75,10 @@ fi
 if [ -f ngs_pipeline_${NOW}.stats ]; then
 	python $NGS_PIPELINE/scripts/stats2Table.py ngs_pipeline_${NOW}.stats >ngs_pipeline_${NOW}.stats.txt
 fi
+
+
+if [ -s ngs_pipeline_${NOW}.stats.txt ]; then
+	print "No job took significant time"
+else
+	rm -rf ngs_pipeline_${NOW}.stats.txt	
+fi
