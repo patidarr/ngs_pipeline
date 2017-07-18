@@ -73,8 +73,8 @@
 	"verifyBamID_vcf"       :{
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel1.recode.vcf",
-		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel1.recode.vcf",
-		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel1.recode.vcf"
+		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_CNVPanel2.recode.vcf",
+		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel2.recode.vcf"
 	},
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",

@@ -20,31 +20,33 @@ chomp $pileup;
 my @input = split("\n", $pileup);
 foreach my $new_line(@input){
 	my @s = split("\t", $new_line);
-	$s[3] =uc($s[3]);
-	$s[3] =~ s/\$//g;
-	$s[3] =~ s/\[//g;
-	$s[3] =~ s/\]//g;
-	$s[3] =~ s/\^//g;
-	$s[3] =~ s/\./$s[2]/g;
-	$s[3] =~ s/\,/$s[2]/g;
-	my $bases = join '', sort, split //, $s[3];
-	my $Ref = () = ($bases =~ /$s[2]/g);
-	my $A = () = ($bases =~ /A/g);
-	my $T = () = ($bases =~ /T/g);
-	my $G = () = ($bases =~ /G/g);
-	my $C = () = ($bases =~ /C/g);
-	my $total = $A+$T+$G+$C;
-	if ($total eq $Ref){
-		next;
-	}
-	else{
-		foreach my $base("A", "T","G","C"){
-			if ($base eq $s[2]){
-				next;
-			}
-			elsif((() = ($bases =~ /$base/g)) >3){
-				my $alt = (() = ($bases =~ /$base/g));
-				print "$s[0]\t$s[1]\t$s[1]\t$s[2]\t$base\t$sample\t$type\t$capture\tmpileup\tNA\tNA\t$total\t$alt\n";
+	if (defined $s[3]){
+		$s[3] =uc($s[3]);
+		$s[3] =~ s/\$//g;
+		$s[3] =~ s/\[//g;
+		$s[3] =~ s/\]//g;
+		$s[3] =~ s/\^//g;
+		$s[3] =~ s/\./$s[2]/g;
+		$s[3] =~ s/\,/$s[2]/g;
+		my $bases = join '', sort, split //, $s[3];
+		my $Ref = () = ($bases =~ /$s[2]/g);
+		my $A = () = ($bases =~ /A/g);
+		my $T = () = ($bases =~ /T/g);
+		my $G = () = ($bases =~ /G/g);
+		my $C = () = ($bases =~ /C/g);
+		my $total = $A+$T+$G+$C;
+		if ($total eq $Ref){
+			next;
+		}
+		else{
+			foreach my $base("A", "T","G","C"){
+				if ($base eq $s[2]){
+					next;
+				}
+				elsif((() = ($bases =~ /$base/g)) >3){
+					my $alt = (() = ($bases =~ /$base/g));
+					print "$s[0]\t$s[1]\t$s[1]\t$s[2]\t$base\t$sample\t$type\t$capture\tmpileup\tNA\tNA\t$total\t$alt\n";
+				}
 			}
 		}
 	}

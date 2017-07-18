@@ -29,7 +29,6 @@ rule HotSpotPileup:
 		bai="{subject}/{TIME}/{sample}/{sample}.{caller}.final.bam.bai",
 		hotspot= config["annovar_data"]+config["hotspot_call"],
 		ref=config["reference"],
-		script=NGS_PIPELINE + "/scripts/hotspot_mpileup.pl",
 	output:
 		out="{subject}/{TIME}/{sample}/calls/{sample}.{caller}.pileup.txt"
 	version:
@@ -39,10 +38,11 @@ rule HotSpotPileup:
 		batch     = config[config['host']]["job_default"],
 		type      = lambda wildcards: config['sample_type'][wildcards.sample],
 		capture	  = lambda wildcards: config['sample_captures'][wildcards.sample],
+		script	  = NGS_PIPELINE + "/scripts/hotspot_mpileup.pl"
 	shell: """
 	#######################
 	module load samtools/{version}
-	{input.script} {input.hotspot} {input.ref} {input.bam} {wildcards.sample} {params.type} {params.capture} >{output.out}
+	{params.script} {input.hotspot} {input.ref} {input.bam} {wildcards.sample} {params.type} {params.capture} >{output.out}
 	#######################
 	"""
 ############

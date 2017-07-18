@@ -48,8 +48,8 @@
 		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel1.recode.vcf",
-		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel1.recode.vcf",
-		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel1.recode.vcf"
+		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_CNVPanel2.recode.vcf",
+		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel2.recode.vcf"
 	},
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/projects/Clinomics/Tools/ref/hg19/Mills_and_1000G_gold_standard.indels.hg19.vcf",
