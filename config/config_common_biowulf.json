@@ -41,7 +41,8 @@
 		"nextera"		: "/data/Clinomics/Ref/khanlab/design/nextera.target.refseq.ensembl.noUTR.notfound.bed",
 		"strexome"		: "/data/Clinomics/Ref/khanlab/design/Strexome.target.bed",
 		"sureselect.exon.v5_utr": "/data/Clinomics/Ref/khanlab/design/NIAID.sureselect.exon.v5_utr.target.bed",
-		"sureselect.exon.v6"	: "/data/Clinomics/Ref/khanlab/design/NIAID.sureselect.exon.v6.target.bed"
+		"sureselect.exon.v6"	: "/data/Clinomics/Ref/khanlab/design/NIAID.sureselect.exon.v6.target.bed",
+		"idt.xgen.exome.res"	: "/data/Clinomics/Ref/khanlab/design/IDT_xgen-exome-research-panel.target.hg19.bed"
 	},
 	"hotspot_bed"		:{
 		"wholegenome"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
@@ -68,7 +69,8 @@
 		"nextera"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"strexome"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"sureselect.exon.v5_utr": "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
-		"sureselect.exon.v6"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
+		"sureselect.exon.v6"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"idt.xgen.exome.res"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
 	},
 	"verifyBamID_vcf"       :{
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Clinical_Research_Exome.recode.vcf",
