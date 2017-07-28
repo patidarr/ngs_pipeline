@@ -35,7 +35,7 @@ if(toupper(featureType) == "TRANSCRIPT") GTFAttrType="transcript_id"
 if(toupper(featureType) == "EXON") GTFAttrType="exon_id"
 
 # count numbers of reads mapped to reference genome at Gene Transcript & Exon
-fc <- featureCounts(files=target_file,annot.ext=referenceGTF_file,isGTFAnnotationFile=TRUE,GTF.featureType="exon" ,GTF.attrType=GTFAttrType,useMetaFeatures=TRUE,allowMultiOverlap=FALSE,nthreads=threads,isPairedEnd=TRUE,requireBothEndsMapped=FALSE,countChimericFragments=TRUE,reportReads=FALSE)
+fc <- featureCounts(files=target_file,annot.ext=referenceGTF_file,isGTFAnnotationFile=TRUE,GTF.featureType="exon" ,GTF.attrType=GTFAttrType,useMetaFeatures=TRUE,allowMultiOverlap=FALSE,nthreads=threads,isPairedEnd=TRUE,requireBothEndsMapped=FALSE,countChimericFragments=TRUE)
 colnames(fc$counts) <- libName
 colnames(fc$stat) <-libName
 ##Get count & annotation Obejct

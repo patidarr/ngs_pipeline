@@ -8,7 +8,8 @@ rule STAR_TPM:
 		ref=config["reference"],
 		gtf1=config['GTF']['UCSC'],
 	output:
-		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam")
+		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam"),
+		temp("{subject}/{TIME}/{sample}/{sample}.star_UCSC.bam.bai")
 	version: config["STAR"]
 	params:
 		rulename  = "STAR",
@@ -18,7 +19,7 @@ rule STAR_TPM:
 		home      = WORK_DIR,
 	shell: """
 	#######################
-	module load STAR/{version}
+	module load STAR/{version} samtools
 	cd ${{LOCAL}}/
 	# run 1st pass
 	STAR --outTmpDir STEP1 \
@@ -59,6 +60,7 @@ rule STAR_TPM:
 		--outFileNamePrefix {wildcards.sample}_ucsc
 	mv -f {wildcards.sample}_ucscAligned.sortedByCoord.out.bam {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_UCSC.bam
 	echo "Finished Step 4"
+	samtools index {params.home}/{wildcards.subject}/{TIME}/{wildcards.sample}/{wildcards.sample}.star_UCSC.bam
 	#######################
 	"""
 ############
