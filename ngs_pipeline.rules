@@ -232,7 +232,7 @@ localrules: Khanlab_Pipeline, RNASeq
 #				Include Rule Book			  #
 ###########################################################################
 include: NGS_PIPELINE +"/ruleBook/bamUtil.rules"
-#include: NGS_PIPELINE +"/ruleBook/verifyBamID.rules"
+include: NGS_PIPELINE +"/ruleBook/verifyBamID.rules"
 include: NGS_PIPELINE +"/ruleBook/rnaseq_pipeline.rules"
 include: NGS_PIPELINE +"/ruleBook/rnaseqQC.rules"
 include: NGS_PIPELINE +"/ruleBook/readDepth.rules"

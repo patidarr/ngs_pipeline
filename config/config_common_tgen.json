@@ -51,6 +51,7 @@
 		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_CNVPanel2.recode.vcf",
 		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel2.recode.vcf"
 	},
+	"conpair_marker"	: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.bed",
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/projects/Clinomics/Tools/ref/hg19/Mills_and_1000G_gold_standard.indels.hg19.vcf",
 	"dbsnp"			: "/projects/Clinomics/Tools/ref/hg19/dbsnp_138.hg19.vcf",

@@ -78,6 +78,7 @@
 		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_CNVPanel2.recode.vcf",
 		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel2.recode.vcf"
 	},
+	"conpair_marker"	: "/data/Clinomics/Ref/khanlab/verifyBamID/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.bed",
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",
 	"dbsnp"			: "/data/Clinomics/Ref/khanlab/dbsnp_138.hg19.vcf",

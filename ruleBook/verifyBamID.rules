@@ -1,6 +1,14 @@
-# vim: syntax=python tabstop=4 expandtab
-# coding: utf-8
-TARGET     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+#TARGET     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+conPair ={}
+if len(config['sample_references']) > 0:
+	for Tumor in config['sample_references']:
+		for Normal in config['sample_references'][Tumor]:
+			TumorIn   = "{subject}/{TIME}/{sample}/qc/{sample}.conpair.mpileup".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)
+			NormalIn  = "{subject}/{TIME}/{sample}/qc/{sample}.conpair.mpileup".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal)
+			conPair[Tumor] = [TumorIn , NormalIn]
+			TARGET += ["{subject}/{TIME}/{sample}/qc/{sample}.concod.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+			TARGET += ["{subject}/{TIME}/{sample}/qc/{sample}.conta.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
+print(conPair)
 ########################
 #	verifyBamID 1.1.3 
 ########################
@@ -18,5 +26,63 @@ rule verifyBamID:
 	#######################
 	module load verifybamid/{version}
 	verifyBamID --vcf {input.vcf} --bam {input.bam} --maxDepth 3000 --ignoreRG --site --chip-none --precise --minMapQ 30 --minQ 20 --minAF 0.05 --out {wildcards.subject}/{wildcards.TIME}/{wildcards.sample}/verifyBamID/{wildcards.sample}
+	#######################
+	"""
+########################
+#   conpair
+########################
+rule conpair_pile:
+	input:
+		bam="{subject}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		ref=config["reference"],
+		marker=config['conpair_marker']
+	output:
+		"{subject}/{TIME}/{sample}/qc/{sample}.conpair.mpileup"
+	version: config['conpair']
+	params:
+		rulename = "conpair_1",
+		batch    = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	module load conpair/{version}
+	run_gatk_pileup_for_sample.py -B {input.bam} -O {output} -R {input.ref} -M {input.marker}
+	#######################
+	"""
+########################
+#   conpair
+########################
+rule conpair_concod:
+	input:	
+		lambda wildcards: conPair[wildcards.Tumor],
+		marker=config['conpair_marker'].replace("bed","txt")
+	output:
+		"{subject}/{TIME}/{Tumor}/qc/{Tumor}.concod.txt"
+	version: config['conpair']
+	params:
+		rulename = "conpair_2",
+		batch    = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	module load conpair/{version}
+	verify_concordance.py -T {input[0]} -N {input[1]} -O {output} -C 20 -Q 30 -B 20 -M {input.marker}
+	#######################
+	"""
+########################
+#   conpair
+########################
+rule conpair_conta:
+	input: 
+		lambda wildcards: conPair[wildcards.Tumor],
+		marker=config['conpair_marker'].replace("bed","txt")
+	output:
+		"{subject}/{TIME}/{Tumor}/qc/{Tumor}.conta.txt"
+	version: config['conpair']
+	params: 
+		rulename = "conpair_2",
+		batch    = config[config['host']]["job_default"]
+	shell: """
+	#######################
+	module load conpair/{version}
+	estimate_tumor_normal_contamination.py -T {input[0]} -N {input[1]} -O {output} -Q 30 -M {input.marker}
 	#######################
 	"""

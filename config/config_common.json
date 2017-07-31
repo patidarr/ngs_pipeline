@@ -36,6 +36,7 @@
 	"defuse"		: "0.7.0",
 	"pypy"			: "5.0",
 	"verifybamid"		: "1.1.3",
+	"conpair"		: "10102016",
 	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.v1.pl",
 	"Panel_List"		: ["clin.snv.v1", "clin.cnv.v2", "clin.snv.v2", "nbl.panel", "seqcapez.rms.v1"],
@@ -60,6 +61,7 @@
 		"nextera"		:{"Normal":"20","Tumor":"20"},
 		"strexome"		:{"Normal":"20","Tumor":"20"},
 		"sureselect.exon.v5_utr":{"Normal":"20","Tumor":"20"},
-		"sureselect.exon.v6"	:{"Normal":"20","Tumor":"20"}
+		"sureselect.exon.v6"	:{"Normal":"20","Tumor":"20"},
+		"idt.xgen.exome.res"	:{"Normal":"10","Tumor":"20"}
 	}
 }
