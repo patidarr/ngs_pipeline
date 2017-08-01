@@ -1,4 +1,4 @@
-[![Snakemake](https://img.shields.io/badge/snakemake- >=3.8.0-brightgreen.svg?style=flat-square)](http://snakemake.bitbucket.org)
+[![Snakemake](https://img.shields.io/badge/snakemake- >=3.8.0-brightgreen.svg?style=flat-square)](https://snakemake.bitbucket.io)
 
 ## Introduction
 This is the implementation of [KhanLab](https://ccr.cancer.gov/Genetics-Branch/javed-khan) NGS Pipeline using Snakemake.
@@ -36,23 +36,23 @@ Bioinformatics Tools Listed in [config files](config/config_common.json)
 
 ### DNASeq:
 - QC
-- BWA, Novoalign
-- Broad Standard Practices on bwa bam
-- Haplotype Caller, Platupys, Bam2MPG, MuTect, Strelka
-- snpEff, Annovar, SIFT, pph2, Custom Annotation
-- Coverage Plot, Circos Plot, Hotspot Coverage Box Plot
-- Create input format for oncogenomics database (Patient Level)
-- Make Actionable Classification for Germline and Somatic Mutations 
-- Copy number based on the simple T/N LogRatio (N cov >=30), Corrected for Total # Reads
-- Copy number, tumor purity using sequenza 
-- LRR adjusted to center
-- Contamination using VerifyBamID
+- BWA, Novoalign  
+- Broad Standard Practices on bwa bam  
+- Haplotype Caller, Platupys, Bam2MPG, MuTect, Strelka  
+- snpEff, Annovar, SIFT, pph2, Custom Annotation  
+- Coverage Plot, Circos Plot, Hotspot Coverage Box Plot  
+- Create input format for oncogenomics database (Patient Level)  
+- Make Actionable Classification for Germline and Somatic Mutations   
+- Copy number based on the simple T/N LogRatio (N cov >=30), Corrected for Total # Reads  
+- Copy number, tumor purity using sequenza   
+- LRR adjusted to center  
+- Contamination using [conpair](https://github.com/nygenome/Conpair)  
 - HLA Typing  
 	* [HLAminer](www.bcgsc.ca/platform/bioinfo/software/hlaminer) v1.3.1   
 	* [seq2HLA](https://bitbucket.org/sebastian_boegel/seq2hla)  
 - Neoantigen Prediction 
 	* [pVAC-Seq](http://pvac-seq.readthedocs.io/en/latest/) 
-		methods: NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign
+		methods: NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign  
 		epitope length: 8,9,10,11
 
 

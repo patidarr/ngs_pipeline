@@ -8,7 +8,6 @@ if len(config['sample_references']) > 0:
 			conPair[Tumor] = [TumorIn , NormalIn]
 			TARGET += ["{subject}/{TIME}/{sample}/qc/{sample}.concod.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
 			TARGET += ["{subject}/{TIME}/{sample}/qc/{sample}.conta.txt".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor)]
-print(conPair)
 ########################
 #	verifyBamID 1.1.3 
 ########################
@@ -37,7 +36,7 @@ rule conpair_pile:
 		ref=config["reference"],
 		marker=config['conpair_marker']
 	output:
-		"{subject}/{TIME}/{sample}/qc/{sample}.conpair.mpileup"
+		temp("{subject}/{TIME}/{sample}/qc/{sample}.conpair.mpileup")
 	version: config['conpair']
 	params:
 		rulename = "conpair_1",
