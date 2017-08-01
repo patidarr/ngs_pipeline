@@ -78,10 +78,13 @@ rule conpair_conta:
 	version: config['conpair']
 	params: 
 		rulename = "conpair_2",
-		batch    = config[config['host']]["job_default"]
+		batch    = config[config['host']]["job_default"],
+		normal   = lambda wildcards: config['sample_references'][wildcards.Tumor]
 	shell: """
 	#######################
 	module load conpair/{version}
 	estimate_tumor_normal_contamination.py -T {input[0]} -N {input[1]} -O {output} -Q 30 -M {input.marker}
+	sed -i 's/Tumor sample contamination level: /{wildcards.Tumor}\\t/g' {output}
+	sed -i 's/Normal sample contamination level: /{params.normal}\\t/g' {output}
 	#######################
 	"""
