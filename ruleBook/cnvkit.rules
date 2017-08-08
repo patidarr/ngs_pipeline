@@ -1,0 +1,25 @@
+for subject in config['subject']:
+	for sample in config['subject'][subject]:
+		if config["sample_type"][sample] =='Tumor':
+			TARGET +=[subject+"/"+TIME+"/"+sample+"/cnvkit/"+sample+".cnn"]	
+
+############
+#       cnvkit
+############
+rule cnvkit:
+	input:
+		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
+		interval= lambda wildcards: config['cnvkit_ref'][config['sample_captures'][wildcards.sample]],
+	output:
+		"{base}/{TIME}/{sample}/cnvkit/{sample}.cnn"
+	version: config["cnvkit"]
+	params:
+		rulename  = "cnvkit",
+		batch     = config[config['host']]["job_default"],
+	shell: """
+	#######################
+	module load cnvkit/{version}
+	cnvkit.py batch -p ${{THREADS}} {input.bam} --reference {input.interval} --output-dir {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/cnvkit/
+	cnvkit.py scatter -s {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/cnvkit/{wildcards.sample}.cn{{s,r}} -o {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/cnvkit/{wildcards.sample}.pdf
+	#######################
+	"""

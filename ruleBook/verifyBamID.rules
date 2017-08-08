@@ -77,7 +77,7 @@ rule conpair_conta:
 		"{subject}/{TIME}/{Tumor}/qc/{Tumor}.conta.txt"
 	version: config['conpair']
 	params: 
-		rulename = "conpair_2",
+		rulename = "conpair_3",
 		batch    = config[config['host']]["job_default"],
 		normal   = lambda wildcards: config['sample_references'][wildcards.Tumor]
 	shell: """

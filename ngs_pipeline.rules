@@ -253,6 +253,7 @@ include: NGS_PIPELINE +"/ruleBook/plots.rules"
 include: NGS_PIPELINE +"/ruleBook/annot.rules"
 include: NGS_PIPELINE +"/ruleBook/STAR.rules"
 include: NGS_PIPELINE +"/ruleBook/Sequenza.rules"
+include: NGS_PIPELINE +"/ruleBook/cnvkit.rules"
 include: NGS_PIPELINE +"/ruleBook/MethlySeq.rules"
 include: NGS_PIPELINE +"/ruleBook/HotSpot_Pileup.rules"
 

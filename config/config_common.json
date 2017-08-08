@@ -37,6 +37,7 @@
 	"pypy"			: "5.0",
 	"verifybamid"		: "1.1.3",
 	"conpair"		: "10102016",
+	"cnvkit"		: "0.8.5",
 	"Actionable_mutation"	: "Actionable.v3.pl",
 	"Actionable_fusion"	: "ActionableFusion.v1.pl",
 	"Panel_List"		: ["clin.snv.v1", "clin.cnv.v2", "clin.snv.v2", "nbl.panel", "seqcapez.rms.v1"],
