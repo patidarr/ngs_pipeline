@@ -12,7 +12,7 @@
 	"reference"		: "/projects/Clinomics/Tools/ref/hg19/ucsc.hg19.fasta",
 	"HLA"			: "/projects/Clinomics/Tools/ref/hg19/HLA/",
 	"version_R"		: "3.3.2",
-	"version_python"        : "2.7.10",
+	"version_python"	: "2.7.10",
 	"version_blast"		: "2.2.31+",
 	"VEP"			: "81",
 	"IEDB"			: "/projects/Clinomics/Tools/ngs_pipeline/",
@@ -53,9 +53,9 @@
 	},
 	"cnvkit_ref"		:{
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.ex.v1.hg19.cnn",
-		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.snv.v1.hg19.bed",				
-		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.cnv.v2.hg19.bed",				
-		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.snv.v2.hg19.bed"				
+		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.snv.v1.hg19.cnn",
+		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.cnv.v2.hg19.cnn",
+		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.snv.v2.hg19.cnn"
 	},
 	"conpair_marker"	: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.bed",
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",
