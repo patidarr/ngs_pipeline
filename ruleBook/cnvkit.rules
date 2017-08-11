@@ -1,8 +1,8 @@
 for subject in config['subject']:
 	for sample in config['subject'][subject]:
 		if config["sample_type"][sample] =='Tumor':
-			if config['cnvkit_ref'][config['sample_captures'][sample]]:
-				TARGET +=[subject+"/"+TIME+"/"+sample+"/cnvkit/"+sample+".cnn"]	
+			if config['sample_captures'][sample] in config['cnvkit_ref']:
+				TARGET +=[subject+"/"+TIME+"/"+sample+"/cnvkit/"+sample+".cns"]	
 
 ############
 #       cnvkit
@@ -12,7 +12,7 @@ rule cnvkit:
 		bam="{base}/{TIME}/{sample}/{sample}.bwa.final.bam",
 		interval= lambda wildcards: config['cnvkit_ref'][config['sample_captures'][wildcards.sample]],
 	output:
-		"{base}/{TIME}/{sample}/cnvkit/{sample}.cnn"
+		"{base}/{TIME}/{sample}/cnvkit/{sample}.cns"
 	version: config["cnvkit"]
 	params:
 		rulename  = "cnvkit",
