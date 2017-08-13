@@ -105,12 +105,12 @@ rule VEP:
 		"{base}/{TIME}/{sample}/calls/{sample}.MuTect.raw.vcf",
 		HLA  =lambda wildcards: HLA[wildcards.sample],
 		tool =NGS_PIPELINE + "/scripts/consensusSomaticVCF.pl",
-		merge=NGS_PIPELINE + "/scripts/consensusHLA.pl"
 	output: 
 		vcf	="{base}/{TIME}/{sample}/NeoAntigen/{sample}.final.vcf",
 	params:
 		rulename = "VEP",
 		VEP	 = config['VEP'],
+		merge=NGS_PIPELINE + "/scripts/consensusHLA.pl",
 		normal	 = lambda wildcards: config['sample_references'][wildcards.sample][0],
 		batch    = config[config['host']]["job_VEP"],
 	shell: """
@@ -120,7 +120,7 @@ rule VEP:
 	variant_effect_predictor.pl -i {output.vcf}.tmp --plugin Downstream --plugin Wildtype --terms SO --offline --cache --dir_cache $VEPCACHEDIR --assembly GRCh37 --output_file {output.vcf} --vcf --force_overwrite
 	rm -rf {output.vcf}.tmp
 	export LC_ALL=C
-	perl {input.merge} {input.HLA[0]} {input.HLA[1]} | sort > {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt
+	perl {params.merge} {input.HLA[0]} {input.HLA[1]} | sort > {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt
 	#######################
 	"""
 ############
