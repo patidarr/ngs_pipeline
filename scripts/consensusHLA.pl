@@ -19,9 +19,14 @@ while(<IN>){
 	#
 	$_ =~ s/'//g;
 	my @line=split("\t",$_);
-	$line[2] = sprintf("%.10f",$line[2]);
-	$HASH{"$line[1]"} = $line[2] if (not exists $HASH{"$line[1]"});
-	$HASH{"$line[3]"} = $line[4] if (not exists $HASH{"$line[3]"});
+	if ($line[2] !~ /NA/i){
+		$line[2] = sprintf("%.10f",$line[2]);
+		$HASH{"$line[1]"} = $line[2] if (not exists $HASH{"$line[1]"});
+	}
+	if ($line[4] !~ /NA/i){
+                $line[4] = sprintf("%.10f",$line[4]);
+		$HASH{"$line[3]"} = $line[4] if (not exists $HASH{"$line[3]"});
+	}
 }
 close IN;
 print "#Allele\tseq2HLA_Confidence\tHLAminer_Score\n";
@@ -53,5 +58,6 @@ while(<IN>){
 	
 }
 foreach (keys %HASH){
+	if($_ =~ /na/i){next;}
 	print "HLA-$_\t$HASH{$_}\tNotCalled\n";
 }

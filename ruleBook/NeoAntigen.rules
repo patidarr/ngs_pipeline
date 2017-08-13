@@ -83,16 +83,16 @@ rule MergeHLA:
 	input:
 		A="{base}/{TIME}/{sample}/HLA/HLAminer/HLAminer_HPTASR.csv",
 		B="{base}/{TIME}/{sample}/HLA/seq2HLA/{sample}-ClassI.HLAgenotype4digits",
-		Tool=NGS_PIPELINE + "/scripts/consensusHLA.pl"
 	output:
 		"{base}/{TIME}/{sample}/HLA/{sample}.Calls.txt"
 	params:
 		rulename = "MergeHLA",
+		Tool=NGS_PIPELINE + "/scripts/consensusHLA.pl",
 		batch    = config[config['host']]["job_default"]
 	shell: """
 	#######################
 	export LC_ALL=C
-	perl {input.Tool} {input.B} {input.A} | sort > {output}	
+	perl {params.Tool} {input.B} {input.A} | sort > {output}	
 	#######################
 	"""
 ############
