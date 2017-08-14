@@ -1,7 +1,7 @@
 for subject in config['subject']:
 	for sample in config['subject'][subject]:
 		if config['sample_captures'][sample] in config['verifyBamID_vcf']:
-			TARGET     += ["{subject}/{TIME}/{sample}/verifyBamID/{sample}.selfSM".format(TIME=TIME, subject=SAMPLE_TO_SUBJECT[s], sample=s) for s in SAMPLES]
+			TARGET     +=[subject+"/"+TIME+"/"+sample+"/verifyBamID/"+sample+".selfSM"] 
 conPair ={}
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
