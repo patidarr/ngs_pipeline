@@ -16,7 +16,7 @@ rule cnvkit:
 	version: config["cnvkit"]
 	params:
 		rulename  = "cnvkit",
-		batch     = config[config['host']]["job_default"],
+		batch     = config[config['host']]["job_gatk"],
 	shell: """
 	#######################
 	module load cnvkit/{version}
