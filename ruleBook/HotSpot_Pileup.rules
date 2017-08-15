@@ -35,7 +35,7 @@ rule HotSpotPileup:
 		config["samtools"]
 	params:
 		rulename  = "HotspotPileup",
-		batch     = config[config['host']]["job_default"],
+		batch     = config[config['host']]["job_bamUtil"],
 		type      = lambda wildcards: config['sample_type'][wildcards.sample],
 		capture	  = lambda wildcards: config['sample_captures'][wildcards.sample],
 		script	  = NGS_PIPELINE + "/scripts/hotspot_mpileup.pl"
