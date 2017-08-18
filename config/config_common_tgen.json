@@ -28,12 +28,14 @@
 		"polya"			: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
 		"ribozero"		: "/projects/Clinomics/Tools/ref/hg19/design/RefSeq.target.hg19.merged.bed",
 		"seqcapez.rms.v1"	: "/projects/Clinomics/Tools/ref/hg19/design/Nimblegen_10_EZ_HX3_capture.target.hg19.merged.bed",
+		"mayo_v5_urt"           : "/projects/Clinomics/Tools/ref/hg19/design/Agilent_S04380219_SureSelect_v5_utr_mayo.target.hg19.bed",
 		"nbl.panel"		: "/projects/Clinomics/Tools/ref/hg19/design/SeqCap_EZ_Panel_Neuro.target.hg19.merged.bed"
 	},
 	"hotspot_bed"           :{
 		"wholegenome"		: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"seqcapez.hu.ex.v3"	: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"seqcapez.hu.ex.utr.v1"	: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"mayo_v5_urt"           : "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged_clinResExome.bed",
 		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/hotspot/hg19_Hotspot.08.08.16_merged.bed",
@@ -49,7 +51,8 @@
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.snv.v1"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel1.recode.vcf",
 		"clin.cnv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_CNVPanel2.recode.vcf",
-		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel2.recode.vcf"
+		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_Panel2.recode.vcf",
+		"mayo_v5_urt"           : "/projects/Clinomics/Tools/ref/hg19/verifyBamID/Omni_MayoV5.recode.vcf"
 	},
 	"cnvkit_ref"		:{
 		"clin.ex.v1"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.ex.v1.hg19.cnn",
@@ -58,6 +61,7 @@
 		"clin.snv.v2"		: "/projects/Clinomics/Tools/ref/hg19/cnvkit/clin.snv.v2.hg19.cnn"
 	},
 	"conpair_marker"	: "/projects/Clinomics/Tools/ref/hg19/verifyBamID/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.bed",
+	"cnvkit_access"		: "/projects/Clinomics/Tools/ref/hg19/access-5k-mappable.hg19.bed",
 	"1000G_phase1"		: "/projects/Clinomics/Tools/ref/hg19/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/projects/Clinomics/Tools/ref/hg19/Mills_and_1000G_gold_standard.indels.hg19.vcf",
 	"dbsnp"			: "/projects/Clinomics/Tools/ref/hg19/dbsnp_138.hg19.vcf",

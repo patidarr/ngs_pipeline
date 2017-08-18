@@ -80,18 +80,32 @@ for sample in config['library'].keys():
 			elif os.path.isfile(DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R1.fastq.gz"):
 				FQ[sample] =[DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R1.fastq.gz", DATA_DIR+"Sample_"+fq+"/Sample_"+fq+"_R2.fastq.gz"]
 			elif os.path.exists(DATA_DIR+fq+"/"):
-				R1=glob.glob(DATA_DIR+fq+"/*_R1_*.fastq.gz")
-				R2=glob.glob(DATA_DIR+fq+"/*_R2_*.fastq.gz")
-				FQ[sample] =[R1,R2]
+				R1=glob.glob(DATA_DIR+fq+"/*_R1*.fastq.gz")
+				R2=glob.glob(DATA_DIR+fq+"/*_R2*.fastq.gz")
+				FQ[sample]  =[R1]
+				FQ[sample] +=[R2]
 			elif os.path.exists(DATA_DIR+"Sample_"+fq+"/"):
-				R1=glob.glob(DATA_DIR+"Sample_"+fq+"/*_R1_*.fastq.gz")
-				R2=glob.glob(DATA_DIR+"Sample_"+fq+"/*_R2_*.fastq.gz")
-				FQ[sample] =[R1,R2]
+				R1=glob.glob(DATA_DIR+"Sample_"+fq+"/*_R1*.fastq.gz")
+				R2=glob.glob(DATA_DIR+"Sample_"+fq+"/*_R2*.fastq.gz")
+				FQ[sample]  =[R1]
+				FQ[sample] +=[R2]
 			else:
+				print("#####################################")
+				print("")
+				print("")
 				print("Can not find fastq files for", sample)
+				print("")
+				print("")
+				print("#####################################")
 				exit()
 		else:
+			print("#####################################")
+			print("")
+                        print("")
 			print("Can not process fastq files from two locations for ",sample )
+			print("")
+			print("")
+			print("#####################################")
 			exit()
 ###########################################################################
 ####

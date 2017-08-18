@@ -63,6 +63,7 @@
 		"strexome"		:{"Normal":"20","Tumor":"20"},
 		"sureselect.exon.v5_utr":{"Normal":"20","Tumor":"20"},
 		"sureselect.exon.v6"	:{"Normal":"20","Tumor":"20"},
+		"mayo_v5_urt"           :{"Normal":"20","Tumor":"20"},
 		"idt.xgen.exome.res"	:{"Normal":"10","Tumor":"20"}
 	}
 }

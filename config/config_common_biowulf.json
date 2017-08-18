@@ -42,6 +42,7 @@
 		"strexome"		: "/data/Clinomics/Ref/khanlab/design/Strexome.target.bed",
 		"sureselect.exon.v5_utr": "/data/Clinomics/Ref/khanlab/design/NIAID.sureselect.exon.v5_utr.target.bed",
 		"sureselect.exon.v6"	: "/data/Clinomics/Ref/khanlab/design/NIAID.sureselect.exon.v6.target.bed",
+		"mayo_v5_urt"           : "/data/Clinomics/Ref/khanlab/design/Agilent_S04380219_SureSelect_v5_utr_mayo.target.hg19.bed",
 		"idt.xgen.exome.res"	: "/data/Clinomics/Ref/khanlab/design/IDT_xgen-exome-research-panel.target.hg19.bed"
 	},
 	"hotspot_bed"		:{
@@ -49,6 +50,7 @@
 		"seqcapez.hu.ex.v3"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"seqcapez.hu.ex.utr.v1"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
+		"mayo_v5_urt"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
 		"clin.snv.v0"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
@@ -76,7 +78,8 @@
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Clinical_Research_Exome.recode.vcf",
 		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel1.recode.vcf",
 		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_CNVPanel2.recode.vcf",
-		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel2.recode.vcf"
+		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_Panel2.recode.vcf",
+		"mayo_v5_urt"           : "/data/Clinomics/Ref/khanlab/verifyBamID/Omni_MayoV5.recode.vcf"
 	},
 	 "cnvkit_ref"            :{
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/cnvkit/clin.ex.v1.hg19.cnn",
@@ -85,6 +88,7 @@
 		"clin.snv.v2"		: "/data/Clinomics/Ref/khanlab/cnvkit/clin.snv.v2.hg19.cnn"
 	},
 	"conpair_marker"	: "/data/Clinomics/Ref/khanlab/verifyBamID/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.bed",
+	"cnvkit_access"		: "/data/Clinomics/Ref/khanlab/access-5k-mappable.hg19.bed",
 	"1000G_phase1"		: "/data/Clinomics/Ref/khanlab/1000G_phase1.indels.hg19.vcf",
 	"Mills_and_1000G"	: "/data/Clinomics/Ref/khanlab/Mills_and_1000G_gold_standard.indels.hg19.vcf",
 	"dbsnp"			: "/data/Clinomics/Ref/khanlab/dbsnp_138.hg19.vcf",
