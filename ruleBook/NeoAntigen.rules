@@ -141,10 +141,10 @@ rule pVACseq:
 		host	 = config['host']
 	shell: """
 	#######################
-	allele=`grep -v -P "\\tNotCalled\\t" {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt |cut -f1 |grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
+	allele=`cut -f1 {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt |grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
 	
 	module load pvacseq python/{params.python}
-	pvacseq run --iedb-install-directory {params.IEDB} -e 8,9,10,11 --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/
+	pvacseq run --iedb-install-directory {params.IEDB} -e 8,9,10,11,12,13,14 --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/
 	export LC_ALL=C
 	perl {params.tool} {output} |sort |uniq >{wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/{wildcards.sample}.final.txt
 	#######################

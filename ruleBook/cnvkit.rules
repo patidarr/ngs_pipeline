@@ -4,7 +4,8 @@ for subject in config['subject']:
 			if config['sample_captures'][sample] in config['cnvkit_ref']:
 				TARGET +=[subject+"/"+TIME+"/"+sample+"/cnvkit/"+sample+".cns"]	
 			else:
-				TARGET +=[subject+"/"+TIME+"/"+sample+"/cnvkit/"+sample+".cnr"]
+				for sample in config['sample_references']: 
+					TARGET +=[subject+"/"+TIME+"/"+sample+"/cnvkit/"+sample+".cnr"]
 ############
 #       cnvkit
 ############
