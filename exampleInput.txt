@@ -1,0 +1,6 @@
+custom ID	Type	Diagnosis	Type of sequencing	Enrichment step	FCID	Library ID	Matched normal	Matched RNA-seq lib	Case Name
+NCI0291	normal DNA	Glioblastoma	E-il	clin.ex.v1	HH3CWBGXX	NCI0291_B_E			example
+NCI0291	normal DNA	Glioblastoma	E-il	clin.snv.v1	HH3CWBGXX	NCI0291_B_P			example
+NCI0291	tumor DNA	Glioblastoma	E-il	clin.ex.v1	HWHT3BGXX	NCI0291_T_E	NCI0291_B_E	NCI0291_T_T	example
+NCI0291	tumor DNA	Glioblastoma	E-il	clin.snv.v1	HWHT3BGXX	NCI0291_T_P	NCI0291_B_P	NCI0291_T_T	example
+NCI0291	tumor RNA	Glioblastoma	T-il	access	HWJW5BGXX	NCI0291_T_T			example
