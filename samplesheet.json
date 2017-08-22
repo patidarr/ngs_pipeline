@@ -20,7 +20,8 @@
     "NCI0291_B_E": "Normal",
     "NCI0291_T_E": "Tumor",
     "NCI0291_B_P": "Normal",
-    "NCI0291_T_P": "Tumor"
+    "NCI0291_T_P": "Tumor",
+    "NCI0291_T_T": "RNASeq"
   },
   "sample_captures": {
     "NCI0291_B_E": "clin.ex.v1",

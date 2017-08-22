@@ -1,9 +1,9 @@
 #!/usr/bin/python
 import os
 import json
+import re
 from sys import argv
 
-f = open(argv[1], 'r')
 samples=argv[2]
 output ={}
 output["sample_captures"] ={}
@@ -15,15 +15,16 @@ output["sample_references"] = {}
 output["sample_RNASeq"] = {}
 output["RNASeq"] = {}
 
-patientIndex=0
-TypeIndex=1
-DiagnosisIndex=2
-captureIndex=4
-FCIDIndex=5
-libraryIndex=6
-normRefIndex=7
-rnaRefIndex=8
-#ID
+#patientIndex=0
+#TypeIndex=1
+#DiagnosisIndex=2
+#captureIndex=4
+#FCIDIndex=5
+#libraryIndex=6
+#normRefIndex=7
+#rnaRefIndex=8
+
+### Column headers in current txt input file
 #custom ID
 #Type
 #Diagnosis
@@ -34,11 +35,29 @@ rnaRefIndex=8
 #Matched normal
 #Matched RNA-seq lib
 #Case Name
-
+f = open(argv[1], 'r')
 for line in f:
 	line = line.rstrip()	
 	column = line.split("\t")
+	if re.search("custom ID", line):
+		patientIndex	=column.index('custom ID')
+		TypeIndex	=column.index('Type')
+		DiagnosisIndex	=column.index('Diagnosis')
+		captureIndex	=column.index('Enrichment step')
+		FCIDIndex	=column.index('FCID')
+		libraryIndex	=column.index('Library ID')
+		normRefIndex	=column.index('Matched normal')
+		rnaRefIndex	=column.index('Matched RNA-seq lib')
 	column[captureIndex] =column[captureIndex].lower()
+	# Change it to work with current pipeline
+	if column[TypeIndex]  == 'tumor RNA':
+		column[TypeIndex] = 'RNASeq'
+	elif column[TypeIndex]  == 'tumor DNA':
+		column[TypeIndex] = 'Tumor'
+	elif column[TypeIndex]  == 'normal DNA' or column[TypeIndex]  == 'blood DNA':
+		column[TypeIndex] = 'Normal'
+
+
 	for sample in samples.split(','):
 		if column[patientIndex] == sample:
 			output["sample_captures"][column[libraryIndex]]=column[captureIndex]
@@ -52,7 +71,7 @@ for line in f:
 				output["library"][column[libraryIndex]] = [column[libraryIndex]]
 			else:
 				output["library"][column[libraryIndex]] = [column[libraryIndex]+"_"+column[FCIDIndex]]
-			if 'DNA' in column[TypeIndex]:
+			if 'Normal' in column[TypeIndex] or 'Tumor' in column[TypeIndex]:
 				if column[patientIndex] not in output["subject"].keys():	
 					output["subject"][column[patientIndex]]=[column[libraryIndex]]
 				else:
