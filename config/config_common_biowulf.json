@@ -50,7 +50,7 @@
 		"seqcapez.hu.ex.v3"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"seqcapez.hu.ex.utr.v1"	: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"clin.ex.v1"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
-		"mayo_v5_urt"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed"
+		"mayo_v5_urt"           : "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
 		"clin.snv.v0"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.snv.v1"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged_panel_1.bed",
 		"clin.cnv.v2"		: "/data/Clinomics/Ref/khanlab/hotspot/hg19_Hotspot.08.08.16_merged.bed",
