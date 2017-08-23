@@ -131,6 +131,7 @@ rule pVACseq:
 		"{base}/{TIME}/{sample}/NeoAntigen/{sample}.final.vcf"
 	output:
 		"{base}/{TIME}/{sample}/NeoAntigen/MHC_Class_I/{sample}.final.tsv"
+	version: config['pvacseq']
 	params:
 		rulename = "pVACSeq",
 		python   = config["version_python"],
@@ -143,7 +144,7 @@ rule pVACseq:
 	#######################
 	allele=`cut -f1 {wildcards.base}/{wildcards.TIME}/{params.normal}/HLA/{params.normal}.Calls.txt |grep -v Allele|tr '\\n' ',' |sed -e 's/,$//g'`
 	
-	module load pvacseq python/{params.python}
+	module load pvacseq/{version} python/{params.python}
 	pvacseq run --iedb-install-directory {params.IEDB} -e 8  --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/8 &
 	pvacseq run --iedb-install-directory {params.IEDB} -e 9  --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/9 &
 	pvacseq run --iedb-install-directory {params.IEDB} -e 10 --fasta-size=200 {input} {wildcards.sample} ${{allele}} {{NNalign,NetMHC,NetMHCIIpan,NetMHCcons,NetMHCpan,PickPocket,SMM,SMMPMBEC,SMMalign}} {wildcards.base}/{wildcards.TIME}/{wildcards.sample}/NeoAntigen/10 &
