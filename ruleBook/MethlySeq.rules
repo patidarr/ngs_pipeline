@@ -5,7 +5,7 @@ if 'methylseq' in config:
 		if subject not in PATIENTS:
 			PATIENTS.append(subject)
 		for library in config['methylseq'][subject]:
-			ALL_FASTQC += [subject+"/"+TIME+"/"+library+"/qc/fastqc/"+library+"_R2_fastqc.html"]
+			TARGET += [subject+"/"+TIME+"/"+library+"/qc/fastqc/"+library+"_R2_fastqc.html"]
 			TARGET += [subject+"/"+TIME+"/"+library+"/"+library+"_pe.deduplicated.CpG_report.txt.gz"]
 			TARGET += [subject+"/"+TIME+"/"+library+"/"+library+"_PE_report.html"]
 	for subject in config['methylseq']:
