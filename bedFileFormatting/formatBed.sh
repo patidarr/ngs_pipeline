@@ -18,8 +18,14 @@ ENS=$dir/ref/Exons_06302016_ensembl_formatted_noUTR.merged.bed
 
 module load bedtools
 module load igvtools
-cp $BED ${OUT}.refseq.ensembl.noUTR.notfound.design.bed
-igvtools index ${OUT}.refseq.ensembl.noUTR.notfound.design.bed
+
+
+# Copy the input as design file, should be replaced by the vendor provided design file whereever available
+cp $BED ${OUT}.refseq.ensembl.noUTR.notfound.design.hg19.bed
+igvtools index ${OUT}.refseq.ensembl.noUTR.notfound.design.hg19.bed
+
+
+
 slopBed -i $BED -g $dir/ref/ucsc.hg19.genome -b 100 >${OUT}
 intersectBed -a $REFSEQ -b ${OUT} -wa >${OUT}.foundInRefSeq
 intersectBed -a ${OUT} -b $REFSEQ -v >${OUT}.PaddedNotfoundInRefSeq
@@ -30,10 +36,10 @@ intersectBed -a ${OUT}.NotfoundInRefSeq -b $ENS -v >${OUT}.NotfoundInENSEMBL
 
 awk '{OFS="\t"}{print $1,$2,$3,"NOTFOUND",0,"NULL"}' ${OUT}.NotfoundInENSEMBL >${OUT}.Notfound
 # remove the padding from remaining regions, mergeBed and make Gene and Exon numbers ___ seperated.
-cat ${OUT}.foundInRefSeq ${OUT}.foundInENSEMBL ${OUT}.Notfound |sortBed -i - |uniq|mergeBed -i - -c 4,5,6 -o distinct,collapse,collapse |awk '{OFS="\t"}{print $1,$2,$3,$4"___"$5,$6}' >${OUT}.refseq.ensembl.noUTR.notfound.target.bed
-igvtools index ${OUT}.refseq.ensembl.noUTR.notfound.target.bed
+cat ${OUT}.foundInRefSeq ${OUT}.foundInENSEMBL ${OUT}.Notfound |sortBed -i - |uniq|mergeBed -i - -c 4,5,6 -o distinct,collapse,collapse |awk '{OFS="\t"}{print $1,$2,$3,$4"___"$5,$6}' >${OUT}.refseq.ensembl.noUTR.notfound.target.hg19.bed
+igvtools index ${OUT}.refseq.ensembl.noUTR.notfound.target.hg19.bed
 
-slopBed -i ${OUT}.refseq.ensembl.noUTR.notfound.target.bed -g $dir/ref/ucsc.hg19.genome -b 20 >${OUT}.refseq.ensembl.noUTR.notfound.targetbp.bed
+slopBed -i ${OUT}.refseq.ensembl.noUTR.notfound.target.hg19.bed -g $dir/ref/ucsc.hg19.genome -b 20 >${OUT}.refseq.ensembl.noUTR.notfound.targetbp.hg19.bed
 rm -rf ${OUT} ${OUT}.foundInRefSeq ${OUT}.NotfoundInRefSeq ${OUT}.foundInENSEMBL ${OUT}.NotfoundInENSEMBL ${OUT}.Notfound ${OUT}.PaddedNotfoundInRefSeq
-igvtools index ${OUT}.refseq.ensembl.noUTR.notfound.targetbp.bed
+igvtools index ${OUT}.refseq.ensembl.noUTR.notfound.targetbp.hg19.bed
 rm -rf igv.log
